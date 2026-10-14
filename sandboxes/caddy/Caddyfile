@@ -1,0 +1,10 @@
+{
+    # Enable Caddy REST Admin API for dynamic routing without restarting
+    admin 0.0.0.0:2019
+    auto_https off
+}
+
+# Default landing response for the local reverse proxy
+:80 {
+    respond "Universal Venture Incubator Sandbox Gateway Active" 200
+}
