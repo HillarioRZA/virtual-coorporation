@@ -75,3 +75,9 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Personal AI Agent Guides & Local Documentation (Private to workspace, NOT for GitHub)
+/*.md
+!/README.md
+/*.png
+
