@@ -72,8 +72,8 @@ def test_office_simulator_event_handling() -> None:
 
     # 3. Test CONSULT_ROLE
     office_sim_engine.handle_bus_event("CONSULT_ROLE", {"role_id": "role_fe"})
-    assert fe_agent.activity_state == "WALKING"
-    assert fe_agent.target_x == 880.0
+    assert fe_agent.activity_state == "CONSULTING"
+    assert "Diskusi di Oasis" in (fe_agent.speech_bubble or "")
 
     # 4. Test CIRCUIT_BREAKER_TRIGGERED
     office_sim_engine.handle_bus_event(
@@ -89,17 +89,17 @@ def test_office_simulator_event_handling() -> None:
 
 
 def test_office_simulator_step_and_intervene() -> None:
-    """Menguji interpolasi langkah pergerakan spasial dan intervensi langsung CEO."""
+    """Menguji detak siklus simulasi aktivitas agen dan intervensi langsung CEO."""
     agent = office_sim_engine.agents["role_fe"]
-    agent.x = 100.0
-    agent.target_x = 200.0
+    agent.activity_state = "CONSULTING"
 
     office_sim_engine.step_simulation()
-    assert agent.x > 100.0
+    assert agent.activity_state == "IDLE"
 
     res = office_sim_engine.intervene_agent("role_fe", "Prioritaskan responsive navbar!")
     assert res["status"] == "SUCCESS"
     assert "Prioritaskan responsive navbar!" in agent.scratchpad
+    assert agent.activity_state == "CODING"
 
 
 def test_office_rest_endpoints(client: TestClient) -> None:
