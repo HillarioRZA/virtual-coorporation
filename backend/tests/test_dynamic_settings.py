@@ -118,3 +118,22 @@ async def test_settings_api_endpoints(temp_settings_db: str) -> None:
         assert reset_res.status_code == 200
         reset_body = reset_res.json()
         assert reset_body["status"] == "success"
+
+
+@pytest.mark.asyncio
+async def test_custom_openai_compatible_provider(temp_settings_db: str) -> None:
+    """Memverifikasi konfigurasi custom OpenAI-compatible provider (TokenomixAI)."""
+    updates = {
+        "OPENAI_COMPATIBLE_API_KEY": "sk-tkx-test-tokenomix-key-12345",
+        "OPENAI_COMPATIBLE_BASE_URL": "https://api.tokenomixai.com/v1",
+        "OPENAI_COMPATIBLE_MODEL": "qwen-2.5-coder-32b-instruct",
+    }
+    count = await dynamic_settings_manager.update_runtime_settings(updates, custom_path=temp_settings_db)
+    assert count == 3
+    assert settings.OPENAI_COMPATIBLE_BASE_URL == "https://api.tokenomixai.com/v1"
+
+    runtime = dynamic_settings_manager.get_runtime_settings()
+    custom_prov = runtime["providers"]["openai_compatible"]
+    assert custom_prov["is_set"] is True
+    assert custom_prov["base_url"] == "https://api.tokenomixai.com/v1"
+    assert "..." in custom_prov["key"]

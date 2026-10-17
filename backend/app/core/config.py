@@ -41,6 +41,11 @@ class Settings(BaseSettings):
     OPENROUTER_API_KEY: Optional[str] = Field(default="")
     OPENROUTER_BASE_URL: str = Field(default="https://openrouter.ai/api/v1")
 
+    # Custom OpenAI-Compatible Provider (TokenomixAI, OpenRouter, vLLM, etc.)
+    OPENAI_COMPATIBLE_API_KEY: Optional[str] = Field(default="")
+    OPENAI_COMPATIBLE_BASE_URL: str = Field(default="https://api.tokenomixai.com/v1")
+    OPENAI_COMPATIBLE_MODEL: str = Field(default="qwen-2.5-coder-32b-instruct")
+
     # Default Model Selection & Provider per Agent Role
     MODEL_COS: str = Field(default="deepseek-reasoner")
     PROVIDER_COS: str = Field(default="deepseek")

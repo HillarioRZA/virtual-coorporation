@@ -65,7 +65,7 @@ export function useDeviceCapabilities(): DeviceCapabilities {
       reason = "Touchscreen mobile interface without precision pointer";
     } else if (screenWidth < 1024 && maxTouchPoints > 1) {
       isDesktop = false;
-      reason = `Display width (${screenWidth}px) insufficient for 3D multi-building workstation`;
+      reason = `Display width (${screenWidth}px) insufficient for Oasis Live Command HQ workstation`;
     } else if (isMobileUa && maxTouchPoints > 0) {
       isDesktop = false;
       reason = "Mobile platform detected via hardware handshake";

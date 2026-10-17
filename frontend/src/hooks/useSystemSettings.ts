@@ -10,9 +10,6 @@ import { SystemSettingsData } from "../lib/types/api";
 
 export type SettingsTab = "providers" | "security" | "paas" | "system";
 
-/**
- * Custom hook managing system configuration state, form changes, and API persistence.
- */
 export function useSystemSettings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("providers");
   const [settingsData, setSettingsData] = useState<SystemSettingsData | null>(null);
@@ -21,7 +18,7 @@ export function useSystemSettings() {
   const [isResetting, setIsResetting] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-  const [providerForm, setProviderForm] = useState<Record<string, { key: string; base_url: string }>>({});
+  const [providerForm, setProviderForm] = useState<Record<string, { key: string; base_url: string; model?: string }>>({});
   const [telegramForm, setTelegramForm] = useState({
     auth_gate_enabled: false,
     bot_token: "",
@@ -45,9 +42,9 @@ export function useSystemSettings() {
       const data = await fetchSystemSettings();
       setSettingsData(data);
       if (data.providers) {
-        const pf: Record<string, { key: string; base_url: string }> = {};
+        const pf: Record<string, { key: string; base_url: string; model?: string }> = {};
         Object.entries(data.providers).forEach(([p, val]) => {
-          pf[p] = { key: "", base_url: val.base_url || "" };
+          pf[p] = { key: "", base_url: val.base_url || "", model: val.model || "" };
         });
         setProviderForm(pf);
       }
@@ -78,11 +75,9 @@ export function useSystemSettings() {
     }
   };
 
-  useEffect(() => {
-    loadSettings();
-  }, []);
+  useEffect(() => { loadSettings(); }, []);
 
-  const handleProviderChange = (prov: string, field: "key" | "base_url", value: string) => {
+  const handleProviderChange = (prov: string, field: "key" | "base_url" | "model", value: string) => {
     setProviderForm((prev) => ({
       ...prev,
       [prov]: { ...(prev[prov] || { key: "", base_url: "" }), [field]: value },
@@ -99,6 +94,7 @@ export function useSystemSettings() {
         const keyName = prov === "gemini" ? "GEMINI_API_KEY" : `${prov.toUpperCase()}_API_KEY`;
         if (val.key.trim() && !val.key.includes("...")) updates[keyName] = val.key.trim();
         if (val.base_url.trim()) updates[`${prov.toUpperCase()}_BASE_URL`] = val.base_url.trim();
+        if (val.model && val.model.trim()) updates[`${prov.toUpperCase()}_MODEL`] = val.model.trim();
       });
 
       updates["TELEGRAM_AUTH_GATE_ENABLED"] = telegramForm.auth_gate_enabled;
@@ -131,7 +127,7 @@ export function useSystemSettings() {
   };
 
   const handleReset = async () => {
-    if (!confirm("Peringatan: Seluruh konfigurasi akan di-reset ke nilai default .env. Lanjutkan?")) return;
+    if (!confirm("Peringatan: Seluruh konfigurasi akan di-reset ke default .env. Lanjutkan?")) return;
     try {
       setIsResetting(true);
       setFeedback(null);
@@ -139,8 +135,7 @@ export function useSystemSettings() {
       setFeedback({ type: "success", message: res.message || "Pengaturan berhasil di-reset ke default." });
       await loadSettings();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Gagal mereset pengaturan.";
-      setFeedback({ type: "error", message: msg });
+      setFeedback({ type: "error", message: err instanceof Error ? err.message : "Gagal mereset pengaturan." });
     } finally {
       setIsResetting(false);
     }
@@ -153,8 +148,7 @@ export function useSystemSettings() {
       const res = await resendAuthPassword();
       setFeedback({ type: "success", message: res.message || "Pesan tes berhasil dikirim ke Telegram!" });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Gagal mengirim tes ke Telegram.";
-      setFeedback({ type: "error", message: msg });
+      setFeedback({ type: "error", message: err instanceof Error ? err.message : "Gagal mengirim tes ke Telegram." });
     } finally {
       setIsTestingTelegram(false);
     }
@@ -167,37 +161,17 @@ export function useSystemSettings() {
       const res = await rotateAuthPassword();
       setFeedback({ type: "success", message: res.message || "Password berhasil dirotasi!" });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Gagal merotasi password.";
-      setFeedback({ type: "error", message: msg });
+      setFeedback({ type: "error", message: err instanceof Error ? err.message : "Gagal merotasi password." });
     } finally {
       setIsRotatingPassword(false);
     }
   };
 
   return {
-    activeTab,
-    setActiveTab,
-    settingsData,
-    isLoading,
-    isSaving,
-    isResetting,
-    feedback,
-    setFeedback,
-    providerForm,
-    handleProviderChange,
-    telegramForm,
-    setTelegramForm,
-    paasForm,
-    setPaasForm,
-    sandboxForm,
-    setSandboxForm,
-    showKeys,
-    setShowKeys,
-    isTestingTelegram,
-    isRotatingPassword,
-    handleSave,
-    handleReset,
-    handleTestTelegram,
-    handleRotatePasswordNow,
+    activeTab, setActiveTab, settingsData, isLoading, isSaving, isResetting,
+    feedback, setFeedback, providerForm, handleProviderChange, telegramForm,
+    setTelegramForm, paasForm, setPaasForm, sandboxForm, setSandboxForm,
+    showKeys, setShowKeys, isTestingTelegram, isRotatingPassword, handleSave,
+    handleReset, handleTestTelegram, handleRotatePasswordNow,
   };
 }

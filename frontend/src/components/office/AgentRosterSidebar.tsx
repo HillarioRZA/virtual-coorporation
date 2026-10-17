@@ -1,21 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, Sparkles, Coffee, Code2, BrainCircuit } from "lucide-react";
+import { Search, Sparkles, Coffee, Code2, BrainCircuit, ShieldAlert, FileText, Globe } from "lucide-react";
 import { AgentSpatialData } from "../../lib/types/office";
 
 interface AgentRosterSidebarProps {
   agents: AgentSpatialData[];
   selectedAgent: AgentSpatialData | null;
   onSelectAgent: (agent: AgentSpatialData) => void;
-  demoMode: boolean;
 }
 
 export function AgentRosterSidebar({
   agents,
   selectedAgent,
   onSelectAgent,
-  demoMode,
 }: AgentRosterSidebarProps) {
   const [searchQuery, setSearchQuery] = useState<string>("");
 
@@ -30,28 +28,35 @@ export function AgentRosterSidebar({
   const getStatusBadge = (state: string) => {
     switch (state) {
       case "CODING":
-        return { label: "working", color: "text-cyan-400 bg-cyan-950/80 border-cyan-800/60" };
+        return { label: "Coding", color: "text-cyan-400 bg-cyan-950/80 border-cyan-800/60" };
+      case "REVIEWING":
+        return { label: "Reviewing", color: "text-amber-400 bg-amber-950/80 border-amber-800/60" };
       case "MEETING":
-        return { label: "planning", color: "text-amber-400 bg-amber-950/80 border-amber-800/60" };
-      case "WALKING":
-        return { label: "moving", color: "text-emerald-400 bg-emerald-950/80 border-emerald-800/60" };
+        return { label: "Meeting", color: "text-indigo-400 bg-indigo-950/80 border-indigo-800/60" };
       case "BLOCKED":
-        return { label: "blocked", color: "text-rose-400 bg-rose-950/80 border-rose-800/60" };
+        return { label: "Blocked", color: "text-rose-400 bg-rose-950/80 border-rose-800/60" };
       default:
-        return { label: "on a break", color: "text-slate-400 bg-slate-900 border-slate-800" };
+        return { label: "Idle", color: "text-slate-400 bg-slate-900 border-slate-800" };
     }
   };
 
   const getRoleIcon = (roleId: string) => {
-    if (roleId.includes("founder") || roleId.includes("cos")) return <Sparkles className="w-3.5 h-3.5" />;
+    if (roleId.includes("founder") || roleId.includes("cos") || roleId.includes("cfo")) {
+      return <Sparkles className="w-3.5 h-3.5" />;
+    }
     if (roleId.includes("cto") || roleId.includes("pm")) return <BrainCircuit className="w-3.5 h-3.5" />;
-    if (roleId.includes("fe") || roleId.includes("be") || roleId.includes("devsecops")) return <Code2 className="w-3.5 h-3.5" />;
+    if (roleId.includes("fe") || roleId.includes("be") || roleId.includes("devsecops")) {
+      return <Code2 className="w-3.5 h-3.5" />;
+    }
+    if (roleId.includes("qa")) return <ShieldAlert className="w-3.5 h-3.5" />;
+    if (roleId.includes("copywriter")) return <FileText className="w-3.5 h-3.5" />;
+    if (roleId.includes("seo") || roleId.includes("growth")) return <Globe className="w-3.5 h-3.5" />;
     return <Coffee className="w-3.5 h-3.5" />;
   };
 
   return (
     <aside className="w-72 md:w-80 flex-shrink-0 bg-slate-950/95 border-r border-slate-800 flex flex-col h-full select-none z-10">
-      {/* Header bar matching Screenshot 3 */}
+      {/* Header bar */}
       <div className="p-3.5 border-b border-slate-800/80 bg-slate-900/40">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -64,15 +69,10 @@ export function AgentRosterSidebar({
               LIVE
             </span>
           </div>
-          {demoMode && (
-            <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">
-              DEMO
-            </span>
-          )}
         </div>
         <p className="text-[11px] text-slate-400 mt-1 font-mono flex items-center gap-1">
           <span className="text-slate-500">•</span>
-          <span>working on Mission Control</span>
+          <span>13 Active Autonomous Agents</span>
         </p>
 
         {/* Search input */}
@@ -80,7 +80,7 @@ export function AgentRosterSidebar({
           <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-500" />
           <input
             type="text"
-            placeholder="Search agents..."
+            placeholder="Search agents or roles..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-slate-900/90 text-xs text-slate-200 pl-8 pr-3 py-1.5 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500 transition-colors placeholder:text-slate-600"
@@ -105,7 +105,6 @@ export function AgentRosterSidebar({
               }`}
             >
               <div className="flex items-center space-x-2.5 min-w-0">
-                {/* Tactical Avatar Portrait */}
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shadow-md border flex-shrink-0"
                   style={{
@@ -127,7 +126,6 @@ export function AgentRosterSidebar({
                 </div>
               </div>
 
-              {/* Status pill tag */}
               <div
                 className={`text-[10px] font-mono px-2 py-0.5 rounded-full border flex-shrink-0 flex items-center gap-1 ${status.color}`}
               >

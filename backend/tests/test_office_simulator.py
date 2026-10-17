@@ -155,3 +155,34 @@ def test_office_websocket_lifecycle_and_events(client: TestClient) -> None:
         assert intervene_data["type"] == "OFFICE_UPDATE"
         assert intervene_data["event"] == "INTERVENE"
 
+
+def test_office_directive_endpoints(client: TestClient) -> None:
+    """Menguji endpoint directive scoped interruption dan @all moderation gate."""
+    # 1. Scoped single-agent directive
+    resp = client.post(
+        "/api/v1/corporate/office/directive",
+        json={
+            "project_id": "proj_dir_test",
+            "mentions": ["role_fe"],
+            "instruction": "Perbaiki responsive layout",
+            "ticket_id": "T-102",
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "SUCCESS"
+    assert data["mode"] == "SCOPED_INTERRUPTION"
+
+    # 2. Executive moderator gate for @all
+    resp_all = client.post(
+        "/api/v1/corporate/office/directive",
+        json={
+            "project_id": "proj_dir_test",
+            "mentions": ["all"],
+            "instruction": "Sprint review Q4",
+        },
+    )
+    assert resp_all.status_code == 200
+    assert resp_all.json()["mode"] == "EXECUTIVE_MODERATED"
+
+

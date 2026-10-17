@@ -1,9 +1,9 @@
-# 🪐 Virtual Tech Startup Multi-Agent System & Sovereign Spatial Corporate OS
-### Autonomous AI Virtual Enterprise Platform, Dynamic Asynchronous Workflow Engine & Zero-Asset 3D Spatial Metaverse (v5.3+)
+# 🪐 Virtual Tech Startup Multi-Agent System & Sovereign Corporate OS
+### Autonomous AI Virtual Enterprise Platform, Dynamic Asynchronous Workflow Engine & Global Oasis Live Command HQ (v6.0+)
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-14.2%20(Production%20Ready)-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![Three.js](https://img.shields.io/badge/Three.js-Zero--Asset%2060--120%20FPS-black?style=flat-square&logo=three.js&logoColor=white)](https://threejs.org/)
+[![Oasis 2D Liquid](https://img.shields.io/badge/Command%20HQ-Obsidian%20Liquid%202D-6366f1?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
 [![Pytest](https://img.shields.io/badge/Pytest-131%2F131%20Passed%20(100%25)-brightgreen?style=flat-square&logo=pytest&logoColor=white)](https://pytest.org/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -18,11 +18,11 @@
 
 Platform ini memberdayakan seorang **Founder tunggal (Solo Entrepreneur / Chairman / CEO)** untuk mengoperasikan konglomerasi digital berskala penuh: mulai dari inisiasi ide produk, riset pasar, penyusunan kontrak OpenAPI, rekayasa paralel Frontend & Backend, penjaminan mutu P2P, audit keamanan statis OWASP Top 10, hingga peluncuran langsung di sandbox kontainer terisolasi.
 
-Seluruh dinamika perusahaan divisualisasikan dalam bentuk digital twin spasial **3D Cyber-Voxel Apple Park Cupertino Mega-Campus** berskala $272\text{ meter}$ yang dibangun **100% prosedural tanpa aset eksternal (0 KB file .gltf/.glb)**.
+Seluruh dinamika perusahaan dipantau secara real-time melalui antarmuka **Global Oasis Live Command HQ** (`/office`) yang elegan, berkinerja tinggi (2D Obsidian Liquid Engine), hemat token (Zero Idle Token Overhead), dan dilengkapi panel live thought stream, handoff inter-agen, serta ruang kontrol krisis All-Hands.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                              PETA EVOLUSI SISTEM (v1.0 ➔ v5.3+ INDUSTRIAL)                            │
+│                              PETA EVOLUSI SISTEM (v1.0 ➔ v6.0+ INDUSTRIAL)                            │
 ├────────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │ • Fase 1 (v1.0 Baseline)      : FSM Sekuensial Kaku, 7-12 Peran Tetap, AST Security Scanner, 68 Tests. │
 │ • Fase 2 (v1.1 - v2.4 Org OS) : Samsung Conglomerate, Dynamic Kanban, Looping DND Pipeline,            │
@@ -30,9 +30,11 @@ Seluruh dinamika perusahaan divisualisasikan dalam bentuk digital twin spasial *
 │ • Fase 3 (v3.0 - v3.5 Ind.)   : Sovereign Model Router, State-First Handoff (>85% Token Saved),        │
 │                                 Autonomous P2P PR Review (Quorum >= 2), 128-dim Vector Wisdom RAG,     │
 │                                 3-Way LCA Branch Merge, Hardened Docker Subnet, 125 Tests.             │
-│ • Fase 4 (v3.6 - v5.3 Spatial): Zero-Asset 3D Apple Park Cupertino (272m Ring, 4 Lantai Penuh,         │
-│                                 Steve Jobs Theater, Tantau Datacenter, AAA Physics, Celestial Sky),    │
-│                                 Enterprise Bug 1-7 Hardening, 131/131 Tests Passed (100%).             │
+│ • Fase 4 (v4.0 - v5.3 Spatial): Zero-Asset 3D Architecture, Spatial Simulator Engine, 131 Tests.       │
+│ • Fase 5 (v6.0+ Command HQ)   : Global Oasis Live Command HQ 2D (/office), 0-Token Watch Shield,       │
+│                                 Scoped Interruption (@mention), Multi-Category Stream Filters,         │
+│                                 Live Screen-Share Pane, All-Hands War Room, Custom OpenAI-Compatible   │
+│                                 Provider (TokenomixAI/vLLM), Strict SRP Refactoring (<= 200 baris).    │
 └────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -40,17 +42,17 @@ Seluruh dinamika perusahaan divisualisasikan dalam bentuk digital twin spasial *
 Pada versi awal (v1.0), sistem mengandalkan 12 peran kanonikal Silicon Valley dan deterministic waterfall state machine. Perlu digarisbawahi:
 > **12 peran awal dan state machine deterministik tersebut HANYALAH STANDAR DASAR (Baseline Gold Standard Template di `branch_main`).**
 
-Pada arsitektur modern (v5.3+), platform telah beroperasi penuh sebagai **Sovereign Autonomous Corporate OS**:
+Pada arsitektur modern (v6.0+), platform telah beroperasi penuh sebagai **Sovereign Autonomous Corporate OS**:
 1. **Dynamic Asynchronous Ticket-Driven State Machine**: Agen bekerja secara otonom dan asinkron, digerakkan oleh kartu tiket pada papan virtual Kanban dengan 5 status (`BACKLOG`, `TODO`, `IN_PROGRESS`, `REVIEW`, `DONE`) dan koordinasi inter-agen via `CorporateEventBus`.
 2. **Visual Dynamic Organization Studio (`/organization`)**: Bebas membuat divisi kustom dan mendaftarkan peran karyawan AI baru dengan instruksi sistem terisolasi, batasan anggaran token, dan izin perkakas eksekusi nyata.
 3. **Visual HTML5 Drag-and-Drop Looping Pipeline Builder**: Menyusun rantai eksekusi alur kerja yang fleksibel, mendukung perulangan peran ($A \rightarrow B \rightarrow C \rightarrow A$), multi-lini produk (Software, Edukasi, Copywriting, Kustom), serta penyisipan kartu **Gerbang Keputusan CEO** langsung ke kanvas.
-4. **Desentralisasi BYOK (Bring-Your-Own-Key)**: Konfigurasi LLM independen per peran (OpenRouter, DeepSeek, Claude, OpenAI, Gemini, Groq, Ollama Lokal) dengan preset bertanda `• FREE` dan Secret Vault terenkripsi AES-256-GCM.
+4. **Desentralisasi BYOK & Custom OpenAI-Compatible Provider**: Konfigurasi LLM independen per peran (OpenRouter, DeepSeek, Claude, OpenAI, Gemini, Groq, Ollama Lokal, dan Custom Provider seperti Tokenomix AI, Together AI, vLLM) dengan preset bertanda `• FREE`, Custom Base URL, dan Secret Vault terenkripsi AES-256-GCM.
 5. **Executive Governance Hub & Anti-Infinite Loop Circuit Breaker**: Pertukaran keputusan terstruktur (`AgentDecisionEnvelope`). Jika terjadi perdebatan teknis melingkar $\ge 3$ putaran berturut-turut tanpa kemajuan kode, tiket otomatis dibekukan (`BLOCKED_LOOP_DETECTED`) dan diserahkan ke hak veto 1-klik CEO.
 6. **Sovereign Model Router & State-First Cognitive Handoff**: Rate limiter adaptif (RPM/TPM/RPD shield) dengan pemangkasan token $>85\%$ dan retensi konteks 98% saat failover model.
 7. **Autonomous Peer-to-Peer PR Review Engine**: Review kode otomatis multi-disiplin antar-agen dengan *Quorum Approval Gate* ($\ge 2$ persetujuan agen) dan algoritma *Three-Way LCA Merge Conflict Resolution*.
 8. **Corporate Wisdom Base & Vector Memory RAG**: Basis pengetahuan vektor semantik 128-dimensi terdistribusi ($L_2$ normalized) berlatensi sub-2ms tanpa dependensi cloud eksternal.
-9. **Zero-Asset 3D Cyber-Voxel Apple Park Mega-Campus (`/office`)**: Digital twin prosedural Three.js 60–120 FPS dengan denah 4 lantai lengkap (Silicon Lab, Strategy Room, Executive Suite, Founder Penthouse), Steve Jobs Theater, Tantau Datacenter, lift kaca interaktif, dan langit astronomis bintang 1420m.
-10. **Enterprise Hardening (Bugs 1–7 Fixed)**: Bebas dari kebocoran memori (VRAM & unawaited listeners teratasi), isolasi rendering tanpa re-mount canvas, penanganan payload WebSocket yang aman, dan kepatuhan penuh Pydantic v2.11+.
+9. **Global Oasis Live Command HQ (`/office`)**: Antarmuka 2D berkinerja tinggi bertema Obsidian Liquid (`#090d16` / `#0f172a`) dengan streaming real-time diskursus agen, filter kategori (All Streams, Execution & Handoffs, CEO Gates, Oasis Lounge), live agent screen-share pane, konsol intervensi terarah `@role` hemat token, dan ruang komando krisis All-Hands War Room.
+10. **Enterprise Hardening & Clean SRP Modularization**: Bebas dari kebocoran memori (VRAM & unawaited listeners teratasi), isolasi rendering murni, penanganan payload WebSocket yang aman, kepatuhan penuh Pydantic v2.11+, dan penegakan batas $\le 150-200$ baris per file.
 
 ---
 
@@ -62,8 +64,8 @@ Pada arsitektur modern (v5.3+), platform telah beroperasi penuh sebagai **Sovere
 │                                  Next.js 14 App Router • TypeScript                                    │
 │                                                                                                        │
 │  /                 /organization         /kanban/[id]         /preview/[id]         /office            │
-│  Portfolio Hub     Org Studio & DND      Mission Control      Live Sandbox, PTY     Zero-Asset 3D      │
-│  & Venture State   Pipeline Builder      & Live Lounge WS     Terminal & Snapshots  Apple Park Campus  │
+│  Portfolio Hub     Org Studio & DND      Mission Control      Live Sandbox, PTY     Global Oasis Live  │
+│  & Venture State   Pipeline Builder      & Live Lounge WS     Terminal & Snapshots  Command HQ (2D)    │
 └───────────────────────────────────────────────────┬────────────────────────────────────────────────────┘
                                                     │ REST API / WebSocket / SSE Streams
                                                     ▼
@@ -102,13 +104,13 @@ Pada arsitektur modern (v5.3+), platform telah beroperasi penuh sebagai **Sovere
 │  • Autonomous P2P PR Review Engine: Automated Multi-Role Code Review with Quorum Approval Gate (>= 2)  │
 │  • Corporate Wisdom Base: Embedded 128-dim Vector Memory RAG (Sub-2ms Semantic Retrieval)              │
 │  • Hardened Docker Subnet Sandbox: Dedicated bridge_net_{project_id} with Hard CPU/RAM Quota           │
-│  • Zero-Asset 3D Procedural Engine: 272m Apple Park Cupertino Megastructure & AAA Physics (60-120 FPS) │
+│  • Global Oasis Live Engine: Real-time Multi-Agent Thoughts, Handoffs & 0-Token Watchdog (Next.js 14)  │
 └────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Pilar Fitur Utama (v5.3+)
+## 🚀 Pilar Fitur Utama (v6.0+)
 
 ### 1. Dynamic Asynchronous Kanban & Ticket-Driven State Machine
 - **Manajemen Berbasis Tiket Otonom**: Setiap aktivitas venture dipetakan ke dalam kartu tiket tugas (`corporate_tickets`) yang menyimpan metadata branch, divisi, penanggung jawab, lini produk, prioritas, serta relasi dependensi.
@@ -187,29 +189,30 @@ Pada arsitektur modern (v5.3+), platform telah beroperasi penuh sebagai **Sovere
 - **1-Click Forking**: Kloning seluruh bagan organisasi, divisi, peran, pipeline, dan tiket ke branch eksperimen terisolasi dengan UUID independen baru.
 - **Three-Way Merge Engine (`branch_merge.py`)**: Menggunakan penelusuran graf Lowest Common Ancestor (LCA) untuk menyelesaikan perbedaan struktural antar-branch secara atomik.
 
-### 9. Desentralisasi BYOK (Bring-Your-Own-Key) Terintegrasi
+### 9. Desentralisasi BYOK & Custom OpenAI-Compatible Provider
 - **Konfigurasi Model Per Karyawan AI**: Setiap agen dapat menggunakan provider LLM yang berbeda sesuai karakteristik tugas:
   * 🌐 **OpenRouter**: Akses ratusan model komersial dan open-source.
-  * 🧠 **DeepSeek**: Model penalaran mendalam dan coding berbiaya hemat (`deepseek-r1`, `deepseek-coder`).
-  * ⚡ **Google Gemini**: Dukungan context window masif (Gemini 2.0 Flash / Pro).
+  * 🧠 **DeepSeek**: Model penalaran mendalam dan coding berbiaya hemat (`deepseek-r1`, `deepseek-chat`).
+  * ⚡ **Google Gemini**: Dukungan context window masif (Gemini 2.5 Flash / Pro).
   * 🏎️ **Groq**: Inferensi berkecepatan tinggi dengan latensi sub-detik (LPU chips).
-  * 🤖 **OpenAI & Anthropic**: GPT-4o, Claude 3.5 Sonnet / Opus.
+  * 🤖 **OpenAI & Anthropic**: GPT-4o, Claude 3.5 Sonnet / Haiku.
   * 🏠 **Ollama Lokal**: 100% offline dan privat tanpa koneksi internet.
+  * 🔌 **Custom OpenAI-Compatible Provider**: Integrasi fleksibel ke penyedia token mana pun (misal: **Tokenomix AI**, Together AI, vLLM, LocalAI) cukup dengan menentukan Custom Base URL dan API Key.
+- **Quick-Fill 1-Klik Tokenomix AI**: Tombol pintas untuk otomatis mengisi Base URL resmi Tokenomix AI (`https://api.tokenomixai.com/v1`).
 - **Pil Preset Rekomendasi Bebas Biaya**: Tag visual `• FREE` berwarna hijau emerald pada antarmuka untuk memudahkan Founder bereksperimen tanpa saldo API.
 - **Secret Vault Terenkripsi AES-256-GCM**: Kunci kredensial produksi disimpan terenkripsi pada SQLite WAL dan dapat dimutakhirkan secara runtime tanpa me-restart server.
 
-### 10. Zero-Asset 3D Cyber-Voxel Apple Park Mega-Campus (`/office`)
-- **100% Procedural Zero-Asset (0 KB .gltf/.glb Files)**: Seluruh dunia spasial Apple Park dibangun murni dari geometri prosedural Three.js, kanvas tekstur in-memory, dan Web Audio synthesizer tanpa ketergantungan download aset eksternal.
-- **Denah Megastruktur Skala Penuh ($272\text{ meter}$ Diameter Ring)**:
-  * 🏢 **The Grand Ring (4 Lantai Penuh)**: Lantai 1 Silicon Lab & Hardware Testing, Lantai 2 Strategy & War Room, Lantai 3 Executive Suite & C-Level Boardroom, Lantai 4 Founder Penthouse Observatorium.
-  * 🎭 **Steve Jobs Theater**: Paviliun silinder kaca kristal dengan atap serat karbon melayang di koordinat `(40, 0, 230)` untuk sesi Sparring dan presentasi Keynote Demo Day.
-  * ⚡ **Tantau SecOps Datacenter**: Gedung server monolitik di koordinat `(60, 0, -230)` tempat audit keamanan kode dan simulasi isolasi kontainer.
-- **AAA First-Person Physics & Audio**:
-  * Dual-mode navigasi: First-Person Walkthrough (WASD) dan God Mode Spectator noclip fly.
-  * Inersia akselerasi/deselerasi halus, headbobbing organik, lean strafe tilt, dan audio langkah kaki sintetis pada 4 jenis permukaan.
-  * Lift kaca interaktif 4 lantai dengan tombol aksi `[F]` dan hotkey `[1-4]`, serta pintu geser proximity otomatis.
-  * Kanopi langit astronomis 1420m zero-parallax berisi 2.200 bintang spektral multi-warna, korona optik matahari, dan bulan bertekstur kawah meteorit 512x512.
-- **Living Agent Ecosystem**: 12 agen voxel dengan status glow dinamis (aktif berpikir, diskusi inter-agen, menunggu gerbang CEO, terblokir circuit breaker) yang bergerak halus pada 60–120 FPS.
+### 10. Global Oasis Live Command HQ (`/office`)
+- **2D Obsidian Liquid Modern Interface**: Antarmuka visual 2D responsif dan elegan bertema dark Obsidian Liquid (`#090d16` / `#0f172a`), memprioritaskan keterbacaan, produktivitas, dan performa tinggi tanpa beban GPU WebGL.
+- **Strict 0-Token Idle Policy**: Feed live stream, drawer, dan WebSocket beroperasi pasif (*event-driven*) tanpa polling LLM latar belakang saat idle, menjamin zero token waste.
+- **Categorized Multi-Agent Thought Feeds**:
+  * 🌐 **All Streams**: Agregasi seluruh percakapan, penalaran, dan aktivitas para agen secara langsung.
+  * ⚡ **Execution & Handoffs**: Pemantauan delegasi pekerjaan dan alih-tangan tiket antar-agen secara transparan.
+  * 👑 **CEO Decision Gates**: Peringatan seketika saat agen membutuhkan persetujuan atau putusan strategis Founder.
+  * ☕ **Oasis Lounge**: Diskusi santai dan pertukaran ide informal para agen di luar tiket kerja.
+- **Interactive Scoped Console (`@mention`)**: Konsol masukan instruksi cerdas dengan auto-completion `@role` (`@founder`, `@cos`, `@cto`, `@pm`, `@fe`, `@be`, `@qa`, `@devsecops`, dll.). Memanggil agen tertentu hanya menyuntikkan instruksi ke agen sasaran secara terisolasi tanpa membebani context-window agen lainnya.
+- **All-Hands Executive War Room**: Modal komando darurat untuk memanggil seluruh pimpinan eksekutif secara bersamaan dengan moderasi berlapis oleh CoS dan CTO.
+- **Live Agent Screen-Share & Code Inspection Pane**: Memantau file aktif yang sedang dikerjakan agen, scratchpad pemikiran, speech bubble status, serta tombol 1-klik Hold Ticket untuk mencegah perdebatan berulang.
 
 ### 11. Ephemeral Sandbox, Interactive PTY Terminal & AST Security
 - **Hardened Docker Bridge Subnet**: Setiap venture diisolasi dalam subnet jembatan khusus (`bridge_net_{project_id}`) dengan pembatasan hard quota CPU (1.5 core) dan RAM (1024 MB), dilengkapi reverse proxy Caddy (`*.local.sandbox`) dan fallback embedded async HTTP port 4000–4999.
@@ -251,8 +254,8 @@ Seluruh endpoint REST API dan WebSocket berada di bawah prefix `/api/v1` dengan 
 | 14 | `settings.py` | `/settings` | REST | Pengaturan dinamis sistem (BYOK API keys, parameter PaaS, reset konfigurasi) tanpa restart server. |
 | 15 | `auth.py` | `/auth` | REST | Verifikasi PIN dinamis 6-digit gerbang keamanan Telegram dan penerbitan session token HMAC. |
 | 16 | `wisdom.py` | `/wisdom` | REST | Corporate Wisdom Knowledge Base: penarikan best-practice dan aturan arsitektur via RAG vektor 128-dim. |
-| 17 | `office.py` | `/office` | REST | Mengambil denah spasial megastruktur Apple Park, zonasi divisi, dan telemetri kantor 3D. |
-| 18 | `office_ws.py` | `/ws/office` | WS | WebSocket siaran koordinat $(X, Y, Z)$ dan status animasi pergerakan agen 3D real-time. |
+| 17 | `office.py` | `/corporate/office` | REST | Endpoint REST status agen, intervensi terarah scoped per-role, dan pengiriman direktif Founder. |
+| 18 | `office_ws.py` | `/corporate/ws/office` | WS | WebSocket streaming dua arah siaran aliran diskursus agen, sinyal handoff, dan aktivitas real-time. |
 | 19 | `sandbox_snapshots.py` | `/projects/{id}/sandbox` | REST | Manajemen snapshot direktori proyek (CoW) dan pemulihan rollback instan anti-data-loss. |
 | 20 | `sandbox_network.py` | `/projects/{id}/network` | REST | Pemeriksaan status isolasi subnet Docker dan pemetaan routing reverse proxy Caddy. |
 | 21 | `sandbox_terminal_ws.py`| `/ws/sandbox/{id}/terminal`| WS | Terminal interaktif PTY shell CLI live dua arah di dalam lingkungan sandbox proyek. |
@@ -276,8 +279,8 @@ Seluruh endpoint REST API dan WebSocket berada di bawah prefix `/api/v1` dengan 
 │   │   │   ├── corporate_ws.py       # Kanban Real-Time WebSocket Channel
 │   │   │   ├── gates.py              # Founder Stage-Gate Decisions
 │   │   │   ├── governance.py         # Executive Governance, Escalation & CEO Veto
-│   │   │   ├── office.py             # 3D Spatial Layout & Telemetry Data
-│   │   │   ├── office_ws.py          # 3D Agent Movement & Coordinates WebSocket
+│   │   │   ├── office.py             # Live Command HQ State & Directives API
+│   │   │   ├── office_ws.py          # Multi-Agent Live Streams WebSocket Channel
 │   │   │   ├── projects.py           # Venture State & Checkpoint Persistence
 │   │   │   ├── pull_requests.py      # Automated PR Engine & Quorum Peer Review
 │   │   │   ├── sandbox_network.py    # Docker Network & Reverse Proxy Routing
@@ -287,7 +290,7 @@ Seluruh endpoint REST API dan WebSocket berada di bawah prefix `/api/v1` dengan 
 │   │   │   ├── sparring.py           # Executive Sparring Room (CoS + CTO)
 │   │   │   ├── vault.py              # AES-256-GCM Encrypted Secret Vault
 │   │   │   └── wisdom.py             # Corporate Wisdom & Organizational Learning
-│   │   ├── core/                     # Config, Logger, Security Gate, Settings Manager
+│   │   ├── core/                     # Config, Logger, Security Gate, Settings Manager & Constants
 │   │   ├── db/                       # Basis Data SQLite Asinkron (aiosqlite WAL)
 │   │   │   ├── branch_repo.py        # Isolasi Branching & Forking Database
 │   │   │   ├── corporate_repo.py     # Unified Corporate Facade Database
@@ -318,12 +321,17 @@ Seluruh endpoint REST API dan WebSocket berada di bawah prefix `/api/v1` dengan 
 │   │   │   ├── kanban/[id]/          # Mission Control Kanban & Live Lounge
 │   │   │   ├── preview/[id]/         # Live Sandbox Preview, PTY Terminal & Snapshots
 │   │   │   ├── sparring/[id]/        # Executive Sparring Debate Room
-│   │   │   ├── office/               # Zero-Asset 3D Apple Park Mega-Campus
+│   │   │   ├── office/               # Global Oasis Live Command HQ
 │   │   │   ├── settings/             # Dynamic BYOK Key Vault & System Settings
 │   │   │   └── analytics/            # Financial Unit Economics & Token Ledger
-│   │   ├── components/               # Komponen Modular Antarmuka
+│   │   ├── components/               # Komponen Modular Antarmuka (SRP <= 200 baris)
 │   │   │   ├── organization/         # WorkflowPipelineBuilder, RoleModal, BranchBar, dll.
-│   │   │   ├── office/3d/            # Zero-Asset Three.js Apple Park Engine (8 Subdirektori, SRP <= 200)
+│   │   │   ├── office/               # Oasis Live Command HQ UI Components
+│   │   │   │   ├── oasis/            # Feed, ScreenSharePane, WarRoom, EventCard, SplitView
+│   │   │   │   ├── AgentRosterSidebar.tsx
+│   │   │   │   ├── OfficeChatConsole.tsx
+│   │   │   │   └── OfficeControlBar.tsx
+│   │   │   ├── settings/             # SettingsProviderTab (BYOK & Custom OpenAI-Compatible)
 │   │   │   └── sandbox/              # Web PTY Terminal & Iframe Preview Container
 │   │   ├── hooks/                    # Custom React Hooks
 │   │   └── lib/                      # API Client Interfaces & TypeScript Types
@@ -382,7 +390,7 @@ Buka peramban (*browser*) Anda dan akses:
 ## 🧪 Pengujian Otomatis & Standar Kualitas
 
 Sistem dibangun dengan mematuhi standar rekayasa perangkat lunak yang sangat ketat:
-- **Prinsip Single Responsibility (SRP)**: Seluruh berkas backend repositori dan 31 berkas modul 3D Apple Park dibatasi maksimal **150–200 baris kode**.
+- **Prinsip Single Responsibility (SRP)**: Seluruh berkas backend repositori dan komponen frontend dibatasi secara disiplin maksimal **150–200 baris kode**.
 - **Type Annotations**: 100% fungsi dan metode memiliki anotasi tipe Python dan TypeScript lengkap (0 error TS).
 - **Zero Raw Prints**: Seluruh operasi dicatat menggunakan *structured logging* (`app.core.logger`).
 - **Resiliensi I/O**: Seluruh operasi basis data, jaringan HTTP, dan pertukaran JSON dibungkus dalam penanganan pengecualian (*exception handling*) spesifik.
@@ -400,4 +408,4 @@ pytest backend/tests -v
 Platform ini dirilis di bawah lisensi resmi **MIT License**. Anda bebas menggunakan, memodifikasi, dan mendistribusikan kode ini untuk keperluan riset maupun komersial. Silakan merujuk ke berkas `LICENSE` untuk ketentuan hukum lengkap.
 
 ---
-*Ditenagai oleh Sovereign Autonomous AI Spatial Corporate OS • Dirancang untuk Pengusaha Tunggal & Inovator Global.*
+*Ditenagai oleh Sovereign Autonomous AI Corporate OS • Dirancang untuk Pengusaha Tunggal & Inovator Global.*

@@ -48,6 +48,10 @@ class UnifiedLLMClient:
             return settings.GEMINI_API_KEY or "", settings.GEMINI_BASE_URL
         elif prov == "ollama":
             return "", settings.OLLAMA_BASE_URL
+        elif prov in ["openai_compatible", "custom"]:
+            key = getattr(settings, "OPENAI_COMPATIBLE_API_KEY", "") or settings.OPENAI_API_KEY or ""
+            base = getattr(settings, "OPENAI_COMPATIBLE_BASE_URL", "") or "https://api.openai.com/v1"
+            return key, base
         else:
             return settings.OPENAI_API_KEY or "", settings.OPENAI_BASE_URL
 
