@@ -26,7 +26,7 @@ class UnifiedLLMClient:
     def _resolve_adapter(self, provider: str) -> BaseLLMAdapter:
         """Menentukan instance adapter yang sesuai berdasarkan nama provider."""
         prov = provider.lower()
-        if prov in ["openai", "openai_compatible", "deepseek", "groq", "mistral", "ollama", "openrouter"]:
+        if prov in ["openai", "openai_compatible", "deepseek", "groq", "mistral", "ollama", "openrouter", "custom"]:
             return self.openai_compat
         elif prov == "anthropic":
             return self.anthropic
@@ -64,6 +64,7 @@ class UnifiedLLMClient:
         temperature: float = 0.7,
         response_format: Optional[Dict[str, Any]] = None,
         fallback_providers: Optional[List[Tuple[str, str]]] = None,
+        thinking_level: str = "medium",
     ) -> str:
         """Panggilan completion teks dengan dukungan failover cascade otomatis."""
         active_provider = provider or "deepseek"
@@ -86,6 +87,7 @@ class UnifiedLLMClient:
                     base_url=base_url,
                     temperature=temperature,
                     response_format=response_format,
+                    thinking_level=thinking_level,
                 )
             except (httpx.HTTPStatusError, httpx.TimeoutException, httpx.RequestError) as err:
                 last_error = err
@@ -102,6 +104,7 @@ class UnifiedLLMClient:
         model: Optional[str] = None,
         provider: Optional[str] = None,
         temperature: float = 0.7,
+        thinking_level: str = "medium",
     ) -> AsyncGenerator[str, None]:
         """Panggilan completion streaming token secara real-time."""
         active_provider = provider or "deepseek"
@@ -117,5 +120,6 @@ class UnifiedLLMClient:
             api_key=api_key,
             base_url=base_url,
             temperature=temperature,
+            thinking_level=thinking_level,
         ):
             yield token

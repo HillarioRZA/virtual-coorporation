@@ -26,11 +26,16 @@ from app.api.v1.branch_merge import router as branch_merge_router
 from app.api.v1.sandbox_network import router as sandbox_network_router
 from app.api.v1.office import router as office_router
 from app.api.v1.office_ws import router as office_ws_router
+from app.api.v1.project_artifacts import router as project_artifacts_router
+from app.api.v1.frontier_radar import router as frontier_radar_router
 
 api_v1_router = APIRouter()
 
 api_v1_router.include_router(projects_router)
+api_v1_router.include_router(project_artifacts_router)
+api_v1_router.include_router(frontier_radar_router)
 api_v1_router.include_router(sparring_router)
+
 api_v1_router.include_router(gates_router)
 api_v1_router.include_router(vault_router)
 api_v1_router.include_router(settings_router)

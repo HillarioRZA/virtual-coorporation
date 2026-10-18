@@ -130,13 +130,24 @@ class CorporateRepository:
         tool_permissions: Optional[List[str]] = None,
         token_budget_per_task: int = 8000,
         is_active: bool = True,
+        thinking_level: str = "medium",
         custom_path: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Mendaftarkan role karyawan AI baru."""
         return await self.roles.create_role(
-            branch_id, division_id, name, slug, system_prompt_template,
-            model_provider, model_name, temperature, tool_permissions,
-            token_budget_per_task, is_active, custom_path,
+            branch_id=branch_id,
+            division_id=division_id,
+            name=name,
+            slug=slug,
+            system_prompt_template=system_prompt_template,
+            model_provider=model_provider,
+            model_name=model_name,
+            temperature=temperature,
+            tool_permissions=tool_permissions,
+            token_budget_per_task=token_budget_per_task,
+            is_active=is_active,
+            thinking_level=thinking_level,
+            custom_path=custom_path,
         )
 
     async def update_role(
@@ -150,12 +161,24 @@ class CorporateRepository:
         tool_permissions: Optional[List[str]] = None,
         token_budget_per_task: Optional[int] = None,
         is_active: Optional[bool] = None,
+        fallback_chain: Optional[List[Dict[str, Any]]] = None,
+        thinking_level: Optional[str] = None,
         custom_path: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
         """Memperbarui konfigurasi role karyawan AI."""
         return await self.roles.update_role(
-            role_id, name, system_prompt_template, model_provider, model_name,
-            temperature, tool_permissions, token_budget_per_task, is_active, custom_path,
+            role_id=role_id,
+            name=name,
+            system_prompt_template=system_prompt_template,
+            model_provider=model_provider,
+            model_name=model_name,
+            temperature=temperature,
+            tool_permissions=tool_permissions,
+            token_budget_per_task=token_budget_per_task,
+            is_active=is_active,
+            fallback_chain=fallback_chain,
+            thinking_level=thinking_level,
+            custom_path=custom_path,
         )
 
     async def delete_role(self, role_id: str, custom_path: Optional[str] = None) -> bool:

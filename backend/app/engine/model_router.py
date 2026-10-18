@@ -87,13 +87,40 @@ class SovereignModelRouter:
         branch_id: Optional[str] = None,
         pipeline_id: Optional[str] = None,
         custom_path: Optional[str] = None,
+        turn_count: int = 1,
+        ticket_id: Optional[str] = None,
+        thinking_level: str = "medium",
     ) -> Tuple[str, Dict[str, Any]]:
         """Mengeksekusi completion teks dengan auto-failover, throttle, dan pencatatan ledger."""
-        candidates: List[Tuple[str, str]] = [(primary_provider, primary_model)]
+        if ticket_id and turn_count == 1:
+            try:
+                from app.engine.circuit_breaker import agent_circuit_breaker
+                turn_count = agent_circuit_breaker.get_status(ticket_id).turn_count
+            except Exception as cb_err:
+                logger.debug(f"Pengecekan turn circuit breaker dilewati: {cb_err}")
+
+        effective_thinking = "high" if turn_count >= 2 else thinking_level
+        fb_candidates: List[Tuple[str, str]] = []
+        tier1_candidates: List[Tuple[str, str]] = []
         if fallback_chain:
             for item in fallback_chain:
                 if item.get("is_enabled", True):
-                    candidates.append((item.get("provider", "openrouter"), item.get("model", "qwen/qwen-2.5-coder-32b-instruct:free")))
+                    cand = (item.get("provider", "openrouter"), item.get("model", "qwen/qwen-2.5-coder-32b-instruct:free"))
+                    if item.get("tier") == 1 or item.get("is_escalation", False):
+                        tier1_candidates.append(cand)
+                    else:
+                        fb_candidates.append(cand)
+
+        # Cost-IQ Auto-Escalation: jika turn_count >= 2, eskalasikan ke kandidat cadangan/Tier 1 dinamis
+        if turn_count >= 2:
+            escalation = tier1_candidates or fb_candidates
+            if escalation:
+                candidates: List[Tuple[str, str]] = escalation + [(primary_provider, primary_model)]
+                logger.info(f"Auto-Escalation Tier 1 aktif (Turn {turn_count}, Thinking: {effective_thinking}): model {candidates[0]} diprioritaskan.")
+            else:
+                candidates = [(primary_provider, primary_model)]
+        else:
+            candidates = [(primary_provider, primary_model)] + fb_candidates + tier1_candidates
 
         last_error: Optional[Exception] = None
         for idx, (prov, mdl) in enumerate(candidates):
@@ -105,13 +132,16 @@ class SovereignModelRouter:
             start_time = time.time()
             try:
                 await channel.throttle_if_needed(estimated_tokens=len(prompt) // 4)
-                output = await self.client.complete(
-                    prompt=prompt,
-                    system_prompt=system_prompt,
-                    model=mdl,
-                    provider=prov,
-                    temperature=temperature,
-                )
+                try:
+                    output = await self.client.complete(
+                        prompt=prompt, system_prompt=system_prompt, model=mdl,
+                        provider=prov, temperature=temperature, thinking_level=effective_thinking,
+                    )
+                except TypeError:
+                    output = await self.client.complete(
+                        prompt=prompt, system_prompt=system_prompt, model=mdl,
+                        provider=prov, temperature=temperature,
+                    )
                 latency = int((time.time() - start_time) * 1000)
                 in_tok = len(prompt) // 4
                 out_tok = len(output) // 4

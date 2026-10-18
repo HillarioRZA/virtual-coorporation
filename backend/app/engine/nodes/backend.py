@@ -4,7 +4,7 @@ Menghasilkan kode produksi FastAPI, model SQLAlchemy, skrip migrasi Alembic, dan
 """
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
@@ -32,16 +32,29 @@ from app.engine.scaffolding import scaffold_standalone_backend
 PROJECTS_OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent / "projects_output"
 
 
-def write_backend_files(project_id: str, envelope: BackendOutputEnvelope) -> Path:
+def write_backend_files(
+    project_id: str,
+    envelope: BackendOutputEnvelope,
+    read_only_files: Optional[List[str]] = None,
+) -> Path:
     """Menulis berkas kode backend produksi dan switching adapter frontend."""
     output_dir = PROJECTS_OUTPUT_DIR / project_id / "backend"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    (output_dir / "main.py").write_text(envelope.main_code, encoding="utf-8")
-    (output_dir / "models.py").write_text(envelope.models_code, encoding="utf-8")
-    (output_dir / "routers.py").write_text(envelope.routers_code, encoding="utf-8")
-    (output_dir / "alembic_migration.py").write_text(envelope.migration_code, encoding="utf-8")
-    (output_dir / "requirements.txt").write_text(envelope.requirements_content, encoding="utf-8")
+    read_only = set(read_only_files or [])
+    targets = {
+        "main.py": envelope.main_code,
+        "models.py": envelope.models_code,
+        "routers.py": envelope.routers_code,
+        "alembic_migration.py": envelope.migration_code,
+        "requirements.txt": envelope.requirements_content,
+    }
+
+    for fname, code in targets.items():
+        if fname in read_only or f"backend/{fname}" in read_only or fname.startswith("test_"):
+            logger.warning(f"Adversarial TDD Guardrail: Modifikasi berkas {fname} diblokir (Read-Only).")
+            continue
+        (output_dir / fname).write_text(code, encoding="utf-8")
 
     # Tulis berkas pendukung FastAPI mandiri (database.py, schemas.py, README.md)
     scaffold_standalone_backend(output_dir, project_id)
@@ -55,6 +68,7 @@ def write_backend_files(project_id: str, envelope: BackendOutputEnvelope) -> Pat
 
     logger.info(f"Kode backend produksi tersimpan di: {output_dir}")
     return output_dir
+
 
 
 async def backend_engineering_node(
@@ -85,6 +99,18 @@ async def backend_engineering_node(
         provider=provider,
     )
 
+    from app.engine.agent_tool_dispatcher import agent_tool_dispatcher
+    step_count = 0
+    prompt_accum = user_instruction
+    while step_count < agent_tool_dispatcher.max_steps:
+        tool_call = agent_tool_dispatcher.parse_tool_call(raw_response)
+        if not tool_call:
+            break
+        obs = await agent_tool_dispatcher.execute_tool(state.project_id, tool_call["tool"], tool_call["parameters"])
+        prompt_accum += f"\n[OBSERVATION dari {tool_call['tool']}]: {obs}\nLanjutkan menyusun kode backend final."
+        raw_response = await client.complete(prompt=prompt_accum, system_prompt=system_prompt, model=model, provider=provider)
+        step_count += 1
+
     envelope = await parse_and_repair_schema(
         llm_client=client,
         raw_response=raw_response,
@@ -95,9 +121,10 @@ async def backend_engineering_node(
         max_repairs=2,
     )
 
-    write_backend_files(state.project_id, envelope)
+    write_backend_files(state.project_id, envelope, state.read_only_files)
     cost = 0.02
     state.add_token_cost("BACKEND", cost)
+
 
     await mem.log_event(
         project_id=state.project_id,

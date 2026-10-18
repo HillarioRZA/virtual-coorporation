@@ -99,8 +99,19 @@ class ContextBuilder:
             if wisdom_msg:
                 messages.append(wisdom_msg)
 
+        # Strategic Bridge: Injeksi manifest lintas divisi untuk peran Kreatif & Marketing (Divisi B & C)
+        cross_div_roles = {"UX", "DESIGNER", "COPYWRITER", "CONTENT", "EDUCATOR", "MARKETER", "SEO", "GROWTH"}
+        if role in cross_div_roles:
+            from app.engine.state_handoff import build_cross_division_manifest
+            manifest = build_cross_division_manifest(state.project_id, state)
+            messages.append({
+                "role": "system",
+                "content": f"[CROSS-DIVISION STRATEGIC MANIFEST]:\n{json.dumps(manifest, indent=2)}",
+            })
+
         # TIER 1: Pinned Contracts
         messages.extend(cls.get_pinned_contracts(role, state))
+
 
         # TIER 3: Compaction pesan lama
         total_events = len(scoped_events)

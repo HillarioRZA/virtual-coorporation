@@ -35,10 +35,12 @@ class VentureState(BaseModel):
 
     # Telemetri & Status Operasional
     preview_url: Optional[str] = None
+    read_only_files: List[str] = Field(default_factory=list, description="Daftar berkas read-only yang tidak boleh dimodifikasi developer.")
     gate_decision: Optional[str] = Field(default=None, description="Keputusan gate terakhir dari Founder ('APPROVE', 'REVISE', 'KILL').")
     gate_feedback: Optional[str] = Field(default=None, description="Catatan umpan balik Founder pada gate.")
     token_usage: Dict[str, float] = Field(default_factory=dict, description="Akumulasi biaya token per peran ($).")
     event_logs: List[str] = Field(default_factory=list, description="Riwayat ringkas eksekusi langkah.")
+
 
     def record_event(self, message: str) -> None:
         """Mencatat ringkasan aksi ke dalam riwayat eksekusi state.

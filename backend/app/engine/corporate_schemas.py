@@ -1,32 +1,26 @@
-"""
-Corporate Schemas & Data Transfer Objects (DTOs).
+"""Corporate Schemas & Data Transfer Objects (DTOs).
+
 Mendefinisikan skema Pydantic untuk Git-Style Branching, Divisi Dinamis,
 Role Karyawan AI, Papan Tiket Kanban, dan Event Bus Messages.
 """
 
-from datetime import datetime
-import json
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
-
-# ============================================================================
 # 1. BRANCH SCHEMAS (Git-Style Workflow Branching)
-# ============================================================================
-
 class BranchCreate(BaseModel):
     """Payload pembuatan branch baru dari nol."""
-    name: str = Field(..., min_length=2, max_length=100, description="Nama deskriptif branch organisasi.")
-    slug: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-z0-9_\-]+$", description="Slug unik identifier URL.")
-    description: Optional[str] = Field(None, max_length=500, description="Keterangan tujuan branch.")
+    name: str = Field(..., min_length=2, max_length=100, description="Nama deskriptif branch.")
+    slug: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-z0-9_\-]+$", description="Slug unik.")
+    description: Optional[str] = Field(None, max_length=500)
 
 
 class BranchForkRequest(BaseModel):
     """Payload kloning / forking branch seperti Git."""
-    name: str = Field(..., min_length=2, max_length=100, description="Nama branch eksperimen baru.")
-    slug: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-z0-9_\-]+$", description="Slug unik branch baru.")
-    description: Optional[str] = Field(None, max_length=500, description="Keterangan tujuan forking.")
-    source_branch_id: str = Field("branch_main", description="ID branch sumber yang dikloning.")
+    name: str = Field(..., min_length=2, max_length=100, description="Nama branch baru.")
+    slug: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-z0-9_\-]+$", description="Slug unik.")
+    description: Optional[str] = Field(None, max_length=500)
+    source_branch_id: str = Field("branch_main", description="ID branch sumber.")
 
 
 class BranchResponse(BaseModel):
@@ -39,19 +33,15 @@ class BranchResponse(BaseModel):
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
-
-# ============================================================================
 # 2. DIVISION SCHEMAS
-# ============================================================================
-
 class DivisionCreate(BaseModel):
     """Payload pendaftaran divisi baru."""
     branch_id: str = Field("branch_main", description="ID branch pemilik divisi.")
     name: str = Field(..., min_length=2, max_length=100, description="Nama divisi.")
-    slug: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-z0-9_\-]+$", description="Slug unik divisi dalam branch.")
-    description: Optional[str] = Field(None, max_length=500, description="Mandat operasional divisi.")
-    accent_color: str = Field("#cbd5e1", description="Kode warna hex aksen antarmuka.")
-    icon_name: str = Field("FolderTree", description="Nama ikon Lucide React.")
+    slug: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-z0-9_\-]+$", description="Slug unik.")
+    description: Optional[str] = Field(None, max_length=500)
+    accent_color: str = Field("#cbd5e1", description="Warna hex aksen.")
+    icon_name: str = Field("FolderTree", description="Nama ikon Lucide.")
 
 
 class DivisionUpdate(BaseModel):
@@ -77,11 +67,7 @@ class DivisionResponse(BaseModel):
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
-
-# ============================================================================
 # 3. ROLE SCHEMAS
-# ============================================================================
-
 class RoleCreate(BaseModel):
     """Payload pendaftaran role agen baru."""
     model_config = ConfigDict(protected_namespaces=())
@@ -89,14 +75,15 @@ class RoleCreate(BaseModel):
     branch_id: str = Field("branch_main", description="ID branch pemilik role.")
     division_id: str = Field(..., description="ID divisi penanggung jawab.")
     name: str = Field(..., min_length=2, max_length=100, description="Nama peran karyawan AI.")
-    slug: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-z0-9_\-]+$", description="Slug unik role dalam branch.")
-    system_prompt_template: str = Field(..., min_length=10, description="System instruction persona.")
+    slug: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-z0-9_\-]+$", description="Slug unik role.")
+    system_prompt_template: str = Field(..., min_length=10, description="System instruction.")
     model_provider: str = Field("openrouter", description="Provider LLM.")
     model_name: str = Field("deepseek/deepseek-r1:free", description="ID model LLM.")
     temperature: float = Field(0.2, ge=0.0, le=1.5, description="Sampling temperature.")
-    tool_permissions: List[str] = Field(default_factory=lambda: ["read_file", "write_file"], description="Daftar izin alat.")
+    tool_permissions: List[str] = Field(default_factory=lambda: ["read_file", "write_file"])
     token_budget_per_task: int = Field(8000, ge=1000, le=100000, description="Batas maksimal token.")
     is_active: bool = Field(True, description="Status aktif agen.")
+    thinking_level: str = Field("medium", pattern=r"^(none|low|medium|high)$", description="Reasoning effort level.")
 
 
 class RoleUpdate(BaseModel):
@@ -111,6 +98,7 @@ class RoleUpdate(BaseModel):
     tool_permissions: Optional[List[str]] = None
     token_budget_per_task: Optional[int] = Field(None, ge=1000, le=100000)
     is_active: Optional[bool] = None
+    thinking_level: Optional[str] = Field(None, pattern=r"^(none|low|medium|high)$")
 
 
 class RoleResponse(BaseModel):
@@ -131,14 +119,11 @@ class RoleResponse(BaseModel):
     is_active: bool
     is_system_default: bool
     order_index: int = 0
+    thinking_level: str = "medium"
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
-
-# ============================================================================
 # 4. TICKET SCHEMAS (Virtual Kanban)
-# ============================================================================
-
 class TicketCreate(BaseModel):
     """Payload pembuatan tiket baru di papan Kanban."""
     branch_id: str = Field("branch_main", description="ID branch workflow.")
@@ -182,11 +167,7 @@ class TicketResponse(BaseModel):
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
-
-# ============================================================================
 # 5. MESSAGE SCHEMAS (Corporate Lounge & Event Bus)
-# ============================================================================
-
 class CorporateMessageCreate(BaseModel):
     """Payload pesan obrolan antar-agen atau event."""
     branch_id: str = Field("branch_main", description="ID branch workflow.")

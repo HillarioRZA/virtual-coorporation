@@ -1,21 +1,15 @@
 "use client";
 
 import React from "react";
-import {
-  Laptop,
-  Tablet,
-  Smartphone,
-  Terminal,
-  History,
-  Network,
-  RefreshCw,
-} from "lucide-react";
+import { Activity, History, Laptop, Network, RefreshCw, Smartphone, Sparkles, Tablet, Terminal } from "lucide-react";
 import { InteractiveTerminal } from "../sandbox/InteractiveTerminal";
 import { SnapshotManagerView } from "../sandbox/SnapshotManagerModal";
 import { NetworkQuotaInspector } from "../sandbox/NetworkQuotaInspector";
+import { ArtifactShowcasePane } from "./ArtifactShowcasePane";
+import { FrontierRadarPane } from "./FrontierRadarPane";
 
 export type ViewportMode = "desktop" | "tablet" | "mobile";
-export type PreviewMode = "webview" | "terminal" | "snapshots" | "network";
+export type PreviewMode = "webview" | "terminal" | "snapshots" | "network" | "artifacts" | "radar";
 
 interface PreviewWebviewPaneProps {
   projectId: string;
@@ -29,10 +23,6 @@ interface PreviewWebviewPaneProps {
   onRollbackComplete: () => void;
 }
 
-/**
- * Renders the left pane containing multi-view interactive sandboxes:
- * Webview with device viewport emulation, Terminal CLI, Snapshots, and Network inspector.
- */
 export const PreviewWebviewPane: React.FC<PreviewWebviewPaneProps> = ({
   projectId,
   previewUrl,
@@ -46,12 +36,9 @@ export const PreviewWebviewPane: React.FC<PreviewWebviewPaneProps> = ({
 }) => {
   const getViewportWidthClass = (): string => {
     switch (viewportMode) {
-      case "mobile":
-        return "max-w-[375px]";
-      case "tablet":
-        return "max-w-[768px]";
-      default:
-        return "w-full";
+      case "mobile": return "max-w-[375px]";
+      case "tablet": return "max-w-[768px]";
+      default: return "w-full";
     }
   };
 
@@ -77,13 +64,31 @@ export const PreviewWebviewPane: React.FC<PreviewWebviewPaneProps> = ({
               <span>⚡ Webview</span>
             </button>
             <button
+              onClick={() => setPreviewMode("radar")}
+              className={`px-3 py-1 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${
+                previewMode === "radar" ? "bg-rose-600 text-white font-bold" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5 text-rose-300" />
+              <span>Radar</span>
+            </button>
+            <button
+              onClick={() => setPreviewMode("artifacts")}
+              className={`px-3 py-1 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${
+                previewMode === "artifacts" ? "bg-amber-600 text-white font-bold" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>Artifacts</span>
+            </button>
+            <button
               onClick={() => setPreviewMode("terminal")}
               className={`px-3 py-1 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${
                 previewMode === "terminal" ? "bg-emerald-600 text-white font-bold" : "text-slate-400 hover:text-white"
               }`}
             >
               <Terminal className="w-3.5 h-3.5 text-emerald-300" />
-              <span>Terminal CLI</span>
+              <span>Terminal</span>
             </button>
             <button
               onClick={() => setPreviewMode("snapshots")}
@@ -101,7 +106,7 @@ export const PreviewWebviewPane: React.FC<PreviewWebviewPaneProps> = ({
               }`}
             >
               <Network className="w-3.5 h-3.5 text-cyan-300" />
-              <span>Network & Quota</span>
+              <span>Network</span>
             </button>
           </div>
         </div>
@@ -111,11 +116,7 @@ export const PreviewWebviewPane: React.FC<PreviewWebviewPaneProps> = ({
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex max-w-xs px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono text-slate-300 items-center justify-between gap-2">
               <span className="truncate max-w-[180px]">{previewUrl || "http://localhost:4000"}</span>
-              <button
-                onClick={onReload}
-                title="Reload Sandbox"
-                className="text-slate-400 hover:text-white p-0.5"
-              >
+              <button onClick={onReload} title="Reload Sandbox" className="text-slate-400 hover:text-white p-0.5">
                 <RefreshCw className="w-3 h-3" />
               </button>
             </div>
@@ -162,6 +163,18 @@ export const PreviewWebviewPane: React.FC<PreviewWebviewPaneProps> = ({
         </div>
       )}
 
+      {previewMode === "radar" && (
+        <div className="flex-1 mt-2 flex flex-col overflow-hidden">
+          <FrontierRadarPane projectId={projectId} />
+        </div>
+      )}
+
+      {previewMode === "artifacts" && (
+        <div className="flex-1 mt-2 flex flex-col overflow-hidden">
+          <ArtifactShowcasePane projectId={projectId} />
+        </div>
+      )}
+
       {previewMode === "terminal" && (
         <div className="flex-1 mt-2 flex flex-col overflow-hidden">
           <InteractiveTerminal projectId={projectId} />
@@ -170,10 +183,7 @@ export const PreviewWebviewPane: React.FC<PreviewWebviewPaneProps> = ({
 
       {previewMode === "snapshots" && (
         <div className="flex-1 mt-2 flex flex-col overflow-hidden">
-          <SnapshotManagerView
-            projectId={projectId}
-            onRollbackComplete={onRollbackComplete}
-          />
+          <SnapshotManagerView projectId={projectId} onRollbackComplete={onRollbackComplete} />
         </div>
       )}
 

@@ -74,6 +74,20 @@ async def qa_eval_node(
     cost = 0.015
     state.add_token_cost("QA", cost)
 
+    # Adversarial TDD: Daftarkan berkas pengujian sebagai read-only & terapkan chmod 444
+    from pathlib import Path
+    test_files = ["tests/test_api.py", "tests/test_backend.py", "backend/tests/test_api.py"]
+    for tf in test_files:
+        if tf not in state.read_only_files:
+            state.read_only_files.append(tf)
+        full_tf = Path("projects_output") / state.project_id / tf
+        if full_tf.exists():
+            try:
+                full_tf.chmod(0o444)
+            except OSError:
+                pass
+
+
     # Pancarkan event SSE eval_scorecard
     await stream_manager.publish(
         project_id=state.project_id,

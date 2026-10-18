@@ -147,3 +147,35 @@ def prepare_differential_continuation(
         f"DILARANG mengulang import atau fungsi yang sudah dideklarasikan sebelumnya."
     )
     return instruction
+
+
+def build_cross_division_manifest(project_id: str, state: Optional[Any] = None) -> Dict[str, Any]:
+    """Menyusun manifest ringkas (< 150 token) kolaborasi lintas Divisi A + B + C.
+
+    Mengekstrak proposisi nilai dari PRD, endpoint OpenAPI utama, dan token desain
+    tanpa membanjiri agen non-teknis dengan simbol AST Python.
+    """
+    from app.engine.design_token_engine import load_design_tokens
+
+    tokens = load_design_tokens(project_id) or {}
+    prd = getattr(state, "prd_spec", None) if state else None
+    openapi = getattr(state, "openapi_spec", None) if state else None
+
+    key_endpoints: List[str] = []
+    if openapi and isinstance(openapi, dict) and "paths" in openapi:
+        key_endpoints = list(openapi["paths"].keys())[:4]
+
+    colors = tokens.get("colors", {})
+    return {
+        "manifest_type": "CROSS_DIVISION_STRATEGIC_BRIDGE",
+        "project_id": project_id,
+        "product_concept": getattr(prd, "core_features", ["High-impact venture solution"]) if prd else ["High-impact venture solution"],
+        "target_audience": getattr(prd, "target_audience", "B2B / Consumer Tech Users") if prd else "B2B / Consumer Tech Users",
+        "key_api_endpoints": key_endpoints or ["/api/v1/auth", "/api/v1/core"],
+        "brand_identity": {
+            "primary_color": colors.get("primary", "#3b82f6"),
+            "accent_color": colors.get("accent", "#06b6d4"),
+            "typography": tokens.get("typography", {}).get("heading", "Inter"),
+        },
+    }
+

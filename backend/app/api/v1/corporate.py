@@ -24,15 +24,12 @@ from app.engine.corporate_schemas import (
 router = APIRouter(prefix="/corporate", tags=["Corporate & Org Studio"])
 
 
-# ============================================================================
 # 1. BRANCHING ENDPOINTS (Git-Style Workflows)
-# ============================================================================
 
 @router.get("/branches", response_model=List[BranchResponse])
 async def list_branches() -> List[BranchResponse]:
     """Mengambil seluruh daftar branch alur kerja organisasi."""
     return await corporate_repo.get_branches()
-
 
 @router.get("/branches/active", response_model=BranchResponse)
 async def get_active_branch() -> BranchResponse:
@@ -42,21 +39,16 @@ async def get_active_branch() -> BranchResponse:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Active branch tidak ditemukan.")
     return active
 
-
 @router.post("/branches/fork", response_model=BranchResponse, status_code=status.HTTP_201_CREATED)
 async def fork_branch(payload: BranchForkRequest) -> BranchResponse:
     """Melakukan kloning / forking seluruh divisi & role dari branch sumber ke branch baru."""
     try:
-        new_branch = await corporate_repo.fork_branch(
-            name=payload.name,
-            slug=payload.slug,
-            description=payload.description,
-            source_branch_id=payload.source_branch_id,
+        return await corporate_repo.fork_branch(
+            name=payload.name, slug=payload.slug,
+            description=payload.description, source_branch_id=payload.source_branch_id,
         )
-        return new_branch
     except ValueError as err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
-
 
 @router.post("/branches/{branch_id}/activate", response_model=BranchResponse)
 async def activate_branch(branch_id: str) -> BranchResponse:
@@ -65,7 +57,6 @@ async def activate_branch(branch_id: str) -> BranchResponse:
         return await corporate_repo.activate_branch(branch_id)
     except ValueError as err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
-
 
 @router.delete("/branches/{branch_id}")
 async def delete_branch(branch_id: str) -> Dict[str, Any]:
@@ -77,9 +68,7 @@ async def delete_branch(branch_id: str) -> Dict[str, Any]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
 
 
-# ============================================================================
 # 2. DIVISION ENDPOINTS
-# ============================================================================
 
 @router.get("/divisions", response_model=List[DivisionResponse])
 async def list_divisions(branch_id: Optional[str] = Query(None, description="Filter by branch ID")) -> List[DivisionResponse]:
@@ -137,9 +126,7 @@ async def delete_division(division_id: str) -> Dict[str, Any]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
 
 
-# ============================================================================
 # 3. ROLE ENDPOINTS
-# ============================================================================
 
 @router.get("/roles", response_model=List[RoleResponse])
 async def list_roles(
@@ -176,6 +163,7 @@ async def create_role(payload: RoleCreate) -> RoleResponse:
             tool_permissions=payload.tool_permissions,
             token_budget_per_task=payload.token_budget_per_task,
             is_active=payload.is_active,
+            thinking_level=payload.thinking_level,
         )
     except ValueError as err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
@@ -194,6 +182,7 @@ async def update_role(role_id: str, payload: RoleUpdate) -> RoleResponse:
         tool_permissions=payload.tool_permissions,
         token_budget_per_task=payload.token_budget_per_task,
         is_active=payload.is_active,
+        thinking_level=payload.thinking_level,
     )
     if not updated:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Role '{role_id}' tidak ditemukan.")

@@ -54,6 +54,9 @@ class DockerMultiRunner:
 
         if mount_path:
             cmd.extend(["-v", f"{mount_path}:/app/project"])
+            tests_dir = Path(mount_path) / "tests"
+            if tests_dir.exists():
+                cmd.extend(["-v", f"{tests_dir.resolve().as_posix()}:/app/project/tests:ro"])
 
         if env_vars:
             for k, v in env_vars.items():

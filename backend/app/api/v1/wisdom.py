@@ -34,6 +34,20 @@ class WisdomSearchRequest(BaseModel):
     min_similarity: float = Field(default=0.20, ge=0.0, le=1.0, description="Skor minimal")
 
 
+class GitHubImportRequest(BaseModel):
+    """Payload impor markdown blueprint/skill dari GitHub."""
+    github_url: str = Field(..., min_length=10, description="URL GitHub berkas .md")
+    namespace: str = Field(default="wisdom:skills", description="Namespace kategori")
+    tags: List[str] = Field(default_factory=list, description="Tag kata kunci")
+
+
+class PluginImportRequest(BaseModel):
+    """Payload impor perkakas plugin Python dari GitHub."""
+    project_id: str = Field(..., min_length=1, description="ID proyek venture")
+    github_url: str = Field(..., min_length=10, description="URL GitHub skrip .py")
+    tool_name: Optional[str] = Field(None, description="Nama alat opsional")
+
+
 @router.get("", status_code=status.HTTP_200_OK)
 async def list_wisdom(
     namespace: Optional[str] = Query(None, description="Filter namespace"),
@@ -120,6 +134,47 @@ async def distill_wisdom_from_pr(pr_id: str) -> Dict[str, Any]:
         raise
     except Exception as err:
         logger.error(f"Gagal mendistilasi PR [{pr_id}]: {err}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(err))
+
+
+@router.post("/import-github", status_code=status.HTTP_201_CREATED)
+async def import_github_skill(payload: GitHubImportRequest) -> Dict[str, Any]:
+    """Mengimpor berkas Markdown skill/blueprint dari GitHub ke Corporate Wisdom."""
+    try:
+        from app.engine.github_bridge import fetch_github_markdown_skill
+        return await fetch_github_markdown_skill(
+            url=payload.github_url,
+            namespace=payload.namespace,
+            tags=payload.tags,
+        )
+    except ValueError as err:
+        logger.warning(f"Validasi impor GitHub gagal: {err}")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
+    except Exception as err:
+        logger.error(f"Gagal mengimpor dari GitHub: {err}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(err))
+
+
+@router.post("/import-plugin", status_code=status.HTTP_201_CREATED)
+async def import_github_plugin(payload: PluginImportRequest) -> Dict[str, Any]:
+    """Mengimpor dan memvalidasi skrip plugin Python dari GitHub ke proyek sandbox."""
+    try:
+        from app.engine.github_bridge import fetch_github_python_plugin
+        result = await fetch_github_python_plugin(
+            project_id=payload.project_id,
+            url=payload.github_url,
+            tool_name=payload.tool_name,
+        )
+        if not result.get("success"):
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result.get("error", "Plugin rejected"))
+        return result
+    except HTTPException:
+        raise
+    except ValueError as err:
+        logger.warning(f"Validasi impor plugin gagal: {err}")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
+    except Exception as err:
+        logger.error(f"Gagal mengimpor plugin dari GitHub: {err}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(err))
 
 

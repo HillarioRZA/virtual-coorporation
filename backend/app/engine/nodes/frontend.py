@@ -4,7 +4,7 @@ Menghasilkan kode Next.js modular berbasis MockServiceAdapter dan meluncurkan pr
 """
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict
 
 from app.core.config import settings
@@ -32,7 +32,11 @@ class FrontendCodeBundle(BaseModel):
 from app.engine.scaffolding import scaffold_standalone_frontend
 
 
-def write_frontend_files(project_id: str, bundle: FrontendCodeBundle) -> Path:
+def write_frontend_files(
+    project_id: str,
+    bundle: FrontendCodeBundle,
+    read_only_files: Optional[List[str]] = None,
+) -> Path:
     """Menyimpan berkas-berkas Next.js yang dihasilkan ke projects_output/<id>/frontend."""
     fe_dir = PROJECTS_OUTPUT_DIR / project_id / "frontend"
     src_services = fe_dir / "src" / "services"
@@ -42,16 +46,26 @@ def write_frontend_files(project_id: str, bundle: FrontendCodeBundle) -> Path:
     for d in [src_services, src_components, src_app]:
         d.mkdir(parents=True, exist_ok=True)
 
-    # 1. Tulis kode komponen utama dari LLM
-    (src_services / "apiClient.ts").write_text(bundle.api_client_code, encoding="utf-8")
-    (src_components / "CoreFeature.tsx").write_text(bundle.core_feature_component_code, encoding="utf-8")
-    (src_app / "page.tsx").write_text(bundle.page_code, encoding="utf-8")
+    read_only = set(read_only_files or [])
+    targets = {
+        src_services / "apiClient.ts": bundle.api_client_code,
+        src_components / "CoreFeature.tsx": bundle.core_feature_component_code,
+        src_app / "page.tsx": bundle.page_code,
+    }
+
+    for path_obj, code in targets.items():
+        rel_path = str(path_obj.relative_to(fe_dir)).replace("\\", "/")
+        if rel_path in read_only or path_obj.name in read_only or path_obj.name.startswith("test_") or ".test." in path_obj.name:
+            logger.warning(f"Adversarial TDD Guardrail: Modifikasi {rel_path} diblokir (Read-Only).")
+            continue
+        path_obj.write_text(code, encoding="utf-8")
 
     # 2. Tulis berkas konfigurasi build mandiri (package.json, tsconfig, tailwind, dsb.)
     scaffold_standalone_frontend(fe_dir, project_id)
 
     logger.info(f"Proyek Next.js mandiri berhasil ditulis ke: {fe_dir}")
     return fe_dir
+
 
 
 async def frontend_prototyping_node(
@@ -97,6 +111,18 @@ async def frontend_prototyping_node(
         temperature=0.3,
     )
 
+    from app.engine.agent_tool_dispatcher import agent_tool_dispatcher
+    step_count = 0
+    prompt_accum = context_prompt
+    while step_count < agent_tool_dispatcher.max_steps:
+        tool_call = agent_tool_dispatcher.parse_tool_call(raw_response)
+        if not tool_call:
+            break
+        obs = await agent_tool_dispatcher.execute_tool(state.project_id, tool_call["tool"], tool_call["parameters"])
+        prompt_accum += f"\n[OBSERVATION dari {tool_call['tool']}]: {obs}\nLanjutkan menyusun kode frontend final."
+        raw_response = await client.complete(prompt=prompt_accum, system_prompt=system_prompt, model=model, provider=provider, temperature=0.3)
+        step_count += 1
+
     bundle = await parse_and_repair_schema(
         llm_client=client,
         raw_response=raw_response,
@@ -108,7 +134,8 @@ async def frontend_prototyping_node(
     )
 
     # Simpan kode ke disk host
-    fe_path = write_frontend_files(state.project_id, bundle)
+    fe_path = write_frontend_files(state.project_id, bundle, state.read_only_files)
+
 
     # Luncurkan kontainer sandbox ephemeral
     sandbox_info = await sbx.run_frontend_sandbox(state.project_id, str(fe_path))

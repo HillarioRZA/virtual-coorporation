@@ -22,11 +22,20 @@ class GeminiAdapter:
         self.timeout = httpx.Timeout(timeout_seconds, connect=10.0)
         self.transport = transport
 
-    def _build_payload(self, prompt: str, system_prompt: str, temperature: float) -> Dict[str, Any]:
+    def _build_payload(
+        self, prompt: str, system_prompt: str, temperature: float, thinking_level: str = "medium"
+    ) -> Dict[str, Any]:
         """Membangun payload JSON untuk Gemini generateContent."""
+        gen_config: Dict[str, Any] = {"temperature": temperature}
+        budgets = {"low": 1024, "medium": 4096, "high": 8192}
+        if thinking_level in budgets:
+            gen_config["thinkingConfig"] = {"thinkingBudget": budgets[thinking_level]}
+        elif thinking_level == "none":
+            gen_config["thinkingConfig"] = {"thinkingBudget": 0}
+
         payload: Dict[str, Any] = {
             "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-            "generationConfig": {"temperature": temperature},
+            "generationConfig": gen_config,
         }
         if system_prompt:
             payload["systemInstruction"] = {"parts": [{"text": system_prompt}]}
@@ -41,11 +50,12 @@ class GeminiAdapter:
         base_url: str = "https://generativelanguage.googleapis.com/v1beta",
         temperature: float = 0.7,
         response_format: Optional[Dict[str, Any]] = None,
+        thinking_level: str = "medium",
     ) -> str:
         """Panggilan completion non-streaming Gemini API."""
         url = f"{base_url.rstrip('/')}/models/{model}:generateContent?key={api_key}"
         headers = {"Content-Type": "application/json"}
-        payload = self._build_payload(prompt, system_prompt, temperature)
+        payload = self._build_payload(prompt, system_prompt, temperature, thinking_level)
 
         try:
             async with httpx.AsyncClient(timeout=self.timeout, transport=self.transport) as client:
@@ -68,11 +78,12 @@ class GeminiAdapter:
         api_key: str,
         base_url: str = "https://generativelanguage.googleapis.com/v1beta",
         temperature: float = 0.7,
+        thinking_level: str = "medium",
     ) -> AsyncGenerator[str, None]:
         """Panggilan streaming token Gemini via Server-Sent Events (SSE)."""
         url = f"{base_url.rstrip('/')}/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
         headers = {"Content-Type": "application/json"}
-        payload = self._build_payload(prompt, system_prompt, temperature)
+        payload = self._build_payload(prompt, system_prompt, temperature, thinking_level)
 
         try:
             async with httpx.AsyncClient(timeout=self.timeout, transport=self.transport) as client:

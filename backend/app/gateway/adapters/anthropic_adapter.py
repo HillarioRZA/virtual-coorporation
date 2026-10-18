@@ -23,12 +23,25 @@ class AnthropicAdapter:
         self.transport = transport
 
     def _build_headers(self, api_key: str) -> Dict[str, str]:
-        """Membangun header resmi Anthropic API."""
+        """Membangun header resmi Anthropic API dengan dukungan Prompt Caching."""
         return {
             "x-api-key": api_key,
             "anthropic-version": "2023-06-01",
+            "anthropic-beta": "prompt-caching-2024-07-31",
             "content-type": "application/json",
         }
+
+    def _build_cached_system(self, system_prompt: str) -> Any:
+        """Membentuk blok system prompt deterministik dengan flag cache_control ephemeral."""
+        if not system_prompt:
+            return ""
+        return [
+            {
+                "type": "text",
+                "text": system_prompt,
+                "cache_control": {"type": "ephemeral"},
+            }
+        ]
 
     async def complete(
         self,
@@ -39,17 +52,22 @@ class AnthropicAdapter:
         base_url: str = "https://api.anthropic.com",
         temperature: float = 0.7,
         response_format: Optional[Dict[str, Any]] = None,
+        thinking_level: str = "medium",
     ) -> str:
         """Panggilan completion non-streaming Anthropic API."""
         url = f"{base_url.rstrip('/')}/v1/messages"
         headers = self._build_headers(api_key)
-        payload = {
+        payload: Dict[str, Any] = {
             "model": model,
             "max_tokens": 4096,
-            "system": system_prompt,
+            "system": self._build_cached_system(system_prompt),
             "messages": [{"role": "user", "content": prompt}],
             "temperature": temperature,
         }
+        budgets = {"low": 1024, "medium": 4096, "high": 8192}
+        if thinking_level in budgets:
+            payload["thinking"] = {"type": "enabled", "budget_tokens": budgets[thinking_level]}
+            payload["max_tokens"] = budgets[thinking_level] + 4096
 
         try:
             async with httpx.AsyncClient(timeout=self.timeout, transport=self.transport) as client:
@@ -72,18 +90,23 @@ class AnthropicAdapter:
         api_key: str,
         base_url: str = "https://api.anthropic.com",
         temperature: float = 0.7,
+        thinking_level: str = "medium",
     ) -> AsyncGenerator[str, None]:
         """Panggilan streaming token Anthropic via SSE."""
         url = f"{base_url.rstrip('/')}/v1/messages"
         headers = self._build_headers(api_key)
-        payload = {
+        payload: Dict[str, Any] = {
             "model": model,
             "max_tokens": 4096,
-            "system": system_prompt,
+            "system": self._build_cached_system(system_prompt),
             "messages": [{"role": "user", "content": prompt}],
             "temperature": temperature,
             "stream": True,
         }
+        budgets = {"low": 1024, "medium": 4096, "high": 8192}
+        if thinking_level in budgets:
+            payload["thinking"] = {"type": "enabled", "budget_tokens": budgets[thinking_level]}
+            payload["max_tokens"] = budgets[thinking_level] + 4096
 
         try:
             async with httpx.AsyncClient(timeout=self.timeout, transport=self.transport) as client:

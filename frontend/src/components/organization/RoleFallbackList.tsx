@@ -116,6 +116,7 @@ export const RoleFallbackList: React.FC<RoleFallbackListProps> = ({ fallbacks, o
                   <option value="anthropic">Anthropic</option>
                   <option value="openai">OpenAI</option>
                   <option value="ollama">Ollama (Local)</option>
+                  <option value="openai_compatible">Custom Provider (Format OpenAI)</option>
                 </select>
               </div>
 

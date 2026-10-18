@@ -55,6 +55,7 @@ async def get_db_connection(custom_path: Optional[str] = None) -> AsyncGenerator
             await conn.execute("PRAGMA journal_mode = WAL;")
             await conn.execute("PRAGMA synchronous = NORMAL;")
             await conn.execute("PRAGMA foreign_keys = ON;")
+            await conn.execute("PRAGMA busy_timeout = 5000;")
             yield conn
     except aiosqlite.Error as err:
         logger.error(f"Kesalahan koneksi SQLite ({db_path}): {err}")

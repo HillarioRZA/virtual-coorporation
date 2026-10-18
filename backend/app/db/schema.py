@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS projects (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 -- 2. Tabel Blackboard Event Log (Memory)
 CREATE TABLE IF NOT EXISTS agent_event_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,10 +31,8 @@ CREATE TABLE IF NOT EXISTS agent_event_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
-
 CREATE INDEX IF NOT EXISTS idx_events_project_stage ON agent_event_logs(project_id, stage);
 CREATE INDEX IF NOT EXISTS idx_events_recipient ON agent_event_logs(recipient_role);
-
 -- 3. Tabel Checkpoints (State Serialization)
 CREATE TABLE IF NOT EXISTS state_checkpoints (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,7 +43,6 @@ CREATE TABLE IF NOT EXISTS state_checkpoints (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
-
 -- 4. Tabel Secret Vault (Kredensial Produksi Terenkripsi)
 CREATE TABLE IF NOT EXISTS vault_secrets (
     project_id TEXT NOT NULL,
@@ -57,7 +53,6 @@ CREATE TABLE IF NOT EXISTS vault_secrets (
     PRIMARY KEY(project_id, secret_key_name),
     FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
-
 -- 5. Tabel Konfigurasi Sistem Dinamis (Dynamic System Settings)
 CREATE TABLE IF NOT EXISTS system_settings (
     key TEXT PRIMARY KEY,
@@ -65,7 +60,6 @@ CREATE TABLE IF NOT EXISTS system_settings (
     category TEXT NOT NULL DEFAULT 'general',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 -- 6. Tabel Branch Organisasi (Git-Style Workflow Branching)
 CREATE TABLE IF NOT EXISTS corporate_branches (
     id TEXT PRIMARY KEY,
@@ -76,7 +70,6 @@ CREATE TABLE IF NOT EXISTS corporate_branches (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 -- 7. Tabel Divisi Korporat Dinamis
 CREATE TABLE IF NOT EXISTS corporate_divisions (
     id TEXT PRIMARY KEY,
@@ -107,6 +100,7 @@ CREATE TABLE IF NOT EXISTS corporate_roles (
     model_provider TEXT NOT NULL DEFAULT 'openrouter',
     model_name TEXT NOT NULL DEFAULT 'deepseek/deepseek-r1:free',
     temperature REAL DEFAULT 0.2,
+    thinking_level TEXT NOT NULL DEFAULT 'medium',
     tool_permissions TEXT NOT NULL DEFAULT '["read_file", "write_file", "ast_scan"]',
     token_budget_per_task INTEGER DEFAULT 8000,
     is_active BOOLEAN DEFAULT 1,

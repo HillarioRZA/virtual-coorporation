@@ -84,3 +84,31 @@ def compute_multi_file_diff(files_delta: List[Dict[str, str]]) -> Dict[str, Any]
         "total_additions": total_additions,
         "total_deletions": total_deletions,
     }
+
+
+def validate_and_preview_patch(file_path: str, old_code: str, patch_payload: str) -> Dict[str, Any]:
+    """Menerapkan patch, memvalidasi sintaks AST, dan menghitung unified diff tanpa mengubah disk.
+
+    Args:
+        file_path: Path berkas target (misal: 'main.py').
+        old_code: Isi kode sebelum patch.
+        patch_payload: String blok TARGET/REPLACEMENT.
+
+    Returns:
+        Dict berisi 'new_code', 'unified_diff', 'additions', 'deletions'.
+    """
+    from app.engine.ast_patcher import apply_search_replace_blocks, validate_python_syntax
+
+    new_code = apply_search_replace_blocks(old_code, patch_payload)
+    if file_path.endswith(".py"):
+        validate_python_syntax(new_code, file_path)
+
+    diff_str, additions, deletions = generate_file_unified_diff(file_path, old_code, new_code)
+    return {
+        "file_path": file_path,
+        "new_code": new_code,
+        "unified_diff": diff_str,
+        "additions": additions,
+        "deletions": deletions,
+    }
+

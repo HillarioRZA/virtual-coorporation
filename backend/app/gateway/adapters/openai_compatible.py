@@ -4,7 +4,7 @@ Mendukung OpenAI, DeepSeek, Groq, Mistral, Ollama lokal, dan OpenRouter.
 """
 
 import json
-from typing import Any, AsyncGenerator, Dict, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional
 import httpx
 
 from app.core.logger import logger
@@ -37,6 +37,14 @@ class OpenAICompatibleAdapter:
             headers["X-Title"] = "Virtual Tech Startup Studio"
         return headers
 
+    def _build_deterministic_messages(self, prompt: str, system_prompt: str) -> List[Dict[str, str]]:
+        """Menyusun struktur pesan statis deterministik (system prompt di blok awal) untuk prefix caching."""
+        messages: List[Dict[str, str]] = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt.strip()})
+        messages.append({"role": "user", "content": prompt.strip()})
+        return messages
+
     async def complete(
         self,
         prompt: str,
@@ -46,18 +54,18 @@ class OpenAICompatibleAdapter:
         base_url: str,
         temperature: float = 0.7,
         response_format: Optional[Dict[str, Any]] = None,
+        thinking_level: str = "medium",
     ) -> str:
-        """Panggilan completion non-streaming OpenAI-compatible."""
+        """Panggilan completion non-streaming OpenAI-compatible dengan prefix caching."""
         url = f"{base_url.rstrip('/')}/chat/completions"
         headers = self._build_headers(api_key, base_url)
         payload: Dict[str, Any] = {
             "model": model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ],
+            "messages": self._build_deterministic_messages(prompt, system_prompt),
             "temperature": temperature,
         }
+        if thinking_level in ("low", "medium", "high"):
+            payload["reasoning_effort"] = thinking_level
         if response_format:
             payload["response_format"] = response_format
 
@@ -82,19 +90,19 @@ class OpenAICompatibleAdapter:
         api_key: str,
         base_url: str,
         temperature: float = 0.7,
+        thinking_level: str = "medium",
     ) -> AsyncGenerator[str, None]:
         """Panggilan completion streaming via Server-Sent Events (SSE)."""
         url = f"{base_url.rstrip('/')}/chat/completions"
         headers = self._build_headers(api_key, base_url)
-        payload = {
+        payload: Dict[str, Any] = {
             "model": model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ],
+            "messages": self._build_deterministic_messages(prompt, system_prompt),
             "temperature": temperature,
             "stream": True,
         }
+        if thinking_level in ("low", "medium", "high"):
+            payload["reasoning_effort"] = thinking_level
 
         try:
             async with httpx.AsyncClient(timeout=self.timeout, transport=self.transport) as client:

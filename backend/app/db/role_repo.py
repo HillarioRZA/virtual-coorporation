@@ -17,7 +17,8 @@ ROLE_COLS = (
     "id, branch_id, division_id, name, slug, system_prompt_template, model_provider, "
     "model_name, temperature, tool_permissions, token_budget_per_task, is_active, "
     "is_system_default, COALESCE(order_index, 0) as order_index, "
-    "COALESCE(fallback_chain, '[]') as fallback_chain, created_at, updated_at"
+    "COALESCE(fallback_chain, '[]') as fallback_chain, "
+    "COALESCE(thinking_level, 'medium') as thinking_level, created_at, updated_at"
 )
 
 
@@ -51,6 +52,7 @@ class RoleRepository:
             "is_system_default": bool(row["is_system_default"]),
             "order_index": int(row["order_index"]),
             "fallback_chain": fallback,
+            "thinking_level": str(row["thinking_level"]) if "thinking_level" in row.keys() else "medium",
             "created_at": str(row["created_at"]),
             "updated_at": str(row["updated_at"]),
         }
@@ -93,7 +95,8 @@ class RoleRepository:
         self, branch_id: str, division_id: str, name: str, slug: str, system_prompt_template: str,
         model_provider: str = "openrouter", model_name: str = "deepseek/deepseek-r1:free",
         temperature: float = 0.2, tool_permissions: Optional[List[str]] = None,
-        token_budget_per_task: int = 8000, is_active: bool = True, custom_path: Optional[str] = None,
+        token_budget_per_task: int = 8000, is_active: bool = True,
+        thinking_level: str = "medium", custom_path: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Mendaftarkan role baru pada branch dan divisi tertentu."""
         role_id = f"role_{uuid.uuid4().hex[:8]}"
@@ -115,12 +118,13 @@ class RoleRepository:
             ins_sql = (
                 "INSERT INTO corporate_roles (id, branch_id, division_id, name, slug, system_prompt_template, "
                 "model_provider, model_name, temperature, tool_permissions, token_budget_per_task, is_active, "
-                "is_system_default) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0);"
+                "is_system_default, thinking_level) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?);"
             )
             await conn.execute(
                 ins_sql,
                 (role_id, branch_id, division_id, name, slug, system_prompt_template,
-                 model_provider, model_name, temperature, perms_json, token_budget_per_task, 1 if is_active else 0),
+                 model_provider, model_name, temperature, perms_json, token_budget_per_task,
+                 1 if is_active else 0, thinking_level),
             )
             await conn.commit()
             logger.info(f"Role baru '{name}' ({role_id}) berhasil didaftarkan.")
@@ -135,7 +139,8 @@ class RoleRepository:
         model_provider: Optional[str] = None, model_name: Optional[str] = None,
         temperature: Optional[float] = None, tool_permissions: Optional[List[str]] = None,
         token_budget_per_task: Optional[int] = None, is_active: Optional[bool] = None,
-        fallback_chain: Optional[List[Dict[str, Any]]] = None, custom_path: Optional[str] = None,
+        fallback_chain: Optional[List[Dict[str, Any]]] = None,
+        thinking_level: Optional[str] = None, custom_path: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
         """Memperbarui konfigurasi role dan rantai model cadangan (fallback chain)."""
         existing = await self.get_role_by_id(role_id, custom_path)
@@ -152,13 +157,15 @@ class RoleRepository:
             "token_budget_per_task": token_budget_per_task if token_budget_per_task is not None else existing["token_budget_per_task"],
             "is_active": 1 if (is_active if is_active is not None else existing["is_active"]) else 0,
             "fallback_chain": json.dumps(fallback_chain if fallback_chain is not None else existing.get("fallback_chain", [])),
+            "thinking_level": thinking_level if thinking_level is not None else existing.get("thinking_level", "medium"),
         }
 
         upd_sql = (
             "UPDATE corporate_roles SET name = :name, system_prompt_template = :system_prompt_template, "
             "model_provider = :model_provider, model_name = :model_name, temperature = :temperature, "
             "tool_permissions = :tool_permissions, token_budget_per_task = :token_budget_per_task, "
-            "is_active = :is_active, fallback_chain = :fallback_chain, updated_at = CURRENT_TIMESTAMP WHERE id = :id;"
+            "is_active = :is_active, fallback_chain = :fallback_chain, thinking_level = :thinking_level, "
+            "updated_at = CURRENT_TIMESTAMP WHERE id = :id;"
         )
         async with get_db_connection(custom_path) as conn:
             await conn.execute(upd_sql, {**fields, "id": role_id})

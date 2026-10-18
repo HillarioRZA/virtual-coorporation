@@ -18,6 +18,7 @@ class BaseLLMAdapter(Protocol):
         base_url: str,
         temperature: float = 0.7,
         response_format: Optional[Dict[str, Any]] = None,
+        thinking_level: str = "medium",
     ) -> str:
         """Mengirimkan permintaan teks completion non-streaming."""
         ...
@@ -30,6 +31,7 @@ class BaseLLMAdapter(Protocol):
         api_key: str,
         base_url: str,
         temperature: float = 0.7,
+        thinking_level: str = "medium",
     ) -> AsyncGenerator[str, None]:
         """Mengalirkan token secara real-time via generator asinkron."""
         ...

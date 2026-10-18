@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { UserPlus, Edit3, X, AlertCircle } from "lucide-react";
-import { DivisionResponse, RoleResponse } from "@/lib/types/corporate";
+import { DivisionResponse, RoleResponse, ThinkingLevel } from "@/lib/types/corporate";
 import { FallbackChannelConfig } from "@/lib/types/analytics";
 import { createRole, updateRole } from "@/lib/corporateApi";
 import { RECOMMENDED_PRESETS } from "@/lib/constants/llmPresets";
@@ -32,6 +32,7 @@ export default function RoleModal({
   const [temperature, setTemperature] = useState(0.2);
   const [tools, setTools] = useState<string[]>(["read_file", "write_file"]);
   const [tokenBudget, setTokenBudget] = useState(8000);
+  const [thinkingLevel, setThinkingLevel] = useState<ThinkingLevel>("medium");
   const [fallbacks, setFallbacks] = useState<FallbackChannelConfig[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,13 +46,15 @@ export default function RoleModal({
       setTemperature(initialData.temperature ?? 0.2);
       setTools(initialData.tool_permissions || ["read_file", "write_file"]);
       setTokenBudget(initialData.token_budget_per_task || 8000);
+      setThinkingLevel((initialData.thinking_level as ThinkingLevel) || "medium");
       setFallbacks(initialData.fallback_chain || []);
     } else {
       setDivisionId(preselectedDivisionId || divisions[0]?.id || "");
       setName(""); setSlug("");
       setSystemPrompt("Anda adalah agen spesialis yang berdedikasi tinggi.");
       setModelProvider("openrouter"); setModelName("deepseek/deepseek-r1:free");
-      setTemperature(0.2); setTools(["read_file", "write_file"]); setTokenBudget(8000); setFallbacks([]);
+      setTemperature(0.2); setTools(["read_file", "write_file"]); setTokenBudget(8000);
+      setThinkingLevel("medium"); setFallbacks([]);
     }
     setError(null);
   }, [initialData, preselectedDivisionId, divisions, isOpen]);
@@ -61,17 +64,13 @@ export default function RoleModal({
   const handleProviderChange = (prov: string) => {
     setModelProvider(prov);
     const presets = RECOMMENDED_PRESETS[prov];
-    if (presets && presets.length > 0) setModelName(presets[0]);
+    if (presets?.length) setModelName(presets[0]);
   };
-
   const handleNameChange = (val: string) => {
     setName(val);
     if (!initialData) setSlug(val.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""));
   };
-
-  const toggleTool = (id: string) => {
-    setTools((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
-  };
+  const toggleTool = (id: string) => setTools((p) => (p.includes(id) ? p.filter((t) => t !== id) : [...p, id]));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +88,7 @@ export default function RoleModal({
         temperature,
         tool_permissions: tools,
         token_budget_per_task: tokenBudget,
+        thinking_level: thinkingLevel,
         fallback_chain: fallbacks,
       };
       const res = initialData
@@ -170,8 +170,10 @@ export default function RoleModal({
 
           <RoleModelFields
             modelProvider={modelProvider} modelName={modelName} temperature={temperature}
-            tokenBudget={tokenBudget} onProviderChange={handleProviderChange}
-            onModelNameChange={setModelName} onTemperatureChange={setTemperature} onTokenBudgetChange={setTokenBudget}
+            tokenBudget={tokenBudget} thinkingLevel={thinkingLevel}
+            onProviderChange={handleProviderChange} onModelNameChange={setModelName}
+            onTemperatureChange={setTemperature} onTokenBudgetChange={setTokenBudget}
+            onThinkingLevelChange={setThinkingLevel}
           />
 
           {/* Multi-Channel Fallback Chain (9router Style) */}

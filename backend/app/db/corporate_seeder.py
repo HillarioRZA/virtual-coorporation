@@ -91,6 +91,12 @@ async def migrate_branch_parent_column(conn: aiosqlite.Connection) -> None:
         await conn.execute("ALTER TABLE corporate_branches ADD COLUMN roles_snapshot TEXT DEFAULT '{}';")
 
 
+async def migrate_role_thinking_level_column(conn: aiosqlite.Connection) -> None:
+    """Migrasi aman kolom thinking_level pada corporate_roles."""
+    cur = await conn.execute("PRAGMA table_info(corporate_roles);")
+    cols = [r[1] for r in await cur.fetchall()]
+    if "thinking_level" not in cols:
+        await conn.execute("ALTER TABLE corporate_roles ADD COLUMN thinking_level TEXT DEFAULT 'medium';")
 
 
 async def seed_default_pipeline_stages(conn: aiosqlite.Connection) -> None:

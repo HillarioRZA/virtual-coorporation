@@ -19,6 +19,7 @@ from app.db.corporate_seeder import (
     migrate_order_index,
     migrate_role_fallback_chain,
     migrate_branch_parent_column,
+    migrate_role_thinking_level_column,
 )
 
 
@@ -41,6 +42,7 @@ async def init_database(custom_path: Optional[str] = None) -> None:
             await migrate_order_index(conn)
             await migrate_role_fallback_chain(conn)
             await migrate_branch_parent_column(conn)
+            await migrate_role_thinking_level_column(conn)
             await seed_default_corporate_structure(conn)
             await seed_default_pipeline_stages(conn)
             await seed_default_corporate_wisdom(conn)

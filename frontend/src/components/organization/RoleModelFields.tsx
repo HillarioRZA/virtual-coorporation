@@ -2,16 +2,19 @@
 
 import React from "react";
 import { LLM_PROVIDERS, RECOMMENDED_PRESETS } from "@/lib/constants/llmPresets";
+import { ThinkingLevel } from "@/lib/types/corporate";
 
 interface RoleModelFieldsProps {
   modelProvider: string;
   modelName: string;
   temperature: number;
   tokenBudget: number;
+  thinkingLevel?: ThinkingLevel;
   onProviderChange: (prov: string) => void;
   onModelNameChange: (name: string) => void;
   onTemperatureChange: (temp: number) => void;
   onTokenBudgetChange: (budget: number) => void;
+  onThinkingLevelChange?: (lvl: ThinkingLevel) => void;
 }
 
 export default function RoleModelFields({
@@ -19,12 +22,20 @@ export default function RoleModelFields({
   modelName,
   temperature,
   tokenBudget,
+  thinkingLevel = "medium",
   onProviderChange,
   onModelNameChange,
   onTemperatureChange,
   onTokenBudgetChange,
+  onThinkingLevelChange,
 }: RoleModelFieldsProps) {
   const activePresets = RECOMMENDED_PRESETS[modelProvider] || [];
+  const thinkingOptions: { id: ThinkingLevel; label: string }[] = [
+    { id: "none", label: "None" },
+    { id: "low", label: "Low ⚡" },
+    { id: "medium", label: "Medium 🧠" },
+    { id: "high", label: "High 🔬" },
+  ];
 
   return (
     <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-3">
@@ -39,6 +50,9 @@ export default function RoleModelFields({
             {LLM_PROVIDERS.map((p) => (
               <option key={p.id} value={p.id} className="bg-[#0c0d14]">{p.label}</option>
             ))}
+            {modelProvider === "custom" && (
+              <option value="custom" className="bg-[#0c0d14]">Custom Provider (Format OpenAI)</option>
+            )}
           </select>
         </div>
         <div>
@@ -48,7 +62,7 @@ export default function RoleModelFields({
             required
             value={modelName}
             onChange={(e) => onModelNameChange(e.target.value)}
-            placeholder="deepseek/deepseek-r1:free"
+            placeholder={modelProvider === "openai_compatible" || modelProvider === "custom" ? "nama-model-anda" : "deepseek/deepseek-r1:free"}
             className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white font-mono text-xs focus:outline-none"
           />
         </div>
@@ -78,6 +92,33 @@ export default function RoleModelFields({
           </div>
         </div>
       )}
+
+      {/* Thinking Level Control */}
+      <div>
+        <label className="block text-[11px] font-mono uppercase text-slate-400 mb-1 flex items-center justify-between">
+          <span>Thinking Level (Reasoning Effort)</span>
+          <span className="text-cyan-400 font-bold capitalize">{thinkingLevel}</span>
+        </label>
+        <div className="grid grid-cols-4 gap-1.5">
+          {thinkingOptions.map((opt) => {
+            const isSelected = thinkingLevel === opt.id;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => onThinkingLevelChange?.(opt.id)}
+                className={`py-1.5 px-2 text-[11px] font-mono rounded-lg border transition-all text-center ${
+                  isSelected
+                    ? "bg-purple-600/30 text-purple-200 border-purple-500/60 font-semibold shadow-sm"
+                    : "bg-black/40 text-slate-400 border-white/10 hover:text-white"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 gap-3 pt-1">
         <div>
