@@ -36,9 +36,11 @@ export interface RoleCostItem {
   role_id: string;
   role_name?: string;
   total_tokens: number;
-  total_cost_usd: number;
+  total_cost_usd?: number;
+  cost_usd?: number;
   request_count: number;
-  fallbacks_count: number;
+  fallbacks_count?: number;
+  fallback_count?: number;
 }
 
 export interface ChannelHealthItem {

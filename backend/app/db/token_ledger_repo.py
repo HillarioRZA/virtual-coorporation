@@ -128,12 +128,15 @@ class TokenLedgerRepository:
                 return [
                     {
                         "role_id": r["role"],
+                        "role_name": r["role"],
                         "model_name": r["model_name"],
                         "provider": r["provider"],
                         "total_tokens": int(r["tokens"]),
                         "cost_usd": round(float(r["cost_usd"]), 4),
+                        "total_cost_usd": round(float(r["cost_usd"]), 4),
                         "request_count": int(r["request_count"]),
                         "fallback_count": int(r["fallback_count"]),
+                        "fallbacks_count": int(r["fallback_count"]),
                     }
                     for r in rows
                 ]

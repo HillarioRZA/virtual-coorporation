@@ -43,30 +43,34 @@ export const RoleCostTable: React.FC<RoleCostTableProps> = ({ roles, totalCost }
             </thead>
             <tbody className="divide-y divide-zinc-850">
               {roles.map((r, idx) => {
-                const share = totalCost > 0 ? (r.total_cost_usd / totalCost) * 100 : 0;
+                const cost = Number(r.total_cost_usd ?? r.cost_usd ?? 0);
+                const reqCount = Number(r.request_count ?? 0);
+                const tokens = Number(r.total_tokens ?? 0);
+                const fallbacks = Number(r.fallbacks_count ?? r.fallback_count ?? 0);
+                const share = totalCost > 0 ? (cost / totalCost) * 100 : 0;
                 return (
                   <tr key={idx} className="hover:bg-zinc-800/30 transition-colors">
                     <td className="py-2.5 font-medium text-white flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-purple-400" />
-                      {r.role_name || r.role_id}
+                      {r.role_name || r.role_id || "Unassigned"}
                     </td>
                     <td className="py-2.5 text-right font-mono text-zinc-300">
-                      {r.request_count.toLocaleString()}
+                      {reqCount.toLocaleString()}
                     </td>
                     <td className="py-2.5 text-right font-mono text-zinc-300">
-                      {r.total_tokens.toLocaleString()}
+                      {tokens.toLocaleString()}
                     </td>
                     <td className="py-2.5 text-right font-mono">
-                      {r.fallbacks_count > 0 ? (
+                      {fallbacks > 0 ? (
                         <span className="text-amber-400 px-1.5 py-0.5 rounded bg-amber-500/10">
-                          {r.fallbacks_count}
+                          {fallbacks}
                         </span>
                       ) : (
                         <span className="text-zinc-400">0</span>
                       )}
                     </td>
                     <td className="py-2.5 text-right font-mono text-emerald-400 font-semibold">
-                      ${r.total_cost_usd.toFixed(4)}
+                      ${cost.toFixed(4)}
                     </td>
                     <td className="py-2.5 text-right font-mono text-zinc-400">
                       {share.toFixed(1)}%
