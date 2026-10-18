@@ -21,7 +21,7 @@ class CreateProjectRequest(BaseModel):
 
     name: str = Field(..., min_length=2, max_length=100, description="Nama proyek startup.")
     founder_idea: str = Field(..., min_length=10, description="Deskripsi ide bisnis mentah dari Founder.")
-    archetype_id: int = Field(default=1, ge=1, le=4, description="Nomor arketipe Golden Path (1-4).")
+    archetype_id: Optional[int] = Field(default=1, description="Nomor arketipe opsional/legacy.")
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)

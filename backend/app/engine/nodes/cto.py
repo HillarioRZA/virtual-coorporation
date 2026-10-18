@@ -95,7 +95,7 @@ async def cto_architecture_node(
     if memory_mgr:
         try:
             summary = (
-                f"Arsitektur Sistem Terkunci. Arketipe: {validated_arch.archetype_id} | "
+                f"Arsitektur Sistem Terkunci | "
                 f"Frontend: {validated_arch.frontend_framework} | "
                 f"Backend: {validated_arch.backend_framework} | "
                 f"DB: {validated_arch.database} | "

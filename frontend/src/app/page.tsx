@@ -7,7 +7,6 @@ import {
   Rocket,
   TrendingUp,
   Cpu,
-  Layers,
   Plus,
   ArrowRight,
   ShieldAlert,
@@ -22,13 +21,6 @@ import {
 } from "lucide-react";
 import { fetchProjects, createProject } from "../lib/api";
 import { ProjectSummary, StageName } from "../lib/types/api";
-
-const ARCHETYPES = [
-  { id: 1, name: "Arketipe 1: Single-Tenant CRUD SaaS", icon: Layers, desc: "Aplikasi multi-halaman dengan otentikasi & relational database" },
-  { id: 2, name: "Arketipe 2: Real-Time Event Driven", icon: Rocket, desc: "Aplikasi responsif berbasis WebSocket / SSE & background workers" },
-  { id: 3, name: "Arketipe 3: AI Copilot Workflow", icon: Cpu, desc: "Eksekusi LLM streaming, prompt chains & integrasi model AI" },
-  { id: 4, name: "Arketipe 4: Data Pipeline & Analytics", icon: TrendingUp, desc: "Pengolahan berkas tabular, data visualization & charting" },
-];
 
 function getStageBadge(stage: StageName) {
   switch (stage) {
@@ -61,7 +53,6 @@ export default function PortfolioHubPage() {
   // Form state
   const [name, setName] = useState("");
   const [founderIdea, setFounderIdea] = useState("");
-  const [archetypeId, setArchetypeId] = useState(1);
   const [errorMsg, setErrorMsg] = useState("");
 
   const loadData = async () => {
@@ -90,7 +81,6 @@ export default function PortfolioHubPage() {
       const result = await createProject({
         name,
         founder_idea: founderIdea,
-        archetype_id: archetypeId,
       });
       setIsModalOpen(false);
       setName("");
@@ -237,8 +227,8 @@ export default function PortfolioHubPage() {
                     </div>
 
                     <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
-                      <span className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10">
-                        Archetype #{proj.archetype_id}
+                      <span className="px-2 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                        Autonomous Incubating
                       </span>
                       <span>•</span>
                       <span>Cost: ${proj.tokens_cost.toFixed(3)}</span>
@@ -327,36 +317,7 @@ export default function PortfolioHubPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-[11px] font-mono font-semibold text-slate-300 mb-2 uppercase tracking-wider">
-                  Pilih Golden Path Archetype
-                </label>
-                <div className="space-y-2">
-                  {ARCHETYPES.map((arch) => (
-                    <label
-                      key={arch.id}
-                      onClick={() => setArchetypeId(arch.id)}
-                      className={`flex items-start space-x-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                        archetypeId === arch.id
-                          ? "bg-white/10 border-white/30 text-white"
-                          : "bg-black/40 border-white/5 text-slate-400 hover:border-white/15"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="archetype"
-                        checked={archetypeId === arch.id}
-                        onChange={() => setArchetypeId(arch.id)}
-                        className="mt-1 accent-white"
-                      />
-                      <div className="flex-1 text-xs">
-                        <span className="font-semibold block text-slate-200">{arch.name}</span>
-                        <span className="text-slate-400 text-[11px]">{arch.desc}</span>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
+
 
               <div className="pt-4 border-t border-white/10 flex justify-end space-x-3">
                 <button

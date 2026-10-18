@@ -3,7 +3,7 @@ Strict Pydantic Data Contracts (Single Source of Truth / SSOT).
 Mendefinisikan skema kontrak data ketat untuk seluruh artefak yang dihasilkan oleh 11 agen.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -27,7 +27,7 @@ class SystemArchitectureSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    archetype_id: int = Field(ge=1, le=4, description="Nomor katalog Golden Path (1 s/d 4).")
+    archetype_id: Optional[int] = Field(default=1, description="Nomor katalog arketipe opsional/legacy.")
     frontend_framework: str = Field(default="Next.js 14 App Router")
     backend_framework: str = Field(default="FastAPI Python")
     database: str = Field(default="PostgreSQL")

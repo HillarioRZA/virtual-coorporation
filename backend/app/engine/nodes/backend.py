@@ -86,7 +86,6 @@ async def backend_engineering_node(
 
     user_instruction = (
         f"Proyek: {state.project_name}\n"
-        f"Arketipe: {state.selected_archetype}\n"
         f"OpenAPI Spec: {state.openapi_spec or {}}\n"
         f"Tech Stack: {state.system_architecture.model_dump() if state.system_architecture else {}}\n"
         "Hasilkan kode backend produksi FastAPI lengkap, model SQLAlchemy, router, dan skrip migrasi."

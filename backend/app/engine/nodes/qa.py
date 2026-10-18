@@ -35,7 +35,6 @@ async def qa_eval_node(
 
     user_instruction = (
         f"Proyek: {state.project_name}\n"
-        f"Arketipe: {state.selected_archetype}\n"
         f"OpenAPI Spec: {state.openapi_spec or {}}\n"
         f"System Architecture: {state.system_architecture.model_dump() if state.system_architecture else {}}\n"
         f"Hasil Pemindaian Keamanan Statis Riil:\n"

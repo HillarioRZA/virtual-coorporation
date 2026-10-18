@@ -23,7 +23,7 @@ class VentureState(BaseModel):
     project_name: str = Field(description="Nama resmi proyek.")
     stage: str = Field(default="SPARRING_ROOM", description="Tahapan aktif state machine saat ini.")
     founder_idea: str = Field(description="Ide bisnis mentah yang diinput Founder.")
-    selected_archetype: int = Field(default=1, ge=1, le=4, description="Nomor arketipe Golden Path (1-4).")
+    selected_archetype: Optional[int] = Field(default=1, description="Nomor arketipe legacy/opsional.")
 
     # Artefak Hasil Kerja Agen (Tervalidasi Skema Ketat)
     business_brief: Optional[BusinessBriefSchema] = None

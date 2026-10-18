@@ -21,7 +21,7 @@ export interface ProjectSummary {
   project_id: string;
   name: string;
   stage: StageName;
-  archetype_id: number;
+  archetype_id?: number;
   tokens_cost: number;
   gross_revenue: number;
   net_profit: number;
@@ -83,7 +83,7 @@ export interface VentureStateData {
   project_name: string;
   stage: StageName;
   founder_idea: string;
-  selected_archetype: number;
+  selected_archetype?: number;
   business_brief?: BusinessBriefData;
   system_architecture?: SystemArchitectureData;
   prd_spec?: Record<string, any>;

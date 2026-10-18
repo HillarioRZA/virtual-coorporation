@@ -94,7 +94,6 @@ async def devsecops_packaging_node(
 
     user_instruction = (
         f"Proyek: {state.project_name}\n"
-        f"Arketipe: {state.selected_archetype}\n"
         f"PaaS Provider: {settings.PAAS_PROVIDER}\n"
         "Hasilkan konfigurasi docker-compose.yml multi-service (frontend, backend, postgres) dan .env.production."
     )

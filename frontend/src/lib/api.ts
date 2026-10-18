@@ -52,7 +52,7 @@ export async function fetchProject(projectId: string): Promise<VentureStateData>
 export async function createProject(payload: {
   name: string;
   founder_idea: string;
-  archetype_id: number;
+  archetype_id?: number;
 }): Promise<{ project_id: string; name: string; stage: string }> {
   const res = await fetch(`${API_BASE}/projects`, {
     method: "POST",
