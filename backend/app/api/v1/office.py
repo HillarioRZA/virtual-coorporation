@@ -5,7 +5,7 @@ Menyediakan inspeksi denah kampus, state agen, dan operasi intervensi langsung C
 
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.logger import logger
 from app.engine.corporate_schemas import CorporateMessageCreate
@@ -23,10 +23,12 @@ class AgentInterventionRequest(BaseModel):
 
 class OfficeDirectiveRequest(BaseModel):
     """Payload untuk arahan Oasis Live Command HQ ke agen atau sesi All Hands."""
-    project_id: str = Field(..., description="ID proyek sasaran")
+    project_id: str = Field(..., alias="projectId", description="ID proyek sasaran")
     mentions: List[str] = Field(..., description="Daftar peran sasaran (e.g. ['role_fe'] atau ['all'])")
     instruction: str = Field(..., description="Instruksi Founder/CEO")
-    ticket_id: Optional[str] = Field(None, description="ID tiket terkait jika ada")
+    ticket_id: Optional[str] = Field(None, alias="ticketId", description="ID tiket terkait jika ada")
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 @router.get("/layout/{project_id}", response_model=Dict[str, Any])

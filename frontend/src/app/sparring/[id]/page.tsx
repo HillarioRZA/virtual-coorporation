@@ -55,9 +55,10 @@ export default function SparringRoomPage() {
         setProject(data);
         setCurrentStage(data.stage);
 
-        // Jika ada event logs awal, populate ke messages
+        // Jika ada event logs awal, populate ke messages dengan deduplikasi pesan beruntun identik
         if (data.event_logs && data.event_logs.length > 0) {
-          const initMsgs = data.event_logs.map((log, idx) => {
+          const initMsgs: { id: string; sender: string; content: string; timestamp: string; isStreaming: boolean }[] = [];
+          data.event_logs.forEach((log, idx) => {
             const sender = log.includes("[CEO]") || log.startsWith("Founder")
               ? "CEO"
               : log.includes("[COS]")
@@ -65,13 +66,18 @@ export default function SparringRoomPage() {
               : log.includes("[CTO]")
               ? "CTO"
               : "SYSTEM";
-            return {
+            const content = log.replace(/^\[(COS|CTO|CEO|SYSTEM)\]\s*/, "").trim();
+            const prev = initMsgs[initMsgs.length - 1];
+            if (prev && prev.sender === sender && prev.content === content) {
+              return;
+            }
+            initMsgs.push({
               id: `init_${idx}`,
               sender,
-              content: log.replace(/^\[(COS|CTO|CEO|SYSTEM)\]\s*/, ""),
+              content,
               timestamp: "",
               isStreaming: false,
-            };
+            });
           });
           setMessages(initMsgs);
         }

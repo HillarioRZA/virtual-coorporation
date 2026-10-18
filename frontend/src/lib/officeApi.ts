@@ -13,7 +13,10 @@ function getAuthHeaders(): Record<string, string> {
     "Content-Type": "application/json",
   };
   if (typeof window !== "undefined") {
-    const token = sessionStorage.getItem("auth_token") || localStorage.getItem("auth_token");
+    const token =
+      sessionStorage.getItem("venture_session_token") ||
+      sessionStorage.getItem("auth_token") ||
+      localStorage.getItem("auth_token");
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
@@ -53,10 +56,17 @@ export async function interveneOfficeAgent(
 export async function dispatchOfficeDirective(
   payload: OfficeDirectivePayload
 ): Promise<{ status: string; message: string }> {
+  const body = {
+    project_id: payload.projectId,
+    projectId: payload.projectId,
+    mentions: payload.mentions,
+    instruction: payload.instruction,
+    ticket_id: payload.ticketId,
+  };
   const res = await fetch(`${API_BASE}/corporate/office/directive`, {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

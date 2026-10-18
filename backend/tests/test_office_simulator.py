@@ -185,4 +185,12 @@ def test_office_directive_endpoints(client: TestClient) -> None:
     assert resp_all.status_code == 200
     assert resp_all.json()["mode"] == "EXECUTIVE_MODERATED"
 
+    # 3. Directive dengan format camelCase dari frontend (projectId)
+    resp_camel = client.post(
+        "/api/v1/corporate/office/directive",
+        json={"projectId": "proj_dir_test", "mentions": ["role_cos"], "instruction": "Halo CoS"},
+    )
+    assert resp_camel.status_code == 200
+    assert resp_camel.json()["status"] == "SUCCESS"
+
 

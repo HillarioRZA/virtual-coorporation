@@ -65,6 +65,11 @@ export function useSSEStream(projectId: string | null) {
             return updated;
           }
 
+          // Cegah duplikasi jika pesan berasal dari CEO yang sudah ditambahkan secara optimistik di UI
+          if (role === "CEO" && last && last.sender === "CEO" && last.content.trim() === payload.token.trim()) {
+            return prev;
+          }
+
           // Buat entri chat baru jika pesan pertama
           return [
             ...prev,
@@ -73,7 +78,7 @@ export function useSSEStream(projectId: string | null) {
               sender: role,
               content: payload.token,
               timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-              isStreaming: true,
+              isStreaming: role !== "CEO",
             },
           ];
         });
