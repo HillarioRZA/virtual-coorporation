@@ -48,6 +48,13 @@ RECOMMENDED_MODELS: Dict[str, List[str]] = {
     "openai_compatible": ["qwen-2.5-coder-32b-instruct", "custom-model"],
 }
 
+SETTING_KEY_ALIASES: Dict[str, str] = {
+    "TELEGRAM_AUTH_GATE_ENABLED": "AUTH_GATE_ENABLED",
+    "TELEGRAM_ROTATION_HOURS": "AUTH_ROTATION_HOURS",
+    "DOCKER_FRONTEND_IMAGE": "DOCKER_BASE_FRONTEND_IMAGE",
+    "DOCKER_BACKEND_IMAGE": "DOCKER_BASE_BACKEND_IMAGE",
+}
+
 ROLE_METADATA: Dict[str, Dict[str, str]] = {
     "COS": {"title": "Chief of Staff (CoS)", "desc": "Evaluasi strategi bisnis, review PRD, dan sparring founder."},
     "CTO": {"title": "Chief Technology Officer (CTO)", "desc": "Arsitektur sistem, tech stack, dan validasi engineering."},

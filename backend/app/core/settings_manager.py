@@ -15,6 +15,7 @@ from app.core.settings_constants import (
     RECOMMENDED_MODELS,
     ROLE_METADATA,
     SENSITIVE_KEYS,
+    SETTING_KEY_ALIASES,
 )
 from app.db.session import get_db_connection
 
@@ -38,7 +39,8 @@ class DynamicSettingsManager:
                 cursor = await conn.execute("SELECT key, value FROM system_settings;")
                 rows = await cursor.fetchall()
                 for row in rows:
-                    key, val = row["key"], row["value"]
+                    raw_key, val = row["key"], row["value"]
+                    key = SETTING_KEY_ALIASES.get(raw_key, raw_key)
                     if hasattr(settings, key):
                         field_info = type(settings).model_fields.get(key)
                         if field_info and field_info.annotation is int:
@@ -124,7 +126,8 @@ class DynamicSettingsManager:
         """Memperbarui konfigurasi runtime in-memory dan menyimpannya ke tabel SQLite."""
         updated_count = 0
         async with get_db_connection(custom_path) as conn:
-            for key, val in updates.items():
+            for raw_key, val in updates.items():
+                key = SETTING_KEY_ALIASES.get(raw_key, raw_key)
                 if not hasattr(settings, key):
                     continue
                 if key in SENSITIVE_KEYS and ("..." in str(val) or str(val) == "********"):

@@ -72,15 +72,20 @@ export function SettingsSecurityTab({
           </div>
 
           <div>
-            <label className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider block mb-1">
-              Telegram Bot Token (@BotFather)
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider block">
+                Telegram Bot Token (@BotFather)
+              </label>
+              <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full border ${isTokenSet ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>
+                {isTokenSet ? "Kunci Aktif Tersimpan" : "Belum Diatur"}
+              </span>
+            </div>
             <div className="relative">
               <input
                 type={showToken ? "text" : "password"}
                 value={telegramForm.bot_token}
                 onChange={(e) => setTelegramForm((p) => ({ ...p, bot_token: e.target.value }))}
-                placeholder={isTokenSet ? "Token aktif terkonfigurasi" : "Contoh: 123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ"}
+                placeholder={isTokenSet ? "Token aktif terkonfigurasi (Ketik baru jika ingin mengganti)" : "Contoh: 123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ"}
                 className="w-full text-xs rounded-xl bg-black/60 border border-white/15 px-3 py-2.5 pr-10 text-slate-200 focus:outline-none focus:border-white/40 font-mono"
               />
               <button
@@ -91,6 +96,9 @@ export function SettingsSecurityTab({
                 {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+            <span className="text-[10px] text-slate-500 font-mono mt-1 block">
+              {isTokenSet ? "Token tersimpan aman di SQLite Vault. Masukkan nilai baru jika ingin mengganti." : "Dapatkan token dari @BotFather di aplikasi Telegram."}
+            </span>
           </div>
 
           <div>

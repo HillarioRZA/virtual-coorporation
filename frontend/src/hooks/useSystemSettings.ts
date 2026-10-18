@@ -97,11 +97,13 @@ export function useSystemSettings() {
         if (val.model && val.model.trim()) updates[`${prov.toUpperCase()}_MODEL`] = val.model.trim();
       });
 
+      updates["AUTH_GATE_ENABLED"] = telegramForm.auth_gate_enabled;
       updates["TELEGRAM_AUTH_GATE_ENABLED"] = telegramForm.auth_gate_enabled;
       if (telegramForm.bot_token.trim() && !telegramForm.bot_token.includes("...")) {
         updates["TELEGRAM_BOT_TOKEN"] = telegramForm.bot_token.trim();
       }
       if (telegramForm.chat_id.trim()) updates["TELEGRAM_CHAT_ID"] = telegramForm.chat_id.trim();
+      updates["AUTH_ROTATION_HOURS"] = telegramForm.rotation_hours;
       updates["TELEGRAM_ROTATION_HOURS"] = telegramForm.rotation_hours;
 
       updates["PAAS_PROVIDER"] = paasForm.provider;
@@ -112,7 +114,9 @@ export function useSystemSettings() {
 
       updates["SANDBOX_DOMAIN_SUFFIX"] = sandboxForm.domain_suffix;
       updates["CADDY_ADMIN_API"] = sandboxForm.caddy_admin_api;
+      updates["DOCKER_BASE_FRONTEND_IMAGE"] = sandboxForm.frontend_image;
       updates["DOCKER_FRONTEND_IMAGE"] = sandboxForm.frontend_image;
+      updates["DOCKER_BASE_BACKEND_IMAGE"] = sandboxForm.backend_image;
       updates["DOCKER_BACKEND_IMAGE"] = sandboxForm.backend_image;
 
       const res = await updateSystemSettings(updates);
