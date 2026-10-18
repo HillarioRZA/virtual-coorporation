@@ -57,13 +57,22 @@ export default function SparringRoomPage() {
 
         // Jika ada event logs awal, populate ke messages
         if (data.event_logs && data.event_logs.length > 0) {
-          const initMsgs = data.event_logs.map((log, idx) => ({
-            id: `init_${idx}`,
-            sender: log.includes("COS") ? "COS" : log.includes("CTO") ? "CTO" : "SYSTEM",
-            content: log,
-            timestamp: "",
-            isStreaming: false,
-          }));
+          const initMsgs = data.event_logs.map((log, idx) => {
+            const sender = log.includes("[CEO]") || log.startsWith("Founder")
+              ? "CEO"
+              : log.includes("[COS]")
+              ? "COS"
+              : log.includes("[CTO]")
+              ? "CTO"
+              : "SYSTEM";
+            return {
+              id: `init_${idx}`,
+              sender,
+              content: log.replace(/^\[(COS|CTO|CEO|SYSTEM)\]\s*/, ""),
+              timestamp: "",
+              isStreaming: false,
+            };
+          });
           setMessages(initMsgs);
         }
       })

@@ -36,7 +36,10 @@ export function useSSEStream(projectId: string | null) {
   useEffect(() => {
     if (!projectId) return;
 
-    const streamUrl = `${API_BASE}/projects/${projectId}/stream`;
+    const token = typeof window !== "undefined" ? sessionStorage.getItem("venture_session_token") : null;
+    const streamUrl = token
+      ? `${API_BASE}/projects/${projectId}/stream?token=${encodeURIComponent(token)}`
+      : `${API_BASE}/projects/${projectId}/stream`;
     const es = new EventSource(streamUrl);
     eventSourceRef.current = es;
 

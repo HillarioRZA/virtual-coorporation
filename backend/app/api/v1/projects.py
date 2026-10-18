@@ -120,6 +120,12 @@ async def get_project(project_id: str) -> Dict[str, Any]:
 
     data = state.to_dict()
     data["preview_url"] = state.preview_url or f"http://demo-{project_id}.local.sandbox"
+    try:
+        raw_logs = await mem.get_event_logs(project_id)
+        if raw_logs:
+            data["event_logs"] = [f"[{l['sender_role']}] {l['content']}" for l in raw_logs]
+    except Exception as log_err:
+        logger.warning(f"Gagal memuat event logs proyek [{project_id}]: {log_err}")
     return {"status": "success", "data": data}
 
 

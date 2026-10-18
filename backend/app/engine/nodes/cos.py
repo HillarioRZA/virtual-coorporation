@@ -32,6 +32,14 @@ async def cos_sparring_node(
     """
     client = llm_client or UnifiedLLMClient()
     model, provider = settings.get_agent_model_and_provider("COS")
+    try:
+        from app.db.role_repo import role_repo
+        role_data = await role_repo.get_role_by_id("role_cos")
+        if role_data and role_data.get("model_name") and role_data.get("model_provider"):
+            model = role_data["model_name"]
+            provider = role_data["model_provider"]
+    except Exception as db_err:
+        logger.debug(f"Menggunakan default settings CoS: {db_err}")
     system_prompt = load_prompt("cos")
 
     logger.info(f"CoS Node Executing for Project: [{state.project_id}] via {provider}/{model}")

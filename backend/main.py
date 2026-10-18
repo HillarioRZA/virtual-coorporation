@@ -116,9 +116,10 @@ class SecurityGateMiddleware:
         if auth_manager.is_enabled() and path.startswith("/api/v1"):
             headers = dict(scope.get("headers", []))
             auth_header = headers.get(b"authorization", b"").decode("latin1")
-            token = None
-            if auth_header.startswith("Bearer "):
-                token = auth_header.replace("Bearer ", "").strip()
+            token = auth_header.replace("Bearer ", "").strip() if auth_header.startswith("Bearer ") else None
+            if not token and b"token=" in scope.get("query_string", b""):
+                qs_parts = dict(kv.split(b"=", 1) for kv in scope.get("query_string", b"").split(b"&") if b"=" in kv)
+                token = qs_parts.get(b"token", b"").decode("latin1")
 
             if not auth_manager.verify_session_token(token):
                 response = JSONResponse(
