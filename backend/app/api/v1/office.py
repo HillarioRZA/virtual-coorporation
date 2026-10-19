@@ -3,6 +3,7 @@ REST API Router untuk Virtual World Corporate Office Simulator.
 Menyediakan inspeksi denah kampus, state agen, dan operasi intervensi langsung CEO.
 """
 
+import asyncio
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
@@ -10,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.core.logger import logger
 from app.engine.corporate_schemas import CorporateMessageCreate
 from app.engine.event_bus import corporate_event_bus
+from app.engine.office_dispatch import dispatch_office_agent_response
 from app.engine.office_simulator import office_sim_engine
 
 router = APIRouter(prefix="/corporate/office", tags=["Corporate Office Simulator"])
@@ -114,6 +116,7 @@ async def dispatch_office_directive(payload: OfficeDirectiveRequest) -> Dict[str
                 event_type="DIRECTIVE_INTERRUPTION",
                 content=f"Instruksi terarah ke {role}: {payload.instruction}",
             ))
+            asyncio.create_task(dispatch_office_agent_response(payload.project_id, role, payload.instruction))
 
         return {
             "status": "SUCCESS",

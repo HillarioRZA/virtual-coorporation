@@ -35,7 +35,22 @@ export function useOfficeOasisState(initialProjectId = "all") {
       ws.onmessage = (e) => {
         try {
           const msg = JSON.parse(e.data);
-          if (msg.type === "OFFICE_UPDATE" && msg.agents) setAgents(msg.agents);
+          if (msg.type === "OFFICE_UPDATE") {
+            if (msg.agents) setAgents(msg.agents);
+            if (msg.stream_event && msg.stream_event.content) {
+              setStreamEvents((prev) => {
+                const se = msg.stream_event;
+                if (prev.some((p) => p.content === se.content && p.senderRoleId === se.senderRoleId)) {
+                  return prev;
+                }
+                const formatted = {
+                  ...se,
+                  timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                };
+                return [formatted, ...prev];
+              });
+            }
+          }
         } catch {}
       };
     } catch { setConnected(false); }
@@ -57,8 +72,9 @@ export function useOfficeOasisState(initialProjectId = "all") {
   const dispatchDirective = useCallback(async (mentions: string[], message: string) => {
     if (mentions.includes("all")) { setAllHandsActive(true); return; }
     const proj = selectedProjectId === "all" ? (projects[0]?.project_id || "default_venture") : selectedProjectId;
-    await dispatchOfficeDirective({ projectId: proj, mentions, instruction: message, ticketId: replyContext?.ticketId });
     setStreamEvents((prev) => [{ id: `dir_${Date.now()}`, projectId: proj, senderRoleId: "role_founder", recipientRoleId: mentions[0], ticketId: replyContext?.ticketId, eventType: "DIRECTIVE", content: `Instruksi Founder ke ${mentions.join(", ")}: "${message}"`, category: "EXECUTION", timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }, ...prev]);
+    setAgents((prev) => prev.map((a) => mentions.includes(a.role_id) ? { ...a, activity_state: "CONSULTING", speech_bubble: "🤔 Menelaah arahan..." } : a));
+    await dispatchOfficeDirective({ projectId: proj, mentions, instruction: message, ticketId: replyContext?.ticketId });
     setReplyContext(null);
   }, [selectedProjectId, projects, replyContext]);
 

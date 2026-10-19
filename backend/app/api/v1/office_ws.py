@@ -36,10 +36,30 @@ async def office_simulation_websocket(websocket: WebSocket, project_id: str) -> 
                 payload = evt if isinstance(evt, dict) else getattr(evt, "payload", {})
                 office_sim_engine.handle_bus_event(evt_type, payload)
                 snap = office_sim_engine.get_snapshot()
+
+                content = getattr(evt, "content", "") if not isinstance(evt, dict) else evt.get("content", "")
+                sender_id = getattr(evt, "sender_role_id", "role_system") if not isinstance(evt, dict) else evt.get("sender_role_id", "role_system")
+                recipient_id = getattr(evt, "recipient_role_id", None) if not isinstance(evt, dict) else evt.get("recipient_role_id")
+                ticket_id = getattr(evt, "ticket_id", None) if not isinstance(evt, dict) else evt.get("ticket_id")
+
+                stream_msg = None
+                if content:
+                    stream_msg = {
+                        "id": f"evt_{project_id}_{int(asyncio.get_event_loop().time() * 1000)}",
+                        "projectId": project_id,
+                        "senderRoleId": sender_id,
+                        "recipientRoleId": recipient_id,
+                        "ticketId": ticket_id,
+                        "eventType": evt_type,
+                        "content": content,
+                        "category": "LOUNGE" if evt_type in ("DIRECTIVE_INTERRUPTION", "DIRECTIVE_RESPONSE", "AGENT_THINKING") else "EXECUTION",
+                    }
+
                 await websocket.send_json({
                     "type": "OFFICE_UPDATE",
                     "event": evt_type,
                     "agents": snap["agents"],
+                    "stream_event": stream_msg,
                 })
         except asyncio.CancelledError:
             pass

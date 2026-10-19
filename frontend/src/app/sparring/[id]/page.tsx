@@ -30,6 +30,7 @@ export default function SparringRoomPage() {
   const [chatInput, setChatInput] = useState("");
   const [targetAgent, setTargetAgent] = useState<"BROADCAST" | "COS" | "CTO">("BROADCAST");
   const [isSending, setIsSending] = useState(false);
+  const [isWaitingResponse, setIsWaitingResponse] = useState(false);
 
   // Gate feedback input state
   const [gateFeedback, setGateFeedback] = useState("");
@@ -87,6 +88,10 @@ export default function SparringRoomPage() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg && (lastMsg.sender !== "CEO" || lastMsg.isStreaming)) {
+      setIsWaitingResponse(false);
+    }
   }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -96,6 +101,7 @@ export default function SparringRoomPage() {
     const msg = chatInput.trim();
     setChatInput("");
     setIsSending(true);
+    setIsWaitingResponse(true);
 
     // Tambahkan pesan CEO ke UI secara optimistik
     addLocalMessage("CEO", msg);
@@ -107,6 +113,7 @@ export default function SparringRoomPage() {
       });
     } catch (err) {
       console.error("Gagal mengirim chat:", err);
+      setIsWaitingResponse(false);
     } finally {
       setIsSending(false);
     }
@@ -166,10 +173,22 @@ export default function SparringRoomPage() {
           <div className="flex items-center space-x-2 text-xs">
             <span
               className={`w-2 h-2 rounded-full ${
-                isConnected ? "bg-emerald-400 animate-pulse" : "bg-slate-600"
+                isWaitingResponse
+                  ? "bg-amber-400 animate-ping"
+                  : isConnected
+                  ? "bg-emerald-400 animate-pulse"
+                  : "bg-slate-600"
               }`}
             />
-            <span className="text-slate-400 hidden sm:inline">{agentStatus}</span>
+            <span className="text-slate-400 hidden sm:inline font-mono">
+              {isWaitingResponse ? (
+                <span className="text-amber-300 font-semibold animate-pulse">
+                  ⚡ {targetAgent === "CTO" ? "CTO" : "CoS"} is thinking...
+                </span>
+              ) : (
+                agentStatus
+              )}
+            </span>
           </div>
           <Link
             href={`/preview/${projectId}`}
@@ -242,13 +261,43 @@ export default function SparringRoomPage() {
                   <div className="whitespace-pre-wrap leading-relaxed text-sm pt-1">
                     {msg.content}
                     {msg.isStreaming && (
-                      <span className="inline-block w-1.5 h-4 ml-1 bg-current animate-pulse align-middle" />
+                      <span className="inline-block w-2 h-4 ml-1 bg-amber-400 animate-pulse align-middle rounded-sm shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
                     )}
                   </div>
                 </div>
               </div>
             );
           })}
+
+          {/* Animated Agent Typing Indicator */}
+          {isWaitingResponse && (
+            <div className="flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border shadow-lg bg-amber-500/20 text-amber-300 border-amber-500/40">
+                <Bot className="w-4 h-4 animate-spin" />
+              </div>
+              <div className="p-3.5 rounded-2xl max-w-lg bg-slate-900/90 border border-amber-500/30 text-slate-200 shadow-xl backdrop-blur-md">
+                <div className="flex items-center gap-2 pb-1.5 border-b border-amber-500/20 text-xs font-bold text-amber-300">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                  </span>
+                  <span>
+                    {targetAgent === "CTO" ? "Chief Technology Officer (CTO)" : "Chief of Staff (CoS)"}
+                  </span>
+                  <span className="text-[10px] font-normal text-amber-400/70 ml-auto">Sedang menganalisis...</span>
+                </div>
+                <div className="flex items-center gap-2 pt-2 text-xs text-slate-300">
+                  <span className="italic">Merumuskan evaluasi bisnis & analisis strategi...</span>
+                  <div className="flex items-center gap-1 pl-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce [animation-delay:-0.3s]"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce [animation-delay:-0.15s]"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
 

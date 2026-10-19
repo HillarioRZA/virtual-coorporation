@@ -91,5 +91,5 @@ export async function holdOfficeTicket(
 
 export function getOfficeWsUrl(projectId: string): string {
   const wsBase = getWsBase();
-  return `${wsBase}/corporate/ws/office/${projectId}`;
+  return `${wsBase}/api/v1/corporate/ws/office/${projectId}`;
 }

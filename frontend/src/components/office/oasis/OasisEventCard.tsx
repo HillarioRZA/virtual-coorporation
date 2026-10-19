@@ -32,15 +32,36 @@ export function OasisEventCard({
   };
 
   const roleName = event.senderRoleId.replace("role_", "").toUpperCase();
+  const isThinking = event.eventType === "AGENT_THINKING";
+  const isDirectiveResponse = event.eventType === "DIRECTIVE_RESPONSE";
 
   return (
-    <div className="bg-slate-900/60 hover:bg-slate-900/80 border border-slate-800/80 hover:border-slate-700/80 rounded-2xl p-3.5 space-y-2.5 transition-all shadow-lg backdrop-blur-md">
+    <div
+      className={`rounded-2xl p-3.5 space-y-2.5 transition-all shadow-lg backdrop-blur-md ${
+        isThinking
+          ? "bg-amber-950/20 border border-amber-500/40 animate-pulse shadow-amber-500/10"
+          : isDirectiveResponse
+          ? "bg-gradient-to-br from-slate-900/90 to-emerald-950/30 border border-emerald-500/40 shadow-emerald-500/10"
+          : "bg-slate-900/60 hover:bg-slate-900/80 border border-slate-800/80 hover:border-slate-700/80"
+      }`}
+    >
       {/* Top Header: Role Avatar, Project & Time */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2.5">
           <div className={`px-2 py-0.5 rounded-lg text-[11px] font-mono font-bold border ${getBadgeColor(event.senderRoleId)}`}>
             {roleName}
           </div>
+          {isThinking && (
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+              Thinking...
+            </span>
+          )}
+          {isDirectiveResponse && (
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              Response
+            </span>
+          )}
           {event.projectName && (
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
               {event.projectName}
@@ -66,7 +87,20 @@ export function OasisEventCard({
       )}
 
       {/* Main Thought / Content */}
-      <p className="text-xs text-slate-200 leading-relaxed font-sans">{event.content}</p>
+      <div className="text-xs text-slate-200 leading-relaxed font-sans">
+        {isThinking ? (
+          <div className="flex items-center gap-2 text-amber-300 font-medium py-0.5">
+            <span>{event.content}</span>
+            <div className="flex items-center gap-1 pl-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce [animation-delay:-0.3s]"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce [animation-delay:-0.15s]"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce"></span>
+            </div>
+          </div>
+        ) : (
+          <p className="whitespace-pre-wrap">{event.content}</p>
+        )}
+      </div>
 
       {/* Action Toolbar */}
       <div className="pt-1 flex items-center justify-between border-t border-slate-800/50">

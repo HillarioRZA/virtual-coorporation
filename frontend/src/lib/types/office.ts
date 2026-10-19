@@ -5,7 +5,7 @@
 
 export type SpatialTier = "EXECUTIVE" | "LEAD_MANAGEMENT" | "WORKER_SPECIALIST" | "COMMONS";
 
-export type AgentActivityState = "IDLE" | "CODING" | "REVIEWING" | "WALKING" | "MEETING" | "BLOCKED";
+export type AgentActivityState = "IDLE" | "CODING" | "REVIEWING" | "WALKING" | "MEETING" | "BLOCKED" | "CONSULTING";
 
 export type OasisStreamCategory = "ALL" | "EXECUTION" | "GATES" | "LOUNGE";
 

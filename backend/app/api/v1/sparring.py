@@ -60,37 +60,43 @@ async def _dispatch_sparring_response(project_id: str, target: str, user_message
 
         client = UnifiedLLMClient()
         logger.info(f"Memproses sparring response dari [{agent_role}] via {provider}/{model}...")
-        reply = await client.complete(
-            prompt="\n\n".join(prompt_parts),
-            system_prompt=system_prompt,
-            model=model,
-            provider=provider,
-            thinking_level=thinking_level,
+
+        await stream_manager.publish(
+            project_id=project_id,
+            event_type="agent_status",
+            data={"status": f"{agent_role} sedang merumuskan analisis...", "agent": agent_role, "is_thinking": True},
         )
+
+        full_reply = ""
+        is_first = True
+        try:
+            async for tok in client.stream_tokens(
+                prompt="\n\n".join(prompt_parts), system_prompt=system_prompt,
+                model=model, provider=provider, thinking_level=thinking_level,
+            ):
+                full_reply += tok
+                await stream_manager.publish(
+                    project_id=project_id, event_type="sparring_token",
+                    data={"sender_role": agent_role, "recipient_role": "CEO", "token": tok, "is_first": is_first},
+                )
+                is_first = False
+        except Exception as str_err:
+            logger.warning(f"Fallback complete() [{agent_role}]: {str_err}")
+            full_reply = await client.complete(
+                prompt="\n\n".join(prompt_parts), system_prompt=system_prompt,
+                model=model, provider=provider, thinking_level=thinking_level,
+            )
+            await stream_manager.publish(
+                project_id=project_id, event_type="sparring_token",
+                data={"sender_role": agent_role, "recipient_role": "CEO", "token": full_reply, "is_first": True},
+            )
 
         await mem.log_event(
-            project_id=project_id,
-            stage=state.stage if state else 1,
-            sender_role=agent_role,
-            recipient_role="CEO",
-            event_type="CHAT",
-            content=reply,
-        )
-
-        await stream_manager.publish(
-            project_id=project_id,
-            event_type="sparring_token",
-            data={
-                "sender_role": agent_role,
-                "recipient_role": "CEO",
-                "token": reply,
-                "is_first": True,
-            },
+            project_id=project_id, stage=state.stage if state else 1,
+            sender_role=agent_role, recipient_role="CEO", event_type="CHAT", content=full_reply,
         )
         await stream_manager.publish(
-            project_id=project_id,
-            event_type="done",
-            data={"sender_role": agent_role, "status": "completed"},
+            project_id=project_id, event_type="done", data={"sender_role": agent_role, "status": "completed"},
         )
     except Exception as err:
         logger.error(f"Gagal menghasilkan sparring response [{agent_role}]: {err}")

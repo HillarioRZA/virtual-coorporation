@@ -24,18 +24,17 @@ async def sandbox_terminal_websocket(websocket: WebSocket, project_id: str) -> N
     cwd_path = terminal_manager.get_working_directory(project_id)
     logger.info(f"Terminal WS terhubung untuk proyek [{project_id}] di [{cwd_path}]")
 
-    # Kirim banner pembuka sistem
-    welcome_banner = {
-        "type": "system",
-        "data": (
-            "⚡ UNIVERSAL SANDBOX TERMINAL (v2.0)\n"
-            f"📁 Working Directory: {cwd_path}\n"
-            "💡 Status: Siap menerima perintah shell. Gunakan tombol preset atau ketik manual.\n\n"
-        ),
-    }
-    await websocket.send_json(welcome_banner)
-
     try:
+        # Kirim banner pembuka sistem
+        welcome_banner = {
+            "type": "system",
+            "data": (
+                "⚡ UNIVERSAL SANDBOX TERMINAL (v2.0)\n"
+                f"📁 Working Directory: {cwd_path}\n"
+                "💡 Status: Siap menerima perintah shell. Gunakan tombol preset atau ketik manual.\n\n"
+            ),
+        }
+        await websocket.send_json(welcome_banner)
         while True:
             raw_data = await websocket.receive_text()
             cmd = ""

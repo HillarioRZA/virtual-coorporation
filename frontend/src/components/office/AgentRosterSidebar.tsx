@@ -27,6 +27,8 @@ export function AgentRosterSidebar({
 
   const getStatusBadge = (state: string) => {
     switch (state) {
+      case "CONSULTING":
+        return { label: "Thinking...", color: "text-amber-400 bg-amber-950/80 border-amber-800/60 animate-pulse" };
       case "CODING":
         return { label: "Coding", color: "text-cyan-400 bg-cyan-950/80 border-cyan-800/60" };
       case "REVIEWING":
