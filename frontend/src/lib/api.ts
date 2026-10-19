@@ -69,7 +69,7 @@ export async function createProject(payload: {
 
 export async function postSparringChat(
   projectId: string,
-  payload: { message: string; target_agent?: string }
+  payload: { message: string; target_agent?: string; attachments?: any[] }
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/projects/${projectId}/sparring/chat`, {
     method: "POST",

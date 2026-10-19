@@ -6,6 +6,7 @@ Mengisi konfigurasi kanonikal bawaan saat basis data pertama kali diinisialisasi
 import json
 from typing import List, Tuple
 import aiosqlite
+from app.db.corporate_prompts import DEFAULT_ROLE_PROMPTS
 
 
 async def seed_default_corporate_structure(conn: aiosqlite.Connection) -> None:
@@ -32,13 +33,13 @@ async def seed_default_corporate_structure(conn: aiosqlite.Connection) -> None:
     )
 
     roles = [
-        ("role_cos", "branch_main", "div_exec", "Chief of Staff", "cos", "Orkestrasi ide bisnis, evaluasi strategi, dan sparring founder", "openrouter", "deepseek/deepseek-r1:free", 0.2, '["read_file", "write_file"]', 8000, 1, 1, 0),
-        ("role_cto", "branch_main", "div_eng", "Chief Technology Officer", "cto", "Arsitektur sistem, pemilihan arketipe, dan validasi engineering", "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file", "ast_scan"]', 10000, 1, 1, 1),
-        ("role_pm", "branch_main", "div_product", "Product Manager", "pm", "Penajaman spesifikasi produk, user stories, dan PRD freeze", "openrouter", "deepseek/deepseek-r1:free", 0.2, '["read_file", "write_file"]', 8000, 1, 1, 2),
-        ("role_ux", "branch_main", "div_product", "UI/UX Architect", "ux", "Desain arketipe visual, wireframe, dan layout antarmuka", "openrouter", "deepseek/deepseek-r1:free", 0.3, '["read_file", "write_file"]', 8000, 1, 1, 3),
-        ("role_fe", "branch_main", "div_eng", "Frontend Engineer", "frontend", "Implementasi antarmuka Next.js 14, Tailwind CSS, dan scaffolding client", "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file"]', 12000, 1, 1, 4),
-        ("role_be", "branch_main", "div_eng", "Backend Engineer", "backend", "Implementasi API FastAPI, database SQLite, dan scaffolding server", "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file"]', 12000, 1, 1, 5),
-        ("role_qa", "branch_main", "div_eng", "QA & SecOps Engineer", "qa", "Audit keamanan AST OWASP, verifikasi unit testing, dan evaluasi kelayakan release", "openrouter", "deepseek/deepseek-r1:free", 0.1, '["read_file", "ast_scan"]', 8000, 1, 1, 6),
+        ("role_cos", "branch_main", "div_exec", "Chief of Staff", "cos", DEFAULT_ROLE_PROMPTS["cos"], "openrouter", "deepseek/deepseek-r1:free", 0.2, '["read_file", "write_file"]', 8000, 1, 1, 0),
+        ("role_cto", "branch_main", "div_eng", "Chief Technology Officer", "cto", DEFAULT_ROLE_PROMPTS["cto"], "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file", "ast_scan"]', 10000, 1, 1, 1),
+        ("role_pm", "branch_main", "div_product", "Product Manager", "pm", DEFAULT_ROLE_PROMPTS["pm"], "openrouter", "deepseek/deepseek-r1:free", 0.2, '["read_file", "write_file"]', 8000, 1, 1, 2),
+        ("role_ux", "branch_main", "div_product", "UI/UX Architect", "ux", DEFAULT_ROLE_PROMPTS["ux"], "openrouter", "deepseek/deepseek-r1:free", 0.3, '["read_file", "write_file"]', 8000, 1, 1, 3),
+        ("role_fe", "branch_main", "div_eng", "Frontend Engineer", "frontend", DEFAULT_ROLE_PROMPTS["frontend"], "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file"]', 12000, 1, 1, 4),
+        ("role_be", "branch_main", "div_eng", "Backend Engineer", "backend", DEFAULT_ROLE_PROMPTS["backend"], "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file"]', 12000, 1, 1, 5),
+        ("role_qa", "branch_main", "div_eng", "QA & SecOps Engineer", "qa", DEFAULT_ROLE_PROMPTS["qa"], "openrouter", "deepseek/deepseek-r1:free", 0.1, '["read_file", "ast_scan"]', 8000, 1, 1, 6),
     ]
     await conn.executemany(
         """
@@ -97,6 +98,19 @@ async def migrate_role_thinking_level_column(conn: aiosqlite.Connection) -> None
     cols = [r[1] for r in await cur.fetchall()]
     if "thinking_level" not in cols:
         await conn.execute("ALTER TABLE corporate_roles ADD COLUMN thinking_level TEXT DEFAULT 'medium';")
+
+
+async def migrate_rich_system_prompts(conn: aiosqlite.Connection) -> None:
+    """Migrasi aman memperbarui prompt sistem kanonikal ke template persona komprehensif."""
+    for slug, prompt in DEFAULT_ROLE_PROMPTS.items():
+        await conn.execute(
+            """
+            UPDATE corporate_roles
+            SET system_prompt_template = ?
+            WHERE branch_id = 'branch_main' AND slug = ? AND LENGTH(system_prompt_template) < 120;
+            """,
+            (prompt, slug),
+        )
 
 
 async def seed_default_pipeline_stages(conn: aiosqlite.Connection) -> None:

@@ -28,9 +28,12 @@ class SparringChatRequest(BaseModel):
         default=None,
         description="Peran agen sasaran opsional: 'COS', 'CTO', atau None (Broadcast).",
     )
+    attachments: Optional[list] = Field(default=None, description="Daftar berkas lampiran.")
 
 
-async def _dispatch_sparring_response(project_id: str, target: str, user_message: str) -> None:
+async def _dispatch_sparring_response(
+    project_id: str, target: str, user_message: str, attachments: Optional[list] = None
+) -> None:
     """Menghasilkan tanggapan otomatis dari agen sasaran (CoS / CTO) di background."""
     agent_role = "CTO" if target == "CTO" else "COS"
     role_id = "role_cto" if agent_role == "CTO" else "role_cos"
@@ -56,6 +59,15 @@ async def _dispatch_sparring_response(project_id: str, target: str, user_message
         if context_msgs:
             recent_hist = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in context_msgs[-6:]])
             prompt_parts.append(f"Riwayat Diskusi:\n{recent_hist}")
+
+        if attachments:
+            att_snippets = []
+            for a in attachments:
+                fn = a.get("filename", "berkas")
+                cp = a.get("content_preview") or ""
+                att_snippets.append(f"--- [Lampiran: {fn}] ---\n{cp}\n-------------------" if cp else f"[Lampiran: {fn}]")
+            prompt_parts.append("Berkas Lampiran dari Founder:\n" + "\n\n".join(att_snippets))
+
         prompt_parts.append(f"CEO (Founder): {user_message}\n\nBerikan respons kritis, konstruktif, dan solutif sebagai {agent_role}.")
 
         client = UnifiedLLMClient()
@@ -91,9 +103,28 @@ async def _dispatch_sparring_response(project_id: str, target: str, user_message
                 data={"sender_role": agent_role, "recipient_role": "CEO", "token": full_reply, "is_first": True},
             )
 
+        # CoV Gatekeeper Pre-Flight Inspection
+        from app.engine.sentinel.verifier import cov_gatekeeper
+        inspection = await cov_gatekeeper.inspect(
+            project_id=project_id, agent_role=agent_role,
+            candidate_content=full_reply, stage=state.stage if state else "ideation",
+        )
+        final_reply = inspection.inspected_content
+        if inspection.tool_call:
+            from app.engine.agent_tool_dispatcher import agent_tool_dispatcher
+            import json
+            t_name = inspection.tool_call.get("tool", "")
+            obs = await agent_tool_dispatcher.execute_tool(project_id, t_name, inspection.tool_call.get("parameters", {}))
+            obs_str = f"\n\n🛠️ **[Observasi Perkakas `{t_name}`]**:\n```json\n{json.dumps(obs, indent=2)}\n```"
+            final_reply += obs_str
+            await stream_manager.publish(
+                project_id=project_id, event_type="sparring_token",
+                data={"sender_role": agent_role, "recipient_role": "CEO", "token": obs_str, "is_first": False},
+            )
+
         await mem.log_event(
             project_id=project_id, stage=state.stage if state else 1,
-            sender_role=agent_role, recipient_role="CEO", event_type="CHAT", content=full_reply,
+            sender_role=agent_role, recipient_role="CEO", event_type="CHAT", content=final_reply,
         )
         await stream_manager.publish(
             project_id=project_id, event_type="done", data={"sender_role": agent_role, "status": "completed"},
@@ -137,21 +168,11 @@ async def post_sparring_chat(project_id: str, payload: SparringChatRequest) -> D
         await stream_manager.publish(
             project_id=project_id,
             event_type="sparring_token",
-            data={
-                "sender_role": "CEO",
-                "recipient_role": target,
-                "token": payload.message,
-                "is_first": True,
-            },
+            data={"sender_role": "CEO", "recipient_role": target, "token": payload.message, "attachments": payload.attachments, "is_first": True},
         )
         logger.info(f"Pesan CEO tersimpan untuk [{project_id}] -> {target}")
-
-        asyncio.create_task(_dispatch_sparring_response(project_id, target, payload.message))
-
-        return {
-            "status": "queued",
-            "message": "Instruksi diterima, agen sedang memproses feedback.",
-        }
+        asyncio.create_task(_dispatch_sparring_response(project_id, target, payload.message, payload.attachments))
+        return {"status": "queued", "message": "Instruksi diterima, agen sedang memproses feedback."}
     except Exception as err:
         logger.error(f"Gagal memproses sparring chat: {err}")
         raise HTTPException(status_code=500, detail=f"Gagal mengirim pesan: {err}") from err
@@ -165,16 +186,7 @@ async def stream_project_events(project_id: str) -> StreamingResponse:
     if not state:
         raise HTTPException(status_code=404, detail=f"Proyek '{project_id}' tidak ditemukan.")
 
-    headers = {
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-        "X-Accel-Buffering": "no",
-        "Content-Type": "text/event-stream",
-    }
-
+    headers = {"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no", "Content-Type": "text/event-stream"}
     logger.info(f"Membuka koneksi SSE untuk project [{project_id}]")
-    return StreamingResponse(
-        stream_manager.event_generator(project_id),
-        media_type="text/event-stream",
-        headers=headers,
-    )
+    return StreamingResponse(stream_manager.event_generator(project_id), media_type="text/event-stream", headers=headers)
+

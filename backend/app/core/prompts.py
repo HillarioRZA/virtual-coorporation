@@ -38,8 +38,10 @@ def load_prompt(role: str, custom_dir: Optional[Path] = None) -> str:
     prompt_file = target_dir / f"{normalized_role}_prompt.md"
 
     if not prompt_file.exists():
-        logger.warning(f"File prompt [{prompt_file}] tidak ditemukan. Menggunakan fallback standar.")
-        fallback = f"Anda adalah agen {role.upper()} yang bertugas sesuai keahlian teknis Anda."
+        from app.db.corporate_prompts import DEFAULT_ROLE_PROMPTS
+        fallback = DEFAULT_ROLE_PROMPTS.get(
+            normalized_role, f"Anda adalah agen {role.upper()} yang bertugas sesuai keahlian teknis Anda."
+        )
         _PROMPT_CACHE[cache_key] = fallback
         return fallback
 

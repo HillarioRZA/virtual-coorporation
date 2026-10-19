@@ -29,6 +29,7 @@ class OfficeDirectiveRequest(BaseModel):
     mentions: List[str] = Field(..., description="Daftar peran sasaran (e.g. ['role_fe'] atau ['all'])")
     instruction: str = Field(..., description="Instruksi Founder/CEO")
     ticket_id: Optional[str] = Field(None, alias="ticketId", description="ID tiket terkait jika ada")
+    attachments: Optional[List[Dict[str, Any]]] = Field(None, description="Daftar berkas lampiran yang diunggah")
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -114,9 +115,13 @@ async def dispatch_office_directive(payload: OfficeDirectiveRequest) -> Dict[str
                 recipient_role_id=role,
                 ticket_id=payload.ticket_id,
                 event_type="DIRECTIVE_INTERRUPTION",
-                content=f"Instruksi terarah ke {role}: {payload.instruction}",
+                content=f"Instruksi Founder ke {role}: \"{payload.instruction}\"",
             ))
-            asyncio.create_task(dispatch_office_agent_response(payload.project_id, role, payload.instruction))
+            asyncio.create_task(
+                dispatch_office_agent_response(
+                    payload.project_id, role, payload.instruction, payload.attachments
+                )
+            )
 
         return {
             "status": "SUCCESS",

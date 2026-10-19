@@ -8,6 +8,7 @@ import { AgentRosterSidebar } from "../../components/office/AgentRosterSidebar";
 import { OfficeChatConsole } from "../../components/office/OfficeChatConsole";
 import { OasisWorkspaceSplitView } from "../../components/office/oasis/OasisWorkspaceSplitView";
 import { OasisAllHandsWarRoom } from "../../components/office/oasis/OasisAllHandsWarRoom";
+import { SentinelTelemetryDashboard } from "../../components/office/sentinel/SentinelTelemetryDashboard";
 
 export default function OfficeSimulatorPage() {
   const {
@@ -86,22 +87,30 @@ export default function OfficeSimulatorPage() {
             onOpenAllHands={() => setAllHandsActive(true)}
           />
 
-          {/* Oasis Live Stream and Live Screen-Share Split View */}
+          {/* Oasis Live Stream or CoV Sentinel Telemetry */}
           <div className="flex-1 overflow-hidden relative">
-            <OasisWorkspaceSplitView
-              events={streamEvents}
-              selectedProjectId={selectedProjectId}
-              categoryFilter={categoryFilter}
-              selectedAgent={selectedAgent}
-              onSelectAgent={setSelectedAgent}
-              onInterrupt={triggerInterrupt}
-              onHold={handleHoldTicket}
-            />
+            {categoryFilter === "SENTINEL" ? (
+              <SentinelTelemetryDashboard
+                projectId={selectedProjectId === "all" ? (projects[0]?.project_id || "default_venture") : selectedProjectId}
+                lastEvent={streamEvents[streamEvents.length - 1]}
+              />
+            ) : (
+              <OasisWorkspaceSplitView
+                events={streamEvents}
+                selectedProjectId={selectedProjectId}
+                categoryFilter={categoryFilter}
+                selectedAgent={selectedAgent}
+                onSelectAgent={setSelectedAgent}
+                onInterrupt={triggerInterrupt}
+                onHold={handleHoldTicket}
+              />
+            )}
           </div>
 
           {/* Oasis Floating @Mention Console */}
           <div className="pt-1 flex-shrink-0">
             <OfficeChatConsole
+              projectId={selectedProjectId === "all" ? (projects[0]?.project_id || "default_venture") : selectedProjectId}
               agents={agents}
               replyContext={replyContext}
               onClearReply={() => setReplyContext(null)}

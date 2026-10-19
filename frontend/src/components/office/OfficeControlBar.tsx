@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, Zap, ShieldAlert, Coffee, Layers } from "lucide-react";
+import { Users, Zap, ShieldAlert, Coffee, Layers, ShieldCheck } from "lucide-react";
 import { ProjectSummary } from "../../lib/types/api";
 import { OasisStreamCategory } from "../../lib/types/office";
 
@@ -28,6 +28,7 @@ export function OfficeControlBar({
     { id: "EXECUTION", label: "Execution & Handoffs", icon: Zap },
     { id: "GATES", label: "CEO Gates", icon: ShieldAlert },
     { id: "LOUNGE", label: "Oasis Lounge", icon: Coffee },
+    { id: "SENTINEL", label: "🛡️ CoV Sentinel", icon: ShieldCheck },
   ];
 
   return (

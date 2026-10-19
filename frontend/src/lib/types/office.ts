@@ -7,12 +7,23 @@ export type SpatialTier = "EXECUTIVE" | "LEAD_MANAGEMENT" | "WORKER_SPECIALIST" 
 
 export type AgentActivityState = "IDLE" | "CODING" | "REVIEWING" | "WALKING" | "MEETING" | "BLOCKED" | "CONSULTING";
 
-export type OasisStreamCategory = "ALL" | "EXECUTION" | "GATES" | "LOUNGE";
+export type OasisStreamCategory = "ALL" | "EXECUTION" | "GATES" | "LOUNGE" | "SENTINEL";
 
 export interface OasisHandoff {
   fromRoleId: string;
   toRoleId: string;
   summary: string;
+}
+
+export interface AttachmentItem {
+  id: string;
+  filename: string;
+  stored_filename?: string;
+  file_type: string;
+  size_bytes: number;
+  download_url: string;
+  content_preview?: string;
+  is_truncated?: boolean;
 }
 
 export interface OasisStreamEvent {
@@ -29,6 +40,7 @@ export interface OasisStreamEvent {
   tokenCost?: number;
   handoff?: OasisHandoff;
   gateStatus?: "WAITING_APPROVAL" | "APPROVED" | "REVISED" | "REJECTED";
+  attachments?: AttachmentItem[];
 }
 
 export interface AgentSpatialData {
@@ -47,4 +59,5 @@ export interface OfficeDirectivePayload {
   mentions: string[];
   instruction: string;
   ticketId?: string;
+  attachments?: AttachmentItem[];
 }

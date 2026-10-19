@@ -12,6 +12,7 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
   isStreaming?: boolean;
+  attachments?: any[];
 }
 
 export function useSSEStream(projectId: string | null) {
@@ -22,13 +23,14 @@ export function useSSEStream(projectId: string | null) {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const eventSourceRef = useRef<EventSource | null>(null);
 
-  const addLocalMessage = useCallback((sender: string, content: string) => {
+  const addLocalMessage = useCallback((sender: string, content: string, attachments?: any[]) => {
     const newMsg: ChatMessage = {
       id: `local_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       sender: sender.toUpperCase(),
       content,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       isStreaming: false,
+      attachments,
     };
     setMessages((prev) => [...prev, newMsg]);
   }, []);

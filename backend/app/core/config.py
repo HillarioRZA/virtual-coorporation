@@ -96,6 +96,15 @@ class Settings(BaseSettings):
     TELEGRAM_CHAT_ID: Optional[str] = Field(default="", description="ID chat Telegram dari @userinfobot")
     AUTH_ROTATION_HOURS: int = Field(default=6, description="Interval rotasi password otomatis dalam jam")
 
+    # Internal Chain-of-Verification (CoV) Sentinel Gatekeeper (Zero UI Exposure)
+    COV_ENABLED: bool = Field(default=True, description="Enable Internal CoV Pre-Flight Gatekeeper")
+    COV_PROVIDER: str = Field(default="deepseek", description="Provider for CoV Gatekeeper")
+    COV_MODEL: str = Field(default="deepseek-reasoner", description="Model for CoV Gatekeeper")
+    COV_BASE_URL: Optional[str] = Field(default="", description="Base URL for CoV provider")
+    COV_API_KEY: Optional[str] = Field(default="", description="API key for CoV provider")
+    COV_MAX_REPAIRS: int = Field(default=2, description="Maximum self-repair attempts by CoV")
+    COV_TEMPERATURE: float = Field(default=0.0, description="Temperature for CoV determinism")
+
     model_config = SettingsConfigDict(
         env_file=str(ENV_FILE),
         env_file_encoding="utf-8",
@@ -115,6 +124,7 @@ class Settings(BaseSettings):
             "QA": (self.MODEL_QA, self.PROVIDER_QA),
             "LEGAL": (self.MODEL_LEGAL, self.PROVIDER_LEGAL),
             "DEVSECOPS": (self.MODEL_DEVSECOPS, self.PROVIDER_DEVSECOPS),
+            "COV": (self.COV_MODEL, self.COV_PROVIDER),
         }
         return role_map.get(role.upper(), (self.MODEL_CTO, self.PROVIDER_CTO))
 

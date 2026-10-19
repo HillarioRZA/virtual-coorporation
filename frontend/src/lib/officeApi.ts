@@ -62,6 +62,7 @@ export async function dispatchOfficeDirective(
     mentions: payload.mentions,
     instruction: payload.instruction,
     ticket_id: payload.ticketId,
+    attachments: payload.attachments,
   };
   const res = await fetch(`${API_BASE}/corporate/office/directive`, {
     method: "POST",
@@ -71,6 +72,38 @@ export async function dispatchOfficeDirective(
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || "Gagal mengirim arahan");
+  }
+  return res.json();
+}
+
+export async function uploadChatAttachment(
+  projectId: string,
+  file: File
+): Promise<import("./types/office").AttachmentItem> {
+  const formData = new FormData();
+  formData.append("project_id", projectId);
+  formData.append("file", file);
+
+  const headers: Record<string, string> = {};
+  if (typeof window !== "undefined") {
+    const token =
+      sessionStorage.getItem("venture_session_token") ||
+      sessionStorage.getItem("auth_token") ||
+      localStorage.getItem("auth_token");
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  }
+
+  const res = await fetch(`${API_BASE}/files/upload`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Gagal mengunggah berkas (${res.status})`);
   }
   return res.json();
 }

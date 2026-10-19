@@ -4,7 +4,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-14.2%20(Production%20Ready)-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![Oasis 2D Liquid](https://img.shields.io/badge/Command%20HQ-Obsidian%20Liquid%202D-6366f1?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
-[![Pytest](https://img.shields.io/badge/Pytest-174%2F174%20Passed%20(100%25)-brightgreen?style=flat-square&logo=pytest&logoColor=white)](https://pytest.org/)
+[![Pytest](https://img.shields.io/badge/Pytest-180%2F180%20Passed%20(100%25)-brightgreen?style=flat-square&logo=pytest&logoColor=white)](https://pytest.org/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![SQLite WAL](https://img.shields.io/badge/Database-SQLite%20WAL-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
@@ -181,6 +181,37 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 * **Isolasi Subnet Docker Hardened**: Setiap venture berjalan di dalam subnet jembatan khusus (`bridge_net_{project_id}`) dengan pembatasan hard quota CPU (1.5 core) dan RAM (1024 MB), dilengkapi reverse proxy Caddy (`*.local.sandbox`) dan fallback embedded async HTTP port 4000–4999.
 * **Interactive Web PTY Terminal**: Terminal CLI live dua arah berbasis WebSocket di antarmuka `/preview/[id]` dengan guardrail pencegah perintah destruktif sistem operasi (`rm -rf /`, `mkfs`, dll).
 * **Copy-on-Write (CoW) Snapshots**: Snapshot direktori proyek otomatis dengan garansi *Zero Data Loss* (pembuatan cadangan instan `AUTO_PRE_ROLLBACK` sebelum rollback dijalankan).
+
+### 14. Internal Chain-of-Verification (CoV) Pre-Flight Gatekeeper & Sentinel Observability Engine
+* **Pemisahan Peran Kognitif & Penjaga Keselamatan Teknis**:
+  - **Peralihan ke Kontrak Fleksibel**: Menggantikan validasi skema yang kaku (`extra="forbid"`) dengan **Open Flexible Contracts (`extra="allow"`)**, memberikan kebebasan bagi agen untuk merancang inovasi UI modern (animasi, glow tokens, micro-interactions).
+  - **Internal Pre-Flight Sentinel**: Sebagai penyeimbang kebebasan kreatif, agen internal CoV bertindak sebagai penjaga kelaikan teknis (*Pre-Flight Inspector*) sebelum respons disiarkan atau perkakas dieksekusi, mencegah runtime crash (500 Internal Server Error).
+* **Konfigurasi Internal Terkunci di Server (Zero UI Exposure)**:
+  - Seluruh konfigurasi model, provider, dan API key CoV (`COV_PROVIDER`, `COV_MODEL`, `COV_BASE_URL`, `COV_API_KEY`) diatur secara eksklusif via `.env` dan `config.py`.
+  - **Zero UI Exposure**: Pengaturan CoV tidak pernah diekspos ke antarmuka `/settings` maupun `/organization` demi menjaga integritas agen pengawas internal.
+* **Lean Tool Manifest (~150-200 Tokens) & Dynamic Stage Filtering**:
+  - CoV hanya menerima deskripsi tanda tangan fungsi dan parameter kunci (*lean manifest*), bukan kode implementasi yang panjang.
+  - **Stage-Aware Filtering**: Tahap Ideasi murni menyuntikkan 0 tools (menghemat token secara maksimal), sedangkan tahap Engineering hanya menyuntikkan perkakas relevan (`inspect_db_schema`, `validate_api_contract`, `git_diff_summary`, `search_codebase`, `runtime_tool_builder`).
+* **Autonomous Role-Agent Self-Healing (Bukan CoV yang Memperbaiki Sendiri)**:
+  - Jika pemanggilan perkakas cacat atau parameter wajib kurang, CoV bertindak sebagai **Auditor/Kritikus** dengan status `REPAIR_REQUIRED` dan menghasilkan `repair_feedback` yang spesifik.
+  - Sistem mengirimkan teguran internal tersebut **kembali ke Agen Role pemanggil (CTO, Backend, Frontend, dll.)**, sehingga **Agen Role sendiri yang memperbaiki respons dan parameternya** secara mandiri menggunakan konteks domain lengkapnya.
+  - Setelah diperbaiki oleh Agen Role dan disetujui oleh CoV (`APPROVED` / `REPAIRED`), perkakas dieksekusi atas nama agen asli dan hasil observasi dikembalikan langsung ke agen tersebut (*Non-Hijacking Tool Execution*).
+* **CoV Sentinel Observability Dashboard (`/office`)**:
+  - Antarmuka telemetri real-time yang transparan di Command HQ dengan Bento Grid (Total Pre-Flight Audits, Skor Reliabilitas %, Jumlah Auto-Repairs, Rerata Latensi ms).
+  - Filter interaktif berdasarkan peran agen dan status (APPROVED, REPAIRED, REJECTED).
+  - Laci inspeksi detail dengan tampilan **Diff Sisi-ke-Sisi (Kandidat Asli vs Hasil Verifikasi)**, catatan teguran koreksi CoV, dan penampil JSON parameter perkakas.
+  - **Event-Driven WebSocket Sync**: Terhubung langsung ke WebSocket Oasis (`/corporate/ws/office/{project_id}`) untuk pembaruan instan tanpa *HTTP polling spam*.
+  - Lencana visual `[🛡️ CoV Verified]` pada setiap kartu respons agen di Oasis Chat.
+
+### 15. Multimodal File Upload Engine & Drag-and-Drop Collaboration
+* **Ekstraksi Teks Cerdas Multi-Format**:
+  - Modul ekstraksi teks aman (`file_parser.py`) mengekstrak konten PDF (menggunakan `pypdf` dengan fallback cerdas), Markdown (`.md`), Plain Text (`.txt`), CSV, JSON, YAML, dan berkas kode sumber (`.py`, `.ts`, `.tsx`, `.js`, `.html`, `.css`).
+  - Menyuntikkan rangkuman dan preview isi berkas langsung ke dalam konteks prompt LLM saat diskusi di Oasis HQ dan Executive Sparring.
+* **REST File Storage & Proteksi Traversal**:
+  - Endpoint `POST /api/v1/files/upload` (mendukung ukuran berkas hingga 15MB) dan `GET /api/v1/files/download/{project_id}/{filename}` dengan proteksi *path traversal*.
+* **Interaksi Intuitif Drag & Drop**:
+  - Founder dapat melampirkan berkas dengan mudah cukup dengan **menyeret dan melepaskan (drag & drop)** berkas ke area input chat di Oasis HQ (`OfficeChatConsole.tsx`) maupun Executive Sparring (`/sparring/[id]`).
+  - Dilengkapi visual *dropzone overlay* bercahaya animasi, chip preview berkas lampiran dengan tombol hapus (x), serta tautan unduh interaktif pada kartu pesan.
 
 ---
 

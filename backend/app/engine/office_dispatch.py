@@ -3,7 +3,7 @@ Office Directive Dispatcher.
 Menangani eksekusi asinkron respons agen AI terhadap arahan Founder di Oasis Command HQ.
 """
 
-from typing import Optional
+from typing import Any, Dict, List, Optional
 from app.core.config import settings
 from app.core.logger import logger
 from app.core.prompts import load_prompt
@@ -15,7 +15,12 @@ from app.engine.office_simulator import office_sim_engine
 from app.gateway.client import UnifiedLLMClient
 
 
-async def dispatch_office_agent_response(project_id: str, role_id: str, instruction: str) -> None:
+async def dispatch_office_agent_response(
+    project_id: str,
+    role_id: str,
+    instruction: str,
+    attachments: Optional[List[Dict[str, Any]]] = None,
+) -> None:
     """Menghasilkan tanggapan otomatis LLM dari agen sasaran di Oasis Live Command HQ."""
     agent = office_sim_engine.agents.get(role_id)
     try:
@@ -54,6 +59,15 @@ async def dispatch_office_agent_response(project_id: str, role_id: str, instruct
         if context_msgs:
             recent_hist = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in context_msgs[-4:]])
             prompt_parts.append(f"Riwayat Diskusi:\n{recent_hist}")
+
+        if attachments:
+            att_snippets = []
+            for a in attachments:
+                fn = a.get("filename", "berkas")
+                cp = a.get("content_preview") or ""
+                att_snippets.append(f"--- [Lampiran: {fn}] ---\n{cp}\n-------------------" if cp else f"[Lampiran: {fn}]")
+            prompt_parts.append("Berkas Lampiran dari Founder:\n" + "\n\n".join(att_snippets))
+
         prompt_parts.append(f"Founder: {instruction}\n\nBerikan tanggapan taktis, padat, dan solutif sebagai {role_slug} (maksimal 2-3 paragraf).")
 
         client = UnifiedLLMClient()
@@ -66,9 +80,57 @@ async def dispatch_office_agent_response(project_id: str, role_id: str, instruct
             thinking_level=thinking_level,
         )
 
+        # CoV Gatekeeper Pre-Flight Inspection
+        from app.engine.sentinel.verifier import cov_gatekeeper
+        inspection = await cov_gatekeeper.inspect(
+            project_id=project_id,
+            agent_role=role_slug,
+            candidate_content=reply,
+            stage=state.stage if state else "ideation",
+        )
+
+        current_reply = reply
+        current_inspection = inspection
+        attempts = 0
+        while not current_inspection.approved and current_inspection.repair_feedback and attempts < settings.COV_MAX_REPAIRS:
+            attempts += 1
+            logger.info(f"Koreksi mandiri [{role_slug}] dipicu CoV ({attempts}/{settings.COV_MAX_REPAIRS}): {current_inspection.repair_feedback}")
+            repair_prompt = (
+                f"{current_reply}\n\n"
+                f"[TEGURAN COV GATEKEEPER]:\n{current_inspection.repair_feedback}\n\n"
+                f"Sebagai {role_slug}, perbaiki format perkakas atau parameter Anda di atas sekarang."
+            )
+            current_reply = await client.complete(
+                prompt=repair_prompt,
+                system_prompt=sys_prompt,
+                model=model,
+                provider=provider,
+                thinking_level=thinking_level,
+            )
+            current_inspection = await cov_gatekeeper.inspect(
+                project_id=project_id,
+                agent_role=role_slug,
+                candidate_content=current_reply,
+                stage=state.stage if state else "ideation",
+            )
+            if current_inspection.approved:
+                current_inspection.status = "REPAIRED"
+                break
+
+        final_reply = current_reply
+
+        # Non-hijacking Tool Execution: CoV menyetujui, dieksekusi atas nama agen asli
+        if current_inspection.tool_call:
+            from app.engine.agent_tool_dispatcher import agent_tool_dispatcher
+            import json
+            t_name = current_inspection.tool_call.get("tool", "")
+            t_params = current_inspection.tool_call.get("parameters", {})
+            obs = await agent_tool_dispatcher.execute_tool(project_id, t_name, t_params)
+            final_reply += f"\n\n🛠️ **[Observasi Perkakas `{t_name}`]**:\n```json\n{json.dumps(obs, indent=2)}\n```"
+
         if agent:
             agent.activity_state = "IDLE"
-            agent.speech_bubble = f"💬 {reply[:30]}..."
+            agent.speech_bubble = f"💬 {final_reply[:30]}..."
 
         await mem.log_event(
             project_id=project_id,
@@ -76,7 +138,7 @@ async def dispatch_office_agent_response(project_id: str, role_id: str, instruct
             sender_role=role_slug,
             recipient_role="CEO",
             event_type="DIRECTIVE_RESPONSE",
-            content=reply,
+            content=final_reply,
         )
 
         await corporate_event_bus.publish(CorporateMessageCreate(
@@ -86,7 +148,7 @@ async def dispatch_office_agent_response(project_id: str, role_id: str, instruct
             sender_role_id=role_id,
             recipient_role_id="role_founder",
             event_type="DIRECTIVE_RESPONSE",
-            content=reply,
+            content=final_reply,
         ))
     except Exception as err:
         logger.error(f"Gagal memproses respons agen [{role_id}] di Oasis: {err}")

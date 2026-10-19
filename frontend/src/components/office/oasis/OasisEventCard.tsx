@@ -1,6 +1,6 @@
 "use client";
 
-import { Zap, Pause, Eye, CheckCircle2, ArrowRight, ShieldAlert, Cpu } from "lucide-react";
+import { Zap, Pause, Eye, CheckCircle2, ArrowRight, ShieldAlert, Cpu, FileText, Image as ImageIcon, ShieldCheck } from "lucide-react";
 import { OasisStreamEvent } from "../../../lib/types/office";
 
 interface OasisEventCardProps {
@@ -58,8 +58,9 @@ export function OasisEventCard({
             </span>
           )}
           {isDirectiveResponse && (
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-              Response
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 shadow-sm">
+              <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              <span>🛡️ CoV Verified</span>
             </span>
           )}
           {event.projectName && (
@@ -101,6 +102,29 @@ export function OasisEventCard({
           <p className="whitespace-pre-wrap">{event.content}</p>
         )}
       </div>
+
+      {/* Attachments if any */}
+      {event.attachments && event.attachments.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 pt-1 border-t border-slate-800/40">
+          {event.attachments.map((att) => (
+            <a
+              key={att.id}
+              href={att.download_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-950/80 border border-slate-800 hover:border-slate-700 text-slate-300 text-[10px] font-mono transition-all hover:text-white"
+            >
+              {att.file_type.startsWith("image/") ? (
+                <ImageIcon className="w-3 h-3 text-cyan-400" />
+              ) : (
+                <FileText className="w-3 h-3 text-amber-400" />
+              )}
+              <span className="truncate max-w-[150px]">{att.filename}</span>
+              <span className="text-slate-500 text-[9px]">({(att.size_bytes / 1024).toFixed(0)}KB)</span>
+            </a>
+          ))}
+        </div>
+      )}
 
       {/* Action Toolbar */}
       <div className="pt-1 flex items-center justify-between border-t border-slate-800/50">

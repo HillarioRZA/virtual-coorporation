@@ -28,8 +28,13 @@ from app.api.v1.office import router as office_router
 from app.api.v1.office_ws import router as office_ws_router
 from app.api.v1.project_artifacts import router as project_artifacts_router
 from app.api.v1.frontier_radar import router as frontier_radar_router
+from app.api.v1.files import router as files_router
+from app.api.v1.sentinel import router as sentinel_router
 
 api_v1_router = APIRouter()
+
+api_v1_router.include_router(files_router)
+api_v1_router.include_router(sentinel_router)
 
 api_v1_router.include_router(projects_router)
 api_v1_router.include_router(project_artifacts_router)

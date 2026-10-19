@@ -26,7 +26,9 @@ class UnifiedLLMClient:
     def _resolve_adapter(self, provider: str) -> BaseLLMAdapter:
         """Menentukan instance adapter yang sesuai berdasarkan nama provider."""
         prov = provider.lower()
-        if prov in ["openai", "openai_compatible", "deepseek", "groq", "mistral", "ollama", "openrouter", "custom"]:
+        if prov == "cov":
+            return self._resolve_adapter(settings.COV_PROVIDER)
+        elif prov in ["openai", "openai_compatible", "deepseek", "groq", "mistral", "ollama", "openrouter", "custom"]:
             return self.openai_compat
         elif prov == "anthropic":
             return self.anthropic
@@ -38,7 +40,11 @@ class UnifiedLLMClient:
     def _resolve_credentials(self, provider: str) -> Tuple[str, str]:
         """Mengambil pasangan (api_key, base_url) secara dinamis dari konfigurasi sistem."""
         prov = provider.lower()
-        if prov == "openrouter":
+        if prov == "cov":
+            cov_p = (settings.COV_PROVIDER or "deepseek").lower()
+            def_key, def_base = self._resolve_credentials(cov_p)
+            return settings.COV_API_KEY or def_key, settings.COV_BASE_URL or def_base
+        elif prov == "openrouter":
             return settings.OPENROUTER_API_KEY or "", settings.OPENROUTER_BASE_URL
         elif prov == "deepseek":
             return settings.DEEPSEEK_API_KEY or "", settings.DEEPSEEK_BASE_URL

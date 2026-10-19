@@ -40,6 +40,18 @@ export function useOfficeOasisState(initialProjectId = "all") {
             if (msg.stream_event && msg.stream_event.content) {
               setStreamEvents((prev) => {
                 const se = msg.stream_event;
+                // Deduplicate founder messages (e.g. from optimistic UI vs WebSocket broadcast)
+                if (
+                  se.senderRoleId === "role_founder" &&
+                  prev.some(
+                    (p) =>
+                      p.senderRoleId === "role_founder" &&
+                      (p.content === se.content ||
+                        p.content.includes(se.content.replace(/^Instruksi.*?: /, "").replace(/^"|"$/g, "")))
+                  )
+                ) {
+                  return prev;
+                }
                 if (prev.some((p) => p.content === se.content && p.senderRoleId === se.senderRoleId)) {
                   return prev;
                 }
@@ -47,6 +59,15 @@ export function useOfficeOasisState(initialProjectId = "all") {
                   ...se,
                   timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
                 };
+
+                // Clear stuck AGENT_THINKING card once DIRECTIVE_RESPONSE arrives for this role
+                if (se.eventType === "DIRECTIVE_RESPONSE") {
+                  const cleaned = prev.filter(
+                    (p) => !(p.eventType === "AGENT_THINKING" && p.senderRoleId === se.senderRoleId)
+                  );
+                  return [formatted, ...cleaned];
+                }
+
                 return [formatted, ...prev];
               });
             }
@@ -69,12 +90,12 @@ export function useOfficeOasisState(initialProjectId = "all") {
     setStreamEvents((prev) => [{ id: `hold_${Date.now()}`, projectId: proj, senderRoleId: "role_founder", ticketId, eventType: "CIRCUIT_BREAKER", content: `Tiket ${ticketId} di-HOLD oleh Founder. Token dihentikan.`, category: "GATES", timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }, ...prev]);
   }, [selectedProjectId, projects]);
 
-  const dispatchDirective = useCallback(async (mentions: string[], message: string) => {
+  const dispatchDirective = useCallback(async (mentions: string[], message: string, attachments?: import("../../lib/types/office").AttachmentItem[]) => {
     if (mentions.includes("all")) { setAllHandsActive(true); return; }
     const proj = selectedProjectId === "all" ? (projects[0]?.project_id || "default_venture") : selectedProjectId;
-    setStreamEvents((prev) => [{ id: `dir_${Date.now()}`, projectId: proj, senderRoleId: "role_founder", recipientRoleId: mentions[0], ticketId: replyContext?.ticketId, eventType: "DIRECTIVE", content: `Instruksi Founder ke ${mentions.join(", ")}: "${message}"`, category: "EXECUTION", timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }, ...prev]);
+    setStreamEvents((prev) => [{ id: `dir_${Date.now()}`, projectId: proj, senderRoleId: "role_founder", recipientRoleId: mentions[0], ticketId: replyContext?.ticketId, eventType: "DIRECTIVE", content: `Instruksi Founder ke ${mentions.join(", ")}: "${message}"`, category: "EXECUTION", timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), attachments }, ...prev]);
     setAgents((prev) => prev.map((a) => mentions.includes(a.role_id) ? { ...a, activity_state: "CONSULTING", speech_bubble: "🤔 Menelaah arahan..." } : a));
-    await dispatchOfficeDirective({ projectId: proj, mentions, instruction: message, ticketId: replyContext?.ticketId });
+    await dispatchOfficeDirective({ projectId: proj, mentions, instruction: message, ticketId: replyContext?.ticketId, attachments });
     setReplyContext(null);
   }, [selectedProjectId, projects, replyContext]);
 
