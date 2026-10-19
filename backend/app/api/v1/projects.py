@@ -10,8 +10,8 @@ from pydantic import BaseModel, Field
 
 from app.core.logger import logger
 from app.db.session import get_db_connection
-from app.engine.memory import MemoryManager
-from app.engine.state import VentureState
+from app.engine.memory.memory import MemoryManager
+from app.engine.runtime.state import VentureState
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
@@ -150,3 +150,48 @@ async def get_preview_status(project_id: str) -> Dict[str, Any]:
             "uptime_seconds": 60 if is_running else 0,
         },
     }
+
+
+@router.delete("/{project_id}", status_code=status.HTTP_200_OK)
+async def delete_project(project_id: str) -> Dict[str, Any]:
+    """Menghapus proyek venture dan seluruh data riwayatnya secara permanen."""
+    try:
+        import shutil
+        from pathlib import Path
+        async with get_db_connection() as conn:
+            cursor = await conn.execute("SELECT id, name FROM projects WHERE id = ?", (project_id,))
+            proj = await cursor.fetchone()
+            if not proj:
+                raise HTTPException(status_code=404, detail=f"Proyek '{project_id}' tidak ditemukan.")
+
+            proj_name = proj["name"]
+            tables = [
+                ("projects", "id"),
+                ("project_checkpoints", "project_id"),
+                ("agent_event_logs", "project_id"),
+                ("corporate_tickets", "project_id"),
+                ("corporate_messages", "project_id"),
+                ("corporate_financial_ledger", "project_id"),
+                ("corporate_pull_requests", "project_id"),
+                ("sandbox_snapshots", "project_id"),
+                ("sentinel_findings", "project_id"),
+            ]
+            for tbl, col in tables:
+                try:
+                    await conn.execute(f"DELETE FROM {tbl} WHERE {col} = ?", (project_id,))
+                except Exception:
+                    pass
+            await conn.commit()
+
+        for base_dir in ["workspaces", "sandbox_storage"]:
+            target_dir = Path(base_dir) / project_id
+            if target_dir.exists() and target_dir.is_dir():
+                shutil.rmtree(target_dir, ignore_errors=True)
+
+        logger.info(f"Proyek [{project_id}] '{proj_name}' berhasil dihapus permanen.")
+        return {"status": "success", "message": f"Proyek '{proj_name}' ({project_id}) berhasil dihapus."}
+    except HTTPException:
+        raise
+    except Exception as err:
+        logger.error(f"Gagal menghapus proyek [{project_id}]: {err}")
+        raise HTTPException(status_code=500, detail=f"Gagal menghapus proyek: {err}") from err

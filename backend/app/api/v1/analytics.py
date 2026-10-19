@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 from app.core.logger import logger
 from app.db.token_ledger_repo import token_ledger_repo
-from app.engine.model_router import sovereign_router
+from app.engine.runtime.model_router import sovereign_router
 
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])

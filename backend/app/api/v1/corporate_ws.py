@@ -9,8 +9,8 @@ from typing import Any, Dict
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.core.logger import logger
-from app.engine.corporate_schemas import CorporateMessageCreate
-from app.engine.event_bus import corporate_event_bus
+from app.engine.schemas.corporate_schemas import CorporateMessageCreate
+from app.engine.runtime.event_bus import corporate_event_bus
 
 router = APIRouter(prefix="/corporate/ws", tags=["Corporate WebSocket Lounge"])
 

@@ -6,18 +6,18 @@ from typing import Any, Dict
 import httpx
 import pytest
 
-from app.engine.citation_auditor import audit_text_citations, extract_citation_urls
-from app.engine.design_token_engine import generate_design_tokens, load_design_tokens
-from app.engine.editorial_reviewer import editorial_reviewer
+from app.engine.quality.citation_auditor import audit_text_citations, extract_citation_urls
+from app.engine.tools.design_token_engine import generate_design_tokens, load_design_tokens
+from app.engine.quality.editorial_reviewer import editorial_reviewer
 from app.engine.nodes.backend import BackendOutputEnvelope, write_backend_files
 from app.engine.nodes.frontend import FrontendCodeBundle, write_frontend_files
-from app.engine.preflight_auditor import audit_project_dependencies
-from app.engine.semantic_linter import (
+from app.engine.quality.preflight_auditor import audit_project_dependencies
+from app.engine.quality.semantic_linter import (
     compute_flesch_metrics,
     detect_and_strip_cliches,
     lint_copy_or_educational_content,
 )
-from app.engine.state import VentureState
+from app.engine.runtime.state import VentureState
 
 
 def test_preflight_auditor_detects_hallucinations(tmp_path: Path) -> None:

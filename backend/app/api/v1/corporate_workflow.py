@@ -11,9 +11,9 @@ from app.core.logger import logger
 from app.db.corporate_repo import corporate_repo
 from app.db.pipeline_repo import pipeline_repo
 from app.db.workflow_repo import workflow_repo
-from app.engine.corporate_schemas import CorporateMessageCreate
-from app.engine.event_bus import corporate_event_bus
-from app.engine.workflow_schemas import (
+from app.engine.schemas.corporate_schemas import CorporateMessageCreate
+from app.engine.runtime.event_bus import corporate_event_bus
+from app.engine.schemas.workflow_schemas import (
     PipelineCreate,
     PipelineResponse,
     PipelineStageItem,
@@ -132,12 +132,13 @@ async def reset_workflow_pipeline(
     try:
         main_stages = await workflow_repo.get_workflow_pipeline("branch_main", pipeline_id=pipeline_id)
         branch_roles = await corporate_repo.get_roles(branch_id=branch_id)
-        slug_to_role_id = {r["slug"]: r["id"] for r in branch_roles}
+        name_to_role_id = {r["name"].lower().strip(): r["id"] for r in branch_roles}
         mapped_stages = []
         for stg in main_stages:
             stg_dict = dict(stg)
-            if stg_dict.get("role_slug") and stg_dict["role_slug"] in slug_to_role_id:
-                stg_dict["role_id"] = slug_to_role_id[stg_dict["role_slug"]]
+            role_name = (stg_dict.get("role_name") or "").lower().strip()
+            if role_name and role_name in name_to_role_id:
+                stg_dict["role_id"] = name_to_role_id[role_name]
             mapped_stages.append(stg_dict)
         updated = await workflow_repo.save_workflow_pipeline_stages(branch_id, mapped_stages, pipeline_id=pipeline_id)
         return [PipelineStageResponse(**s) for s in updated]

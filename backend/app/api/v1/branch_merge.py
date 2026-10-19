@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
 from app.core.logger import logger
-from app.engine.branch_merge import branch_merge_engine
+from app.engine.governance.branch_merge import branch_merge_engine
 
 router = APIRouter(prefix="/corporate/branches", tags=["Branch Merging"])
 

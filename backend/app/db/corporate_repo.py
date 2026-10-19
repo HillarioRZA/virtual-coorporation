@@ -122,8 +122,8 @@ class CorporateRepository:
         branch_id: str,
         division_id: str,
         name: str,
-        slug: str,
         system_prompt_template: str,
+        job_description: Optional[str] = "",
         model_provider: str = "openrouter",
         model_name: str = "deepseek/deepseek-r1:free",
         temperature: float = 0.2,
@@ -133,13 +133,13 @@ class CorporateRepository:
         thinking_level: str = "medium",
         custom_path: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Mendaftarkan role karyawan AI baru."""
+        """Mendaftarkan role karyawan AI baru tanpa slug."""
         return await self.roles.create_role(
             branch_id=branch_id,
             division_id=division_id,
             name=name,
-            slug=slug,
             system_prompt_template=system_prompt_template,
+            job_description=job_description or "",
             model_provider=model_provider,
             model_name=model_name,
             temperature=temperature,
@@ -153,7 +153,9 @@ class CorporateRepository:
     async def update_role(
         self,
         role_id: str,
+        division_id: Optional[str] = None,
         name: Optional[str] = None,
+        job_description: Optional[str] = None,
         system_prompt_template: Optional[str] = None,
         model_provider: Optional[str] = None,
         model_name: Optional[str] = None,
@@ -168,7 +170,9 @@ class CorporateRepository:
         """Memperbarui konfigurasi role karyawan AI."""
         return await self.roles.update_role(
             role_id=role_id,
+            division_id=division_id,
             name=name,
+            job_description=job_description,
             system_prompt_template=system_prompt_template,
             model_provider=model_provider,
             model_name=model_name,

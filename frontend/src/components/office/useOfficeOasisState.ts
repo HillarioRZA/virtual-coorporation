@@ -6,6 +6,7 @@ import { ProjectSummary } from "../../lib/types/api";
 import { AgentSpatialData, OasisStreamCategory, OasisStreamEvent } from "../../lib/types/office";
 import { DEFAULT_OFFICE_AGENTS } from "./officeConstants";
 import { getOfficeWsUrl, dispatchOfficeDirective, holdOfficeTicket } from "../../lib/officeApi";
+import { fetchRoles } from "../../lib/corporateApi";
 
 export function useOfficeOasisState(initialProjectId = "all") {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
@@ -22,6 +23,32 @@ export function useOfficeOasisState(initialProjectId = "all") {
 
   useEffect(() => {
     fetchProjects().then((res) => { if (res?.length) setProjects(res); }).catch(() => {});
+    fetchRoles()
+      .then((corpRoles) => {
+        if (corpRoles && corpRoles.length > 0) {
+          setAgents((prev) => {
+            const founder = prev.find((p) => p.role_id === "role_founder") || DEFAULT_OFFICE_AGENTS[0];
+            const liveAgents: AgentSpatialData[] = corpRoles.map((r) => {
+              const existing = prev.find((p) => p.role_id === r.id);
+              return {
+                role_id: r.id,
+                name: r.name,
+                tier: existing?.tier || (r.is_system_default ? "EXECUTIVE" : "WORKER_SPECIALIST"),
+                activity_state: existing?.activity_state || "IDLE",
+                active_file: existing?.active_file || "",
+                scratchpad: existing?.scratchpad || r.job_description || "Standby menunggu delegasi tiket...",
+                speech_bubble: existing?.speech_bubble,
+                color: existing?.color || "#06b6d4",
+              };
+            });
+            if (!liveAgents.some((a) => a.role_id === "role_founder")) {
+              liveAgents.unshift(founder);
+            }
+            return liveAgents;
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -93,11 +120,27 @@ export function useOfficeOasisState(initialProjectId = "all") {
   const dispatchDirective = useCallback(async (mentions: string[], message: string, attachments?: import("../../lib/types/office").AttachmentItem[]) => {
     if (mentions.includes("all")) { setAllHandsActive(true); return; }
     const proj = selectedProjectId === "all" ? (projects[0]?.project_id || "default_venture") : selectedProjectId;
-    setStreamEvents((prev) => [{ id: `dir_${Date.now()}`, projectId: proj, senderRoleId: "role_founder", recipientRoleId: mentions[0], ticketId: replyContext?.ticketId, eventType: "DIRECTIVE", content: `Instruksi Founder ke ${mentions.join(", ")}: "${message}"`, category: "EXECUTION", timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), attachments }, ...prev]);
+    const targetNames = mentions.map((m) => {
+      if (m === "all") return "All Hands";
+      const matched = agents.find((a) => a.role_id === m);
+      return matched ? matched.name : m.replace(/^role_/, "").replace(/_/g, " ");
+    });
+    setStreamEvents((prev) => [{
+      id: `dir_${Date.now()}`,
+      projectId: proj,
+      senderRoleId: "role_founder",
+      recipientRoleId: mentions[0],
+      ticketId: replyContext?.ticketId,
+      eventType: "DIRECTIVE",
+      content: `Instruksi Founder ke ${targetNames.join(", ")}: "${message}"`,
+      category: "EXECUTION",
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      attachments,
+    }, ...prev]);
     setAgents((prev) => prev.map((a) => mentions.includes(a.role_id) ? { ...a, activity_state: "CONSULTING", speech_bubble: "🤔 Menelaah arahan..." } : a));
     await dispatchOfficeDirective({ projectId: proj, mentions, instruction: message, ticketId: replyContext?.ticketId, attachments });
     setReplyContext(null);
-  }, [selectedProjectId, projects, replyContext]);
+  }, [selectedProjectId, projects, replyContext, agents]);
 
   return { projects, selectedProjectId, setSelectedProjectId, categoryFilter, setCategoryFilter, agents, selectedAgent, setSelectedAgent, streamEvents, allHandsActive, setAllHandsActive, replyContext, setReplyContext, connected, triggerInterrupt, handleHoldTicket, dispatchDirective };
 }

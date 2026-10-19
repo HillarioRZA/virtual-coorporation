@@ -33,6 +33,20 @@ LEAN_TOOL_DEFINITIONS: Dict[str, Dict[str, Union[str, Dict[str, str]]]] = {
             "code": "string (diperlukan jika action='synthesize')",
         },
     },
+    "lock_test_suite": {
+        "desc": "Menyimpan skenario uji TDD, mengunci file (chmod 444), dan mendaftarkan read-only guardrail.",
+        "params": {
+            "test_filename": "string (misal: 'test_api.py')",
+            "test_content": "string (blok kode pengujian Pytest/Jest)",
+        },
+    },
+    "write_code_bundle": {
+        "desc": "Menulis kode implementasi frontend/backend dengan proteksi read-only.",
+        "params": {
+            "bundle_type": "'frontend' | 'backend'",
+            "code_map": "object (kamus berkas dan isi kodenya)",
+        },
+    },
 }
 
 # Pemetaan perkakas berdasarkan nomor atau nama tahapan workflow
@@ -48,8 +62,9 @@ STAGE_TOOLS_MAPPING: Dict[str, List[str]] = {
         "git_diff_summary",
         "search_codebase",
         "runtime_tool_builder",
+        "write_code_bundle",
     ],
-    "qa": ["validate_api_contract", "git_diff_summary", "search_codebase"],
+    "qa": ["validate_api_contract", "git_diff_summary", "search_codebase", "lock_test_suite"],
     "deployment": ["git_diff_summary", "runtime_tool_builder"],
 }
 

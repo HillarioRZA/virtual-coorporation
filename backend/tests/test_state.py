@@ -4,7 +4,7 @@ Menguji serialisasi, validasi skema ketat, dan penanganan kesalahan.
 """
 
 import pytest
-from app.engine.schemas import (
+from app.engine.schemas.schemas import (
     BusinessBriefSchema,
     ComponentSpec,
     PRDContractSchema,
@@ -13,7 +13,7 @@ from app.engine.schemas import (
     UIComponentSpecSchema,
     UserStory,
 )
-from app.engine.state import VentureState
+from app.engine.runtime.state import VentureState
 
 
 def test_business_brief_schema_valid() -> None:

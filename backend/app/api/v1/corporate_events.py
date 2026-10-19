@@ -8,14 +8,14 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, Query, status
 
 from app.core.logger import logger
-from app.engine.corporate_schemas import (
+from app.engine.schemas.corporate_schemas import (
     CorporateMessageCreate,
     CorporateMessageResponse,
 )
-from app.engine.dispatcher import task_dispatcher
-from app.engine.event_bus import corporate_event_bus
-from app.engine.memory import MemoryManager
-from app.engine.state import VentureState
+from app.engine.runtime.dispatcher import task_dispatcher
+from app.engine.runtime.event_bus import corporate_event_bus
+from app.engine.memory.memory import MemoryManager
+from app.engine.runtime.state import VentureState
 
 router = APIRouter(prefix="/corporate", tags=["Corporate Event Bus & Dispatcher"])
 

@@ -7,15 +7,15 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.api.v1.project_artifacts import router as artifacts_router
-from app.engine.artifact_compiler import (
+from app.engine.tools.artifact_compiler import (
     compile_ad_campaign_bundle,
     compile_ebook_document,
     compile_presentation_deck,
     list_project_artifacts,
 )
-from app.engine.context_builder import ContextBuilder
-from app.engine.state import VentureState
-from app.engine.state_handoff import build_cross_division_manifest
+from app.engine.memory.context_builder import ContextBuilder
+from app.engine.runtime.state import VentureState
+from app.engine.memory.state_handoff import build_cross_division_manifest
 from fastapi import FastAPI
 
 

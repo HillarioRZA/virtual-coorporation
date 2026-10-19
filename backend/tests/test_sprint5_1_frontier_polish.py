@@ -12,10 +12,10 @@ import pytest_asyncio
 
 from app.core.config import settings
 from app.db.init_db import init_database
-from app.engine.agent_tool_dispatcher import agent_tool_dispatcher
-from app.engine.financial_guardrail import financial_guardrail
-from app.engine.flight_recorder import agent_flight_recorder
-from app.engine.tool_synthesizer import tool_synthesizer
+from app.engine.tools.agent_tool_dispatcher import agent_tool_dispatcher
+from app.engine.governance.financial_guardrail import financial_guardrail
+from app.engine.governance.flight_recorder import agent_flight_recorder
+from app.engine.tools.tool_synthesizer import tool_synthesizer
 from app.engine.tools.code_search import code_searcher
 from main import app
 

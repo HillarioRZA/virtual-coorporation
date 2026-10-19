@@ -18,8 +18,9 @@ import {
   Sparkles,
   Columns3,
   Brain,
+  Trash2,
 } from "lucide-react";
-import { fetchProjects, createProject } from "../lib/api";
+import { fetchProjects, createProject, deleteProject } from "../lib/api";
 import { ProjectSummary, StageName } from "../lib/types/api";
 
 function getStageBadge(stage: StageName) {
@@ -54,6 +55,26 @@ export default function PortfolioHubPage() {
   const [name, setName] = useState("");
   const [founderIdea, setFounderIdea] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDeleteProject = async (projectId: string, projectName: string) => {
+    if (
+      !window.confirm(
+        `Hapus proyek "${projectName}" (${projectId}) beserta seluruh tiket, workspace, dan riwayatnya secara permanen? Tindakan ini tidak dapat dibatalkan.`
+      )
+    ) {
+      return;
+    }
+    try {
+      setDeletingId(projectId);
+      await deleteProject(projectId);
+      await loadData();
+    } catch (err: any) {
+      alert(`Gagal menghapus proyek: ${err.message || err}`);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -221,9 +242,19 @@ export default function PortfolioHubPage() {
                         </h3>
                         <p className="text-[11px] text-slate-500 font-mono mt-0.5">{proj.project_id}</p>
                       </div>
-                      <span className={`text-[10px] font-mono font-semibold px-2.5 py-1 rounded-full border ${badge.style}`}>
-                        {badge.label}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`text-[10px] font-mono font-semibold px-2.5 py-1 rounded-full border ${badge.style}`}>
+                          {badge.label}
+                        </span>
+                        <button
+                          onClick={() => handleDeleteProject(proj.project_id, proj.name)}
+                          disabled={deletingId === proj.project_id}
+                          title="Hapus Proyek Permanen"
+                          className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-colors disabled:opacity-50"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">

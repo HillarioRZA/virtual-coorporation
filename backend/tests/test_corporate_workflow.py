@@ -138,9 +138,9 @@ async def test_kanban_seeding_respects_reordered_workflow(tmp_path: Path) -> Non
     branch_id = forked["id"]
 
     roles = await corporate_repo.get_roles(branch_id=branch_id, custom_path=db_file)
-    role_be = next(r for r in roles if r["slug"] == "backend")
-    role_fe = next(r for r in roles if r["slug"] == "frontend")
-    other_roles = [r for r in roles if r["slug"] not in ("backend", "frontend")]
+    role_be = next(r for r in roles if "be" in r["id"].lower() or "backend" in r["name"].lower())
+    role_fe = next(r for r in roles if "fe" in r["id"].lower() or "frontend" in r["name"].lower())
+    other_roles = [r for r in roles if r["id"] not in (role_be["id"], role_fe["id"])]
 
     # Susun ulang: Backend nomor 1, Frontend nomor 2, sisanya mengikuti
     custom_order = [role_be["id"], role_fe["id"]] + [r["id"] for r in other_roles]

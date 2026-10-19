@@ -147,10 +147,10 @@ export default function DivisionModal({
           )}
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Deskripsi Mandat</label>
+            <label className="block text-xs font-medium text-slate-300 mb-1">Tujuan / Purpose Divisi</label>
             <textarea
               rows={2}
-              placeholder="Mandat atau produk mandiri yang dihasilkan divisi ini..."
+              placeholder="Tujuan utama dan mandat strategis yang dijalankan divisi ini..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-white/30"

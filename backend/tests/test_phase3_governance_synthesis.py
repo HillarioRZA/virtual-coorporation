@@ -5,10 +5,10 @@ Unit Test Suite untuk Fase 3 (Tool Synthesizer, Episodic Memory, Financial Guard
 from pathlib import Path
 import pytest
 
-from app.engine.tool_synthesizer import DynamicToolRegistry
-from app.engine.episodic_memory import CrossVentureEpisodicMemory
-from app.engine.financial_guardrail import FinancialCircuitBreaker
-from app.engine.flight_recorder import AgentFlightRecorder
+from app.engine.tools.tool_synthesizer import DynamicToolRegistry
+from app.engine.memory.episodic_memory import CrossVentureEpisodicMemory
+from app.engine.governance.financial_guardrail import FinancialCircuitBreaker
+from app.engine.governance.flight_recorder import AgentFlightRecorder
 
 
 @pytest.mark.asyncio

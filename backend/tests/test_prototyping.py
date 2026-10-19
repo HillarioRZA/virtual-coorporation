@@ -10,19 +10,19 @@ import pytest
 import pytest_asyncio
 
 from app.db.init_db import init_database
-from app.engine.memory import MemoryManager
+from app.engine.memory.memory import MemoryManager
 from app.engine.nodes.frontend import FrontendCodeBundle, frontend_prototyping_node, write_frontend_files
 from app.engine.nodes.pm import pm_spec_freeze_node
 from app.engine.nodes.prototyping import mock_prototyping_phase_node, prd_and_specs_phase_node
 from app.engine.nodes.ui_ux import ui_ux_spec_node
-from app.engine.routers import (
+from app.engine.runtime.routers import (
     apply_gate_decision,
     router_gate_2,
     router_mock_prototyping,
     router_prd_and_specs,
 )
-from app.engine.state import VentureState
-from app.engine.state_machine import NativeStateMachine
+from app.engine.runtime.state import VentureState
+from app.engine.runtime.state_machine import NativeStateMachine
 from app.gateway.client import UnifiedLLMClient
 
 

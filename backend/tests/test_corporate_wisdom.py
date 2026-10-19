@@ -9,14 +9,14 @@ from httpx import AsyncClient, ASGITransport
 from main import app
 from app.db.init_db import init_database
 from app.db.wisdom_repo import CorporateWisdomRepo
-from app.engine.vector_store import (
+from app.engine.memory.vector_store import (
     DeterministicSemanticVectorizer,
     cosine_similarity,
     SovereignVectorStore,
 )
-from app.engine.wisdom_engine import CorporateWisdomEngine
-from app.engine.context_builder import ContextBuilder
-from app.engine.state import VentureState
+from app.engine.memory.wisdom_engine import CorporateWisdomEngine
+from app.engine.memory.context_builder import ContextBuilder
+from app.engine.runtime.state import VentureState
 
 
 @pytest.fixture

@@ -10,21 +10,21 @@ import aiosqlite
 from app.core.logger import logger
 
 BASELINE_TECH_CORE_PRESETS = [
-    ("pm", "Product Requirement Document (PRD)", "Penajaman spesifikasi fitur, user stories, dan acceptance criteria."),
-    ("ux", "UI/UX Wireframe & Design System", "Perancangan arketipe antarmuka, tata letak, dan design tokens."),
-    ("frontend", "Next.js Frontend Prototyping", "Membangun komponen UI interaktif dan API client mock."),
-    ("backend", "FastAPI Backend Implementation", "Mengimplementasikan endpoint API dan skema database relasional."),
-    ("qa", "AST Security & Vulnerability Audit", "Memindai celah keamanan OWASP dan pengujian fungsional."),
+    ("role_pm", "Product Requirement Document (PRD)", "Penajaman spesifikasi fitur, user stories, dan acceptance criteria."),
+    ("role_ux", "UI/UX Wireframe & Design System", "Perancangan arketipe antarmuka, tata letak, dan design tokens."),
+    ("role_fe", "Next.js Frontend Prototyping", "Membangun komponen UI interaktif dan API client mock."),
+    ("role_be", "FastAPI Backend Implementation", "Mengimplementasikan endpoint API dan skema database relasional."),
+    ("role_qa", "AST Security & Vulnerability Audit", "Memindai celah keamanan OWASP dan pengujian fungsional."),
 ]
 
 TASK_ROLE_PRESETS: Dict[str, tuple[str, str]] = {
-    "cos": ("Business Brief & Strategic Ideation", "Merumuskan value proposition dan model monetisasi."),
-    "cto": ("System Architecture & OpenAPI Spec", "Menentukan stack teknologi dan spesifikasi kontrak API."),
-    "pm": ("Product Requirement Document (PRD)", "Penajaman spesifikasi fitur dan user stories."),
-    "ux": ("UI/UX Wireframe & Design System", "Perancangan tata letak dan arketipe antarmuka."),
-    "frontend": ("Next.js Frontend Prototyping", "Membangun komponen UI interaktif dan API client."),
-    "backend": ("FastAPI Backend Implementation", "Mengimplementasikan endpoint API dan skema database."),
-    "qa": ("AST Security & Vulnerability Audit", "Memindai celah keamanan OWASP dan validasi kode."),
+    "role_cos": ("Business Brief & Strategic Ideation", "Merumuskan value proposition dan model monetisasi."),
+    "role_cto": ("System Architecture & OpenAPI Spec", "Menentukan stack teknologi dan spesifikasi kontrak API."),
+    "role_pm": ("Product Requirement Document (PRD)", "Penajaman spesifikasi fitur dan user stories."),
+    "role_ux": ("UI/UX Wireframe & Design System", "Perancangan tata letak dan arketipe antarmuka."),
+    "role_fe": ("Next.js Frontend Prototyping", "Membangun komponen UI interaktif dan API client."),
+    "role_be": ("FastAPI Backend Implementation", "Mengimplementasikan endpoint API dan skema database."),
+    "role_qa": ("AST Security & Vulnerability Audit", "Memindai celah keamanan OWASP dan validasi kode."),
 }
 
 
@@ -49,17 +49,16 @@ async def _seed_main_baseline_tickets(
     custom_path: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """Menghasilkan 5 tiket standar emas Tech Core pada branch_main."""
-    roles_q = "SELECT id, division_id, slug FROM corporate_roles WHERE branch_id = 'branch_main';"
+    roles_q = "SELECT id, division_id, name FROM corporate_roles WHERE branch_id = 'branch_main';"
     async with conn.execute(roles_q) as cur:
-        roles_map = {r["slug"]: dict(r) for r in await cur.fetchall()}
+        roles_map = {r["id"]: dict(r) for r in await cur.fetchall()}
 
-    div_eng_id = roles_map.get("frontend", {}).get("division_id", "div_eng")
+    div_eng_id = roles_map.get("role_fe", {}).get("division_id", "div_eng")
     created: List[Dict[str, Any]] = []
     prev_id: Optional[str] = None
 
-    for idx, (slug, title, desc) in enumerate(BASELINE_TECH_CORE_PRESETS):
-        r_info = roles_map.get(slug)
-        role_id = r_info["id"] if r_info else None
+    for idx, (role_id, title, desc) in enumerate(BASELINE_TECH_CORE_PRESETS):
+        r_info = roles_map.get(role_id)
         div_id = r_info["division_id"] if r_info else div_eng_id
 
         t = await repo.create_ticket(
@@ -97,7 +96,7 @@ async def _seed_custom_branch_tickets(
     if target_pipe_id:
         stages_q = """
             SELECT s.id, s.stage_index, s.stage_type, s.role_id, s.ceo_gate_type,
-                   s.custom_label, s.custom_instructions, r.slug AS role_slug, r.division_id
+                   s.custom_label, s.custom_instructions, r.name AS role_name, r.division_id
             FROM corporate_pipeline_stages s
             LEFT JOIN corporate_roles r ON s.role_id = r.id
             WHERE s.branch_id = ? AND s.pipeline_id = ?
@@ -108,7 +107,7 @@ async def _seed_custom_branch_tickets(
     else:
         stages_q = """
             SELECT s.id, s.stage_index, s.stage_type, s.role_id, s.ceo_gate_type,
-                   s.custom_label, s.custom_instructions, r.slug AS role_slug, r.division_id
+                   s.custom_label, s.custom_instructions, r.name AS role_name, r.division_id
             FROM corporate_pipeline_stages s
             LEFT JOIN corporate_roles r ON s.role_id = r.id
             WHERE s.branch_id = ?
@@ -125,9 +124,8 @@ async def _seed_custom_branch_tickets(
             is_ceo = stg["stage_type"] == "CEO_GATE"
             div_id = "div_exec" if is_ceo else (stg["division_id"] or "div_eng")
             role_id = None if is_ceo else stg["role_id"]
-            slug = "ceo" if is_ceo else (stg["role_slug"] or "unknown")
 
-            d_title, d_desc = TASK_ROLE_PRESETS.get(slug, (f"Tahap #{idx+1}", "Tugas operasional."))
+            d_title, d_desc = TASK_ROLE_PRESETS.get(role_id or "", (stg["custom_label"] or f"Tahap #{idx+1}", stg["custom_instructions"] or "Tugas operasional."))
             title = stg["custom_label"] or d_title
             desc = stg["custom_instructions"] or d_desc
 
@@ -148,7 +146,7 @@ async def _seed_custom_branch_tickets(
 
     # Fallback ke corporate_roles order_index
     fallback_q = (
-        "SELECT id, division_id, name, slug FROM corporate_roles "
+        "SELECT id, division_id, name FROM corporate_roles "
         "WHERE branch_id = ? AND is_active = 1 "
         "ORDER BY COALESCE(order_index, 0) ASC, created_at ASC;"
     )
@@ -156,7 +154,7 @@ async def _seed_custom_branch_tickets(
         ordered_roles = await cur.fetchall()
 
     for idx, role in enumerate(ordered_roles):
-        d_title, d_desc = TASK_ROLE_PRESETS.get(role["slug"], (f"Tahap {role['name']}", f"Tugas {role['name']}"))
+        d_title, d_desc = TASK_ROLE_PRESETS.get(role["id"], (f"Tahap {role['name']}", f"Tugas {role['name']}"))
         t = await repo.create_ticket(
             branch_id=branch_id,
             project_id=project_id,

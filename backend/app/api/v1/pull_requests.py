@@ -10,8 +10,8 @@ from pydantic import BaseModel, Field
 
 from app.core.logger import logger
 from app.db.pr_repo import pr_repo
-from app.engine.peer_reviewer import peer_reviewer
-from app.engine.diff_engine import compute_multi_file_diff
+from app.engine.quality.peer_reviewer import peer_reviewer
+from app.engine.quality.diff_engine import compute_multi_file_diff
 
 
 router = APIRouter(prefix="/pull-requests", tags=["pull-requests"])

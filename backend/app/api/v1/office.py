@@ -9,10 +9,11 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.logger import logger
-from app.engine.corporate_schemas import CorporateMessageCreate
-from app.engine.event_bus import corporate_event_bus
-from app.engine.office_dispatch import dispatch_office_agent_response
-from app.engine.office_simulator import office_sim_engine
+from app.db.role_repo import role_repo
+from app.engine.schemas.corporate_schemas import CorporateMessageCreate
+from app.engine.runtime.event_bus import corporate_event_bus
+from app.engine.office.office_dispatch import dispatch_office_agent_response
+from app.engine.office.office_simulator import office_sim_engine
 
 router = APIRouter(prefix="/corporate/office", tags=["Corporate Office Simulator"])
 
@@ -105,21 +106,25 @@ async def dispatch_office_directive(payload: OfficeDirectiveRequest) -> Dict[str
             }
 
         # 2. Scoped Single-Agent Interruption (hemat context window & token)
-        for role in payload.mentions:
-            office_sim_engine.intervene_agent(role, payload.instruction)
+        for role_ident in payload.mentions:
+            role_info = await role_repo.resolve_role(role_ident)
+            target_role_id = role_info["id"] if role_info else role_ident
+            target_name = role_info["name"] if role_info else role_ident.replace("role_", "").replace("_", " ").title()
+
+            office_sim_engine.intervene_agent(target_role_id, payload.instruction)
             await corporate_event_bus.publish(CorporateMessageCreate(
                 branch_id="branch_main",
                 project_id=payload.project_id,
                 channel_type="LOUNGE",
                 sender_role_id="role_founder",
-                recipient_role_id=role,
+                recipient_role_id=target_role_id,
                 ticket_id=payload.ticket_id,
                 event_type="DIRECTIVE_INTERRUPTION",
-                content=f"Instruksi Founder ke {role}: \"{payload.instruction}\"",
+                content=f"Instruksi Founder ke {target_name}: \"{payload.instruction}\"",
             ))
             asyncio.create_task(
                 dispatch_office_agent_response(
-                    payload.project_id, role, payload.instruction, payload.attachments
+                    payload.project_id, target_role_id, payload.instruction, payload.attachments
                 )
             )
 

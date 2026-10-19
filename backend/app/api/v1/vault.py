@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from app.core.logger import logger
 from app.core.security import SecretVaultManager
-from app.engine.memory import MemoryManager
+from app.engine.memory.memory import MemoryManager
 
 router = APIRouter(prefix="/projects", tags=["Secret Vault"])
 

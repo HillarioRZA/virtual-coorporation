@@ -5,13 +5,13 @@ import tempfile
 from typing import Any, Dict, List
 import pytest
 
-from app.engine.ast_patcher import (
+from app.engine.tools.ast_patcher import (
     apply_ast_patch_to_file,
     apply_search_replace_blocks,
     validate_python_syntax,
 )
-from app.engine.diff_engine import validate_and_preview_patch
-from app.engine.model_router import SovereignModelRouter
+from app.engine.quality.diff_engine import validate_and_preview_patch
+from app.engine.runtime.model_router import SovereignModelRouter
 
 
 def test_apply_search_replace_single_block() -> None:

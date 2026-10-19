@@ -9,7 +9,7 @@ from typing import Any, Dict
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import FileResponse
 from app.core.logger import logger
-from app.engine.artifact_compiler import PROJECTS_OUTPUT_DIR, list_project_artifacts
+from app.engine.tools.artifact_compiler import PROJECTS_OUTPUT_DIR, list_project_artifacts
 
 router = APIRouter(prefix="/projects", tags=["Project Artifacts"])
 

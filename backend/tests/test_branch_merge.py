@@ -12,8 +12,8 @@ from app.db.init_db import init_database
 from app.db.branch_repo import branch_repo
 from app.db.division_repo import division_repo
 from app.db.role_repo import role_repo
-from app.engine.branch_merge import branch_merge_engine
-from app.engine.corporate_schemas import RoleCreate
+from app.engine.governance.branch_merge import branch_merge_engine
+from app.engine.schemas.corporate_schemas import RoleCreate
 
 
 @pytest.fixture
@@ -64,7 +64,6 @@ async def test_preview_and_fast_forward_merge(clean_db):
         branch_id=feat_b["id"],
         division_id=div_id,
         name="ML Engineer",
-        slug="ml-engineer",
         system_prompt_template="You are ML Engineer.",
         model_name="deepseek/deepseek-r1:free",
         custom_path=clean_db,
@@ -76,7 +75,7 @@ async def test_preview_and_fast_forward_merge(clean_db):
     )
     assert preview["has_conflicts"] is False
     assert len(preview["added_roles"]) == 1
-    assert preview["added_roles"][0]["slug"] == "ml-engineer"
+    assert preview["added_roles"][0]["name"] == "ML Engineer"
 
     # 4. Execute merge
     result = await branch_merge_engine.execute_merge(
@@ -87,7 +86,7 @@ async def test_preview_and_fast_forward_merge(clean_db):
 
     # 5. Verifikasi role baru telah tersinkron di branch_main
     main_roles = await role_repo.get_roles("branch_main", custom_path=clean_db)
-    assert any(r["slug"] == "ml-engineer" for r in main_roles)
+    assert any(r["name"] == "ML Engineer" for r in main_roles)
 
 
 @pytest.mark.asyncio
@@ -104,8 +103,8 @@ async def test_three_way_merge_conflict_resolution(clean_db):
     main_roles = await role_repo.get_roles("branch_main", custom_path=clean_db)
     feat_roles = await role_repo.get_roles(feat_b["id"], custom_path=clean_db)
 
-    cto_main = next(r for r in main_roles if r["slug"] == "cto")
-    cto_feat = next(r for r in feat_roles if r["slug"] == "cto")
+    cto_main = next(r for r in main_roles if "cto" in r["id"].lower() or "Chief Technology" in r["name"])
+    cto_feat = next(r for r in feat_roles if "cto" in r["id"].lower() or "Chief Technology" in r["name"])
 
     # Modifikasi di main
     await role_repo.update_role(

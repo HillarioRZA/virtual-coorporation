@@ -80,7 +80,7 @@ class BranchRepository:
                 # 2. Ambil snapshot peran sumber untuk LCA merge
                 async with conn.execute("SELECT * FROM corporate_roles WHERE branch_id = ?;", (source_branch_id,)) as cur:
                     source_roles = await cur.fetchall()
-                snap = json.dumps({r["slug"]: {"model_name": r["model_name"], "temperature": r["temperature"]} for r in source_roles})
+                snap = json.dumps({r["name"]: {"model_name": r["model_name"], "temperature": r["temperature"]} for r in source_roles})
 
                 await conn.execute(
                     "INSERT INTO corporate_branches (id, name, slug, description, is_active_main, parent_branch_id, roles_snapshot) VALUES (?, ?, ?, ?, 0, ?, ?);",
@@ -107,9 +107,11 @@ class BranchRepository:
                     role_map[r["id"]] = new_role_id
                     target_div_id = div_map.get(r["division_id"])
                     if target_div_id:
+                        jd = r["job_description"] if "job_description" in r.keys() else ""
+                        tl = r["thinking_level"] if "thinking_level" in r.keys() else "medium"
                         await conn.execute(
-                            "INSERT INTO corporate_roles (id, branch_id, division_id, name, slug, system_prompt_template, model_provider, model_name, temperature, tool_permissions, token_budget_per_task, is_active, is_system_default, order_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?);",
-                            (new_role_id, new_branch_id, target_div_id, r["name"], r["slug"], r["system_prompt_template"], r["model_provider"], r["model_name"], r["temperature"], r["tool_permissions"], r["token_budget_per_task"], r["is_active"], r["order_index"] if "order_index" in r.keys() else 0),
+                            "INSERT INTO corporate_roles (id, branch_id, division_id, name, job_description, system_prompt_template, model_provider, model_name, temperature, tool_permissions, token_budget_per_task, is_active, is_system_default, order_index, thinking_level) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?);",
+                            (new_role_id, new_branch_id, target_div_id, r["name"], jd, r["system_prompt_template"], r["model_provider"], r["model_name"], r["temperature"], r["tool_permissions"], r["token_budget_per_task"], r["is_active"], r["order_index"] if "order_index" in r.keys() else 0, tl),
                         )
 
                 # 5. Kloning pipeline

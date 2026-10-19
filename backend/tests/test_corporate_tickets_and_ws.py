@@ -13,8 +13,8 @@ import pytest_asyncio
 from app.core.config import settings
 from app.db.init_db import init_database
 from app.db.ticket_repo import ticket_repo
-from app.engine.dispatcher import task_dispatcher
-from app.engine.state import VentureState
+from app.engine.runtime.dispatcher import task_dispatcher
+from app.engine.runtime.state import VentureState
 from app.gateway.client import UnifiedLLMClient
 from main import app
 

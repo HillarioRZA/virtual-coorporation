@@ -8,9 +8,9 @@ from fastapi import APIRouter, HTTPException, Query, status
 
 from app.core.logger import logger
 from app.db.ticket_repo import ticket_repo
-from app.engine.corporate_schemas import TicketCreate, TicketResponse, TicketUpdate
-from app.engine.event_bus import corporate_event_bus
-from app.engine.corporate_schemas import CorporateMessageCreate
+from app.engine.schemas.corporate_schemas import TicketCreate, TicketResponse, TicketUpdate
+from app.engine.runtime.event_bus import corporate_event_bus
+from app.engine.schemas.corporate_schemas import CorporateMessageCreate
 
 router = APIRouter(prefix="/corporate/tickets", tags=["Corporate Tickets & Kanban"])
 

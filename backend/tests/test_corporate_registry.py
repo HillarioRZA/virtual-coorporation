@@ -55,14 +55,14 @@ async def test_default_corporate_seeding(test_client: httpx.AsyncClient) -> None
     role_res = await test_client.get("/api/v1/corporate/roles?branch_id=branch_main")
     assert role_res.status_code == 200
     roles = role_res.json()
-    role_slugs = [r["slug"] for r in roles]
-    assert "cos" in role_slugs
-    assert "cto" in role_slugs
-    assert "pm" in role_slugs
-    assert "ux" in role_slugs
-    assert "frontend" in role_slugs
-    assert "backend" in role_slugs
-    assert "qa" in role_slugs
+    role_ids = [r["id"] for r in roles]
+    assert "role_cos" in role_ids
+    assert "role_cto" in role_ids
+    assert "role_pm" in role_ids
+    assert "role_ux" in role_ids
+    assert "role_fe" in role_ids
+    assert "role_be" in role_ids
+    assert "role_qa" in role_ids
 
 
 @pytest.mark.asyncio
@@ -107,7 +107,7 @@ async def test_deactivate_and_modify_role_in_forked_branch(test_client: httpx.As
 
     # 2. Ambil role QA di branch kustom
     roles_res = await test_client.get(f"/api/v1/corporate/roles?branch_id={forked_branch_id}")
-    qa_forked = next(r for r in roles_res.json() if r["slug"] == "qa")
+    qa_forked = next(r for r in roles_res.json() if "qa" in r["id"].lower() or "qa" in r["name"].lower())
     qa_forked_id = qa_forked["id"]
 
     # 3. Nonaktifkan QA role di branch kustom
@@ -122,7 +122,7 @@ async def test_deactivate_and_modify_role_in_forked_branch(test_client: httpx.As
 
     # 4. Verifikasi bahwa pada branch_main, role QA asli TETAP AKTIF (is_active = True)
     main_roles_res = await test_client.get("/api/v1/corporate/roles?branch_id=branch_main")
-    main_qa = next(r for r in main_roles_res.json() if r["slug"] == "qa")
+    main_qa = next(r for r in main_roles_res.json() if "qa" in r["id"].lower() or "qa" in r["name"].lower())
     assert main_qa["is_active"] is True
     assert main_qa["token_budget_per_task"] == 8000
 

@@ -8,8 +8,8 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.api.v1 import api_v1_router
-from app.engine.office_layout import get_canonical_campus_layout, auto_slot_role, SpatialTier
-from app.engine.office_simulator import office_sim_engine
+from app.engine.office.office_layout import get_canonical_campus_layout, auto_slot_role, SpatialTier
+from app.engine.office.office_simulator import office_sim_engine
 
 test_app = FastAPI()
 test_app.include_router(api_v1_router, prefix="/api/v1")

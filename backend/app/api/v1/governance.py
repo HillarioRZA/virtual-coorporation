@@ -8,10 +8,10 @@ from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from app.core.logger import logger
-from app.engine.circuit_breaker import agent_circuit_breaker
-from app.engine.corporate_schemas import CorporateMessageCreate
-from app.engine.event_bus import corporate_event_bus
-from app.engine.workflow_schemas import (
+from app.engine.governance.circuit_breaker import agent_circuit_breaker
+from app.engine.schemas.corporate_schemas import CorporateMessageCreate
+from app.engine.runtime.event_bus import corporate_event_bus
+from app.engine.schemas.workflow_schemas import (
     CircuitBreakerOverrideRequest,
     CircuitBreakerStatus,
     ExecutiveDecisionRequest,

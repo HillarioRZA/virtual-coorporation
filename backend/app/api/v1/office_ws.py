@@ -9,8 +9,8 @@ from typing import Any, Dict
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.core.logger import logger
-from app.engine.event_bus import corporate_event_bus
-from app.engine.office_simulator import office_sim_engine
+from app.engine.runtime.event_bus import corporate_event_bus
+from app.engine.office.office_simulator import office_sim_engine
 
 router = APIRouter(tags=["Office Simulator WebSocket"])
 

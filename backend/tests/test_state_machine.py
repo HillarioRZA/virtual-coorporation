@@ -5,8 +5,8 @@ Menguji registrasi node, perutean transisi state, checkpointer, dan circuit brea
 
 from typing import Any, Dict
 import pytest
-from app.engine.state import VentureState
-from app.engine.state_machine import NativeStateMachine
+from app.engine.runtime.state import VentureState
+from app.engine.runtime.state_machine import NativeStateMachine
 
 
 @pytest.mark.asyncio

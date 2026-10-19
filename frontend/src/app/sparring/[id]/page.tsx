@@ -23,8 +23,10 @@ import {
   X,
 } from "lucide-react";
 import { fetchProject, postGateDecision, postSparringChat } from "../../../lib/api";
+import { fetchRoles } from "../../../lib/corporateApi";
 import { useSSEStream } from "../../../hooks/useSSEStream";
 import { VentureStateData } from "../../../lib/types/api";
+import { RoleResponse } from "../../../lib/types/corporate";
 import { uploadChatAttachment } from "../../../lib/officeApi";
 import { AttachmentItem } from "../../../lib/types/office";
 
@@ -35,12 +37,15 @@ export default function SparringRoomPage() {
 
   const [project, setProject] = useState<VentureStateData | null>(null);
   const [chatInput, setChatInput] = useState("");
-  const [targetAgent, setTargetAgent] = useState<"BROADCAST" | "COS" | "CTO">("BROADCAST");
+  const [availableRoles, setAvailableRoles] = useState<RoleResponse[]>([]);
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const [mentionIndex, setMentionIndex] = useState<number>(-1);
   const [isSending, setIsSending] = useState(false);
   const [isWaitingResponse, setIsWaitingResponse] = useState(false);
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const chatInputRef = useRef<HTMLInputElement | null>(null);
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
@@ -89,6 +94,38 @@ export default function SparringRoomPage() {
 
   const removeAttachment = (id: string) => {
     setAttachments((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  useEffect(() => {
+    fetchRoles()
+      .then((roles) => setAvailableRoles(roles.filter((r) => r.is_active)))
+      .catch((err) => console.error("Gagal load roles untuk autocomplete:", err));
+  }, []);
+
+  const handleChatInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setChatInput(val);
+    const cursor = e.target.selectionStart || val.length;
+    const textBeforeCursor = val.slice(0, cursor);
+    const atIndex = textBeforeCursor.lastIndexOf("@");
+    if (atIndex !== -1 && !/\s/.test(textBeforeCursor.slice(atIndex + 1))) {
+      setMentionQuery(textBeforeCursor.slice(atIndex + 1));
+      setMentionIndex(atIndex);
+    } else {
+      setMentionQuery(null);
+      setMentionIndex(-1);
+    }
+  };
+
+  const insertMention = (name: string) => {
+    if (mentionIndex === -1) return;
+    const before = chatInput.slice(0, mentionIndex);
+    const after = chatInput.slice(mentionIndex + 1 + (mentionQuery?.length || 0));
+    const nextVal = `${before}@${name} ${after}`;
+    setChatInput(nextVal);
+    setMentionQuery(null);
+    setMentionIndex(-1);
+    setTimeout(() => chatInputRef.current?.focus(), 50);
   };
 
   // Gate feedback input state
@@ -160,6 +197,8 @@ export default function SparringRoomPage() {
     const msg = chatInput.trim();
     const currentAttachments = [...attachments];
     setChatInput("");
+    setMentionQuery(null);
+    setMentionIndex(-1);
     setAttachments([]);
     setIsSending(true);
     setIsWaitingResponse(true);
@@ -170,7 +209,6 @@ export default function SparringRoomPage() {
     try {
       await postSparringChat(projectId, {
         message: msg,
-        target_agent: targetAgent === "BROADCAST" ? undefined : targetAgent,
         attachments: currentAttachments,
       });
     } catch (err) {
@@ -245,7 +283,7 @@ export default function SparringRoomPage() {
             <span className="text-slate-400 hidden sm:inline font-mono">
               {isWaitingResponse ? (
                 <span className="text-amber-300 font-semibold animate-pulse">
-                  ⚡ {targetAgent === "CTO" ? "CTO" : "CoS"} is thinking...
+                  ⚡ Agen AI sedang menganalisis...
                 </span>
               ) : (
                 agentStatus
@@ -367,7 +405,7 @@ export default function SparringRoomPage() {
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                   </span>
                   <span>
-                    {targetAgent === "CTO" ? "Chief Technology Officer (CTO)" : "Chief of Staff (CoS)"}
+                    Agen AI Korporat
                   </span>
                   <span className="text-[10px] font-normal text-amber-400/70 ml-auto">Sedang menganalisis...</span>
                 </div>
@@ -476,43 +514,64 @@ export default function SparringRoomPage() {
               <span>Lepaskan berkas di sini untuk melampirkan ke Sparring Room (Gambar, PDF, Teks, Kode)...</span>
             </div>
           )}
-          {/* Target Selector */}
-          <div className="flex items-center space-x-2 text-xs">
-            <span className="text-slate-400">Target Penerima:</span>
-            <button
-              type="button"
-              onClick={() => setTargetAgent("BROADCAST")}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${
-                targetAgent === "BROADCAST"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-slate-900 text-slate-400 hover:bg-slate-800"
-              }`}
-            >
-              Broadcast (CoS + CTO)
-            </button>
-            <button
-              type="button"
-              onClick={() => setTargetAgent("COS")}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${
-                targetAgent === "COS"
-                  ? "bg-amber-500 text-slate-950 font-bold"
-                  : "bg-slate-900 text-slate-400 hover:bg-slate-800"
-              }`}
-            >
-              CoS Only (Bisnis)
-            </button>
-            <button
-              type="button"
-              onClick={() => setTargetAgent("CTO")}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${
-                targetAgent === "CTO"
-                  ? "bg-cyan-500 text-slate-950 font-bold"
-                  : "bg-slate-900 text-slate-400 hover:bg-slate-800"
-              }`}
-            >
-              CTO Only (Teknis)
-            </button>
-          </div>
+          {/* Floating @mention Autocomplete Popover */}
+          {mentionQuery !== null && (
+            <div className="absolute bottom-full mb-3 left-0 right-0 z-40 max-h-60 overflow-y-auto rounded-2xl bg-[#0c0d14]/95 border border-cyan-500/40 shadow-2xl backdrop-blur-xl p-2 animate-in fade-in slide-in-from-bottom-2 duration-150">
+              <div className="px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider text-cyan-400 flex items-center justify-between border-b border-white/10 mb-1">
+                <span className="flex items-center gap-1.5">
+                  <Bot className="w-3 h-3 text-cyan-400" />
+                  <span>Sebut Peran AI (@mention)</span>
+                </span>
+                <span className="text-slate-500 lowercase font-mono text-[9px]">Tekan Esc untuk menutup</span>
+              </div>
+              <div className="space-y-0.5">
+                {/* Broadcast Option */}
+                {("all".includes(mentionQuery.toLowerCase()) || "broadcast".includes(mentionQuery.toLowerCase()) || "executives".includes(mentionQuery.toLowerCase())) && (
+                  <button
+                    type="button"
+                    onClick={() => insertMention("All Executives")}
+                    className="w-full text-left px-3 py-2 rounded-xl flex items-center justify-between hover:bg-cyan-500/10 text-white transition-colors group"
+                  >
+                    <div className="flex items-center space-x-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 flex items-center justify-center text-xs font-bold">
+                        📢
+                      </div>
+                      <div>
+                        <div className="text-xs font-semibold text-indigo-300 group-hover:text-white">@All Executives</div>
+                        <div className="text-[10px] text-slate-400">Siarkan pesan ke seluruh dewan eksekutif</div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono text-indigo-400/80">Broadcast</span>
+                  </button>
+                )}
+
+                {/* Filtered Active Roles from DB */}
+                {availableRoles
+                  .filter((r) => r.name.toLowerCase().includes(mentionQuery.toLowerCase()))
+                  .map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => insertMention(r.name)}
+                      className="w-full text-left px-3 py-2 rounded-xl flex items-center justify-between hover:bg-cyan-500/10 text-white transition-colors group"
+                    >
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 flex items-center justify-center text-xs font-bold">
+                          <Bot className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-semibold text-white group-hover:text-cyan-300">@{r.name}</div>
+                          <div className="text-[10px] text-slate-400 line-clamp-1 max-w-[420px]">
+                            {r.job_description || r.model_name}
+                          </div>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-mono text-cyan-400/70">{r.model_name.split("/").pop()}</span>
+                    </button>
+                  ))}
+              </div>
+            </div>
+          )}
 
           {/* Attachment Chips Preview */}
           {attachments.length > 0 && (
@@ -558,11 +617,15 @@ export default function SparringRoomPage() {
               {isUploading ? <Loader2 className="w-4 h-4 animate-spin text-indigo-400" /> : <Paperclip className="w-4 h-4" />}
             </button>
             <input
+              ref={chatInputRef}
               type="text"
               value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              placeholder="Ketik instruksi, tanggapan, atau kritik Founder..."
-              className="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+              onChange={handleChatInputChange}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setMentionQuery(null);
+              }}
+              placeholder="Ketik pesan... (Gunakan @ untuk mention peran, misal: @Chief of Staff)"
+              className="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
             />
             <button
               type="submit"

@@ -23,7 +23,7 @@ class WorkflowRepository:
             "stage_index": int(r["stage_index"]), "order_index": int(r["stage_index"]),
             "stage_type": r["stage_type"], "role_id": r["role_id"],
             "role_name": r["role_name"] or ("CEO Human Gate" if is_ceo else "Unknown Role"),
-            "role_slug": r["role_slug"] or ("ceo" if is_ceo else "unknown"),
+            "role_slug": None,
             "division_id": r["division_id"] or "div_exec",
             "division_name": r["division_name"] or ("Executive Suite" if is_ceo else "General"),
             "division_color": r["division_color"] or "#eab308",
@@ -61,7 +61,7 @@ class WorkflowRepository:
                 query = """
                     SELECT s.id AS stage_id, s.pipeline_id, s.stage_index, s.stage_type, s.role_id,
                            s.ceo_gate_type, s.custom_label, s.custom_instructions,
-                           r.name AS role_name, r.slug AS role_slug, r.model_name,
+                           r.name AS role_name, r.model_name,
                            COALESCE(r.is_active, 1) AS is_active,
                            COALESCE(r.is_system_default, 0) AS is_system_default,
                            d.id AS division_id, d.name AS division_name, d.accent_color AS division_color
@@ -78,7 +78,7 @@ class WorkflowRepository:
 
                 # Fallback jika tahap belum terisi di pipeline_stages
                 q_roles = """
-                    SELECT r.id AS role_id, r.name AS role_name, r.slug AS role_slug,
+                    SELECT r.id AS role_id, r.name AS role_name,
                            r.division_id, d.name AS division_name, d.accent_color AS division_color,
                            COALESCE(r.order_index, 0) AS order_index, r.model_name,
                            r.is_active, r.is_system_default
@@ -94,7 +94,7 @@ class WorkflowRepository:
                             "id": f"stg_{r['role_id']}", "pipeline_id": target_pipe,
                             "stage_index": int(r["order_index"]), "order_index": int(r["order_index"]),
                             "stage_type": "ROLE_EXECUTION", "role_id": r["role_id"],
-                            "role_name": r["role_name"], "role_slug": r["role_slug"],
+                            "role_name": r["role_name"], "role_slug": None,
                             "division_id": r["division_id"], "division_name": r["division_name"],
                             "division_color": r["division_color"], "model_name": r["model_name"],
                             "ceo_gate_type": None, "custom_label": None, "custom_instructions": None,

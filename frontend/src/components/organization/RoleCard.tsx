@@ -35,7 +35,6 @@ export default function RoleCard({
         role: {
           id: role.id,
           name: role.name,
-          slug: role.slug,
           division_id: role.division_id,
           model_name: role.model_name,
           token_budget_per_task: role.token_budget_per_task,
@@ -76,7 +75,7 @@ export default function RoleCard({
                 <h5 className="text-xs font-semibold text-white tracking-tight">{role.name}</h5>
                 <GripVertical className="w-3 h-3 text-slate-500 opacity-60" />
               </div>
-              <span className="text-[10px] font-mono text-slate-400">{role.slug}</span>
+              <span className="text-[10px] font-mono text-slate-400">{role.model_name.split("/").pop()}</span>
             </div>
           </div>
 
@@ -93,6 +92,15 @@ export default function RoleCard({
             {role.is_active ? "Active" : "Inactive"}
           </button>
         </div>
+
+        {role.job_description && (
+          <div className="mb-2 px-2 py-1 rounded bg-cyan-950/30 border border-cyan-800/40">
+            <span className="text-[9px] uppercase tracking-wider text-cyan-400 font-bold block mb-0.5">Jobdesk / Fokus:</span>
+            <p className="text-[11px] text-cyan-200/90 font-sans line-clamp-2">
+              {role.job_description}
+            </p>
+          </div>
+        )}
 
         <p className="text-[11px] text-slate-400 line-clamp-2 mb-3 italic font-sans">
           &quot;{role.system_prompt_template}&quot;

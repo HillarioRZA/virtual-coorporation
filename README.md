@@ -213,6 +213,23 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
   - Founder dapat melampirkan berkas dengan mudah cukup dengan **menyeret dan melepaskan (drag & drop)** berkas ke area input chat di Oasis HQ (`OfficeChatConsole.tsx`) maupun Executive Sparring (`/sparring/[id]`).
   - Dilengkapi visual *dropzone overlay* bercahaya animasi, chip preview berkas lampiran dengan tombol hapus (x), serta tautan unduh interaktif pada kartu pesan.
 
+### 16. Dynamic Polymorphic Role Node Engine & Single-Source Corporate Registry
+* **Penghapusan Total Node Statis & Berkas Prompt**:
+  - Seluruh berkas node peran statis di `backend/app/engine/nodes/` dan berkas `backend/prompts/*.md` telah dihapus secara fisik demi transisi ke arsitektur dinamis sejati.
+  - Tabel SQLite `corporate_roles` bertindak sebagai **Satu-Satunya Sumber Kebenaran (*Single Source of Truth*)** untuk seluruh konfigurasi peran: nama, slug, deskripsi tugas & fokus jobdesk (`job_description`), instruksi persona sistem (`system_prompt_template`), model LLM, provider, temperature, batas token, dan izin perkakas.
+* **Mesin Eksekusi Polimorfik Tunggal (`execute_dynamic_role_node`)**:
+  - Seluruh peran dieksekusi oleh mesin tunggal di `app/engine/dynamic_node.py` yang secara dinamis memuat konfigurasi peran, menjalankan loop perkakas (`_handle_agent_tools`), menyelaraskan skema output (`role_output_processor.py`), dan mencatat publikasi artefak ke memori blackboard (`role_event_logger.py`).
+* **Injeksi Hierarki Pohon Organisasi (*Org-Tree Scoped Context*)**:
+  - Agen eksekutif (CoS, CTO, PM) secara otomatis menerima konteks menyeluruh mengenai struktur organisasi perusahaan terkini: daftar divisi, tujuan/mandat divisi (`purpose`), seluruh peran AI di dalam divisi, serta fokus tugas dan jobdesk masing-masing (`job_description`).
+  - Hal ini memberdayakan para pimpinan eksekutif untuk mendelegasikan tugas ke tiket Kanban secara otonom sesuai kapasitas divisi yang ada.
+* **Executive Baton Relay & `@mention` Routing Terarah**:
+  - Percakapan antar-agen di Oasis HQ maupun Sparring Room mendukung pengalihan estafet tongkat komando (*Baton Relay*).
+  - Dilengkapi guardrail batas estafet maksimum `MAX_RELAY_HOPS = 3` dan pengabaian *self-mention* untuk mencegah *infinite ping-pong loop* antar-agen.
+* **Adversarial TDD Berbasis Izin Perkakas (*Tool Permission Decoupled*)**:
+  - Logika isolasi penguncian berkas tes (*read-only* & `chmod 444`) kini dipisahkan sepenuhnya dari nama berkas python statis dan dialihkan menjadi izin perkakas `lock_test_suite` di antarmuka organisasi.
+* **Manajemen Visual Tujuan Divisi & Jobdesk Peran di UI**:
+  - Antarmuka visual `/organization` memungkinkan Founder mengubah Tujuan Divisi (*Division Purpose*) dan Fokus Jobdesk Karyawan AI (*Role Job Description*) secara langsung tanpa menyentuh kode backend.
+
 ---
 
 ## 🔄 Alur Kerja Operasional & Siklus Hidup Venture
@@ -268,33 +285,37 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 
 ---
 
-## 📡 Spesifikasi 21 Router API Backend
+## 📡 Spesifikasi 25 Router API Backend
 
 Seluruh endpoint REST API dan WebSocket terpusat di bawah prefix `/api/v1` dengan validasi skema tipe Pydantic v2:
 
 | No | Modul Router | Prefix Endpoint | Tipe | Deskripsi & Tanggung Jawab Utama |
 |:--:|:-------------|:----------------|:----:|:---------------------------------|
-| 1 | `corporate.py` | `/corporate` | REST | CRUD hierarki organisasi: branch, forking alur kerja, divisi dinamis, dan pendaftaran peran AI. |
+| 1 | `corporate.py` | `/corporate` | REST | CRUD hierarki organisasi: branch, forking alur kerja, divisi dinamis, dan pendaftaran peran AI (100% Slug-Free). |
 | 2 | `corporate_workflow.py` | `/corporate/branches/{id}` | REST | Pipeline builder multi-lini produk, tahapan DND berulang (*looping*), dan gerbang keputusan CEO. |
 | 3 | `corporate_tickets.py` | `/corporate/tickets` | REST | Manajemen kartu tiket Kanban virtual (5 status), dependensi tugas, dan tingkat prioritas. |
 | 4 | `corporate_events.py` | `/corporate/events` | REST | Riwayat percakapan inter-agen, dialog eskalasi, dan log event bus korporat. |
 | 5 | `corporate_ws.py` | `/ws/corporate` | WS | WebSocket streaming dua arah untuk sinkronisasi tiket Kanban dan siaran event real-time. |
 | 6 | `governance.py` | `/governance` | REST | Pengawas interaksi agen: status circuit breaker, eskalasi C-Level, dan intervensi hak veto CEO. |
 | 7 | `branch_merge.py` | `/corporate/branches` | REST | Analisis *diff* struktural antar-branch dan penggabungan atomik branch eksperimen ke main via LCA. |
-| 8 | `projects.py` | `/projects` | REST | Siklus hidup venture: inisiasi ide baru, muat checkpoint state, dan manajemen portofolio. |
-| 9 | `sparring.py` | `/projects/{id}/sparring` | REST / SSE | Sesi debat sokratik pra-PRD antara Founder, CoS, dan CTO dengan streaming inferensi LLM. |
-| 10 | `gates.py` | `/projects/{id}/gates` | REST | Stage-Gate keputusan Founder: persetujuan formal, revisi arahan, atau terminasi proyek. |
-| 11 | `pull_requests.py` | `/projects/{id}/prs` | REST | Siklus hidup PR otomatis: automated peer-to-peer code review dan quorum approval gate ($\ge 2$). |
-| 12 | `vault.py` | `/projects/{id}/vault` | REST | Penyimpanan kredensial produksi rahasia terenkripsi AES-256-GCM (Secret Vault). |
-| 13 | `analytics.py` | `/analytics` | REST | Metrik penggunaan token per agen, evaluasi unit economics, dan neraca keuangan ledger. |
-| 14 | `settings.py` | `/settings` | REST | Pengaturan dinamis sistem (BYOK API keys, parameter PaaS, reset konfigurasi) tanpa restart server. |
-| 15 | `auth.py` | `/auth` | REST | Verifikasi PIN dinamis 6-digit gerbang keamanan Telegram dan penerbitan session token HMAC. |
-| 16 | `wisdom.py` | `/wisdom` | REST | Corporate Wisdom Knowledge Base: penarikan best-practice dan aturan arsitektur via RAG vektor 128-dim. |
-| 17 | `office.py` | `/corporate/office` | REST | Endpoint REST status agen, intervensi terarah scoped per-role, dan pengiriman direktif Founder. |
-| 18 | `office_ws.py` | `/corporate/ws/office` | WS | WebSocket streaming dua arah siaran aliran diskursus agen, sinyal handoff, dan aktivitas real-time. |
-| 19 | `sandbox_snapshots.py` | `/projects/{id}/sandbox` | REST | Manajemen snapshot direktori proyek (CoW) dan pemulihan rollback instan anti-data-loss. |
-| 20 | `sandbox_network.py` | `/projects/{id}/network` | REST | Pemeriksaan status isolasi subnet Docker dan pemetaan routing reverse proxy Caddy. |
-| 21 | `sandbox_terminal_ws.py`| `/ws/sandbox/{id}/terminal`| WS | Terminal interaktif PTY shell CLI live dua arah di dalam lingkungan sandbox proyek. |
+| 8 | `projects.py` | `/projects` | REST | Siklus hidup venture: inisiasi ide baru, muat checkpoint state, dan **Cascading Clean Sweep Deletion** (`DELETE /{id}`). |
+| 9 | `project_artifacts.py` | `/projects/{id}/artifacts` | REST | Akses berkas artefak venture, OpenAPI specs, PRD, dan preview link. |
+| 10 | `sparring.py` | `/projects/{id}/sparring` | REST / SSE | Sesi debat sokratik pra-PRD antar-agen dengan dukungan `@mention` dinamis seluruh peran aktif organisasi. |
+| 11 | `gates.py` | `/projects/{id}/gates` | REST | Stage-Gate keputusan Founder: persetujuan formal, revisi arahan, atau terminasi proyek. |
+| 12 | `pull_requests.py` | `/projects/{id}/prs` | REST | Siklus hidup PR otomatis: automated peer-to-peer code review dan quorum approval gate ($\ge 2$). |
+| 13 | `vault.py` | `/projects/{id}/vault` | REST | Penyimpanan kredensial produksi rahasia terenkripsi AES-256-GCM (Secret Vault). |
+| 14 | `analytics.py` | `/analytics` | REST | CFO Observability: token ledger summary, burn rate timeline, role costs, dan health radar sliding window. |
+| 15 | `settings.py` | `/settings` | REST | Pengaturan dinamis sistem (BYOK API keys, parameter PaaS, reset konfigurasi) tanpa restart server. |
+| 16 | `auth.py` | `/auth` | REST | Verifikasi PIN dinamis 6-digit gerbang keamanan Telegram dan penerbitan session token HMAC. |
+| 17 | `wisdom.py` | `/wisdom` | REST | Corporate Wisdom Knowledge Base: penarikan best-practice RAG vektor 128-dim & auto-sync boot/mutasi. |
+| 18 | `office.py` | `/corporate/office` | REST | Endpoint REST status agen, intervensi terarah scoped per-role, dan pengiriman direktif Founder. |
+| 19 | `office_ws.py` | `/corporate/ws/office` | WS | WebSocket streaming dua arah siaran aliran diskursus agen, sinyal handoff, dan aktivitas real-time. |
+| 20 | `sandbox_snapshots.py` | `/projects/{id}/sandbox` | REST | Manajemen snapshot direktori proyek (CoW) dan pemulihan 1-Click Rollback anti-data-loss. |
+| 21 | `sandbox_network.py` | `/projects/{id}/network` | REST | Pemeriksaan status isolasi subnet Docker dan pemetaan routing reverse proxy Caddy. |
+| 22 | `sandbox_terminal_ws.py`| `/ws/sandbox/{id}/terminal`| WS | Terminal interaktif PTY shell CLI live dua arah di dalam lingkungan sandbox proyek. |
+| 23 | `files.py` | `/files` | REST | Upload dan unduh lampiran multimodal dengan verifikasi MIME dan proteksi path traversal. |
+| 24 | `sentinel.py` | `/sentinel` | REST | Telemetri CoV (Chain-of-Verification) Pre-flight Guardrail dan audit celah keamanan. |
+| 25 | `frontier_radar.py` | `/frontier-radar` | REST | Telemetri model router upstream health, token consumption rate, dan cooldown tracker. |
 
 ---
 
@@ -304,80 +325,84 @@ Seluruh endpoint REST API dan WebSocket terpusat di bawah prefix `/api/v1` denga
 .
 ├── backend/
 │   ├── app/
-│   │   ├── api/v1/                   # 21 Modul Router REST API & WebSocket
-│   │   │   ├── analytics.py          # Metrik Token Ledger & Financial Tracking
+│   │   ├── api/v1/                   # 25 Modul Router REST API & WebSocket (SRP <= 200 baris)
+│   │   │   ├── analytics.py          # Metrik Token Ledger & CFO Observability
 │   │   │   ├── auth.py               # Otentikasi Stealth PIN & Telegram Security Gate
 │   │   │   ├── branch_merge.py       # Git-Style Branch Diff & LCA Atomic Merge
-│   │   │   ├── corporate.py          # Corporate Organization Hierarchy CRUD
+│   │   │   ├── corporate.py          # Corporate Organization Hierarchy CRUD (Slug-Free)
 │   │   │   ├── corporate_events.py   # Corporate Event Log & Message Queries
 │   │   │   ├── corporate_tickets.py  # Kanban Virtual Tickets & Task Transitions
 │   │   │   ├── corporate_workflow.py # Dynamic Workflow Pipeline & Looping Sequence
 │   │   │   ├── corporate_ws.py       # Kanban Real-Time WebSocket Channel
+│   │   │   ├── files.py              # File Upload & Multimodal Extraction
+│   │   │   ├── frontier_radar.py     # Upstream Health & Model Router Radar
 │   │   │   ├── gates.py              # Founder Stage-Gate Decisions
 │   │   │   ├── governance.py         # Executive Governance, Escalation & CEO Veto
 │   │   │   ├── office.py             # Live Command HQ State & Directives API
 │   │   │   ├── office_ws.py          # Multi-Agent Live Streams WebSocket Channel
-│   │   │   ├── projects.py           # Venture State & Checkpoint Persistence
+│   │   │   ├── projects.py           # Venture State & Cascading Clean Sweep Deletion
+│   │   │   ├── project_artifacts.py  # Venture Artifacts & Preview Delivery
 │   │   │   ├── pull_requests.py      # Automated PR Engine & Quorum Peer Review
 │   │   │   ├── sandbox_network.py    # Docker Network & Reverse Proxy Routing
-│   │   │   ├── sandbox_snapshots.py  # Zero-Data-Loss CoW Snapshots & Rollbacks
+│   │   │   ├── sandbox_snapshots.py  # Zero-Data-Loss CoW Snapshots & 1-Click Rollbacks
 │   │   │   ├── sandbox_terminal_ws.py# Interactive Web PTY Terminal Stream
+│   │   │   ├── sentinel.py           # Chain-of-Verification Audit Logs & Findings
 │   │   │   ├── settings.py           # Dynamic BYOK & Runtime Settings Manager
-│   │   │   ├── sparring.py           # Executive Sparring Room (CoS + CTO)
+│   │   │   ├── sparring.py           # Executive Sparring Room (Dynamic Org Roles)
 │   │   │   ├── vault.py              # AES-256-GCM Encrypted Secret Vault
-│   │   │   └── wisdom.py             # Corporate Wisdom & Organizational Learning
-│   │   ├── core/                     # Config, Logger, Security Gate, Settings Manager & Constants
+│   │   │   └── wisdom.py             # Corporate Wisdom Base & Vector RAG
+│   │   ├── core/                     # Config, Logger, Security Gate, Settings & Constants
 │   │   ├── db/                       # Basis Data SQLite Asinkron (aiosqlite WAL)
 │   │   │   ├── branch_repo.py        # Isolasi Branching & Forking Database
 │   │   │   ├── corporate_repo.py     # Unified Corporate Facade Database
 │   │   │   ├── division_repo.py      # Operasi Divisi Organisasi
-│   │   │   ├── role_repo.py          # Operasi Peran Karyawan AI
+│   │   │   ├── role_repo.py          # Operasi Peran Karyawan AI (100% Slug-Free)
 │   │   │   ├── pipeline_repo.py      # Multi-Product Pipelines
 │   │   │   ├── ticket_repo.py        # Virtual Kanban Tickets Storage
 │   │   │   ├── workflow_repo.py      # Pipeline Stages & Ordering Storage
-│   │   │   └── session.py            # SQLite WAL Connection Pool
-│   │   ├── engine/                   # Core Cognitive & Execution Engines
-│   │   │   ├── circuit_breaker.py    # Anti-Infinite Loop Guardrail
-│   │   │   ├── dispatcher.py         # Task Concurrency Dispatcher (asyncio.gather)
-│   │   │   ├── event_bus.py          # Asynchronous Actor Event Bus
-│   │   │   ├── model_router.py       # Sovereign Model Router & Quota Shield
-│   │   │   ├── state_handoff.py      # State-First Cognitive Handoff Engine
-│   │   │   ├── peer_reviewer.py      # Automated P2P Code Review Engine
-│   │   │   ├── vector_store.py       # Embedded 128-dim Vector Database
-│   │   │   ├── security_scanner.py   # Real Python AST OWASP Scanner
-│   │   │   ├── flight_recorder.py    # Time-Travel Blackbox Event Recorder
-│   │   │   ├── financial_guardrail.py# Token Quota & Cost Control Guardrail
-│   │   │   └── tool_synthesizer.py   # GitHub Tool Bridge with AST Security Scanner
-│   │   ├── gateway/                  # Unified Multi-Provider LLM Client
+│   │   │   ├── token_ledger_repo.py  # CFO Token Ledger & Cost Attribution
+│   │   │   ├── wisdom_repo.py        # Corporate Wisdom Documents & Vectors
+│   │   │   ├── sentinel_repo.py      # CoV Pre-flight Inspection Records
+│   │   │   └── session.py            # SQLite WAL Connection Pool (`busy_timeout = 5000`)
+│   │   ├── engine/                   # Modular Cognitive & Execution Engines
+│   │   │   ├── runtime/              # Model Router, State Machine, State Handoff, Dispatcher
+│   │   │   ├── roles/                # Dynamic Polymorphic Role Node, Role Event Logger
+│   │   │   ├── governance/           # Circuit Breaker, Financial Guardrail, Flight Recorder
+│   │   │   ├── memory/               # Blackboard Memory, Venture State, Vector Store
+│   │   │   ├── tools/                # DB Inspector, Contract Validator, Tool Synthesizer
+│   │   │   ├── quality/              # AST Security Scanner, P2P Reviewer, Visual Evaluator
+│   │   │   ├── office/               # Actor Event Bus & Oasis Lounge Engine
+│   │   │   └── sentinel/             # CoV Pre-Flight Gatekeeper & Inspector
+│   │   ├── gateway/                  # Unified Multi-Provider BYOK Client (Adapters)
 │   │   └── sandbox/                  # Docker Sandbox Runner & Caddy Proxy Manager
-│   ├── tests/                        # 174 Unit & Integration Test Suites (100% Passed)
+│   ├── tests/                        # Unit & Integration Test Suites (100% Passed)
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
 │   │   ├── app/                      # Next.js 14 App Router Pages
-│   │   │   ├── organization/         # Visual Org Studio & Pipeline Builder
+│   │   │   ├── organization/         # Visual Org Studio & HTML5 DND Pipeline Builder
 │   │   │   ├── kanban/[id]/          # Mission Control Kanban & Live Lounge
 │   │   │   ├── preview/[id]/         # Live Sandbox Preview, PTY Terminal & Snapshots
-│   │   │   ├── sparring/[id]/        # Executive Sparring Debate Room
-│   │   │   ├── office/               # Global Oasis Live Command HQ
+│   │   │   ├── sparring/[id]/        # Executive Sparring Room (Dynamic Roles)
+│   │   │   ├── office/               # Global Oasis Live Command HQ (Obsidian 2D)
 │   │   │   ├── settings/             # Dynamic BYOK Key Vault & System Settings
-│   │   │   ├── analytics/            # Financial Unit Economics & Token Ledger
+│   │   │   ├── analytics/            # CFO Observability & Token Burn Cockpit
 │   │   │   └── wisdom/               # Corporate Wisdom Base & GitHub Skill Importer
 │   │   ├── components/               # Komponen Modular Antarmuka (SRP <= 150-200 baris)
-│   │   │   ├── organization/         # WorkflowPipelineBuilder, RoleModal, BranchBar, dll.
-│   │   │   ├── office/               # Oasis Live Command HQ UI Components
-│   │   │   │   ├── oasis/            # Feed, ScreenSharePane, WarRoom, EventCard, SplitView
-│   │   │   │   ├── AgentRosterSidebar.tsx
-│   │   │   │   ├── OfficeChatConsole.tsx
-│   │   │   │   └── OfficeControlBar.tsx
-│   │   │   ├── settings/             # SettingsProviderTab (BYOK & Custom OpenAI-Compatible)
+│   │   │   ├── organization/         # PipelineBuilder, RoleModal (Slug-Free), BranchBar
+│   │   │   ├── office/               # Oasis Feed, ScreenShare, WarRoom, EventCard
+│   │   │   ├── analytics/            # TokenSummaryCards, ChannelHealthRadar, RoleCostTable
+│   │   │   ├── settings/             # SettingsProviderTab (BYOK & Custom Providers)
 │   │   │   └── sandbox/              # Web PTY Terminal & Iframe Preview Container
 │   │   ├── hooks/                    # Custom React Hooks
 │   │   └── lib/                      # API Client Interfaces & TypeScript Types
 │   ├── package.json
 │   └── tailwind.config.ts
-├── sandboxes/                        # Direktori Isolasi Proyek & Konfigurasi Caddy
-├── projects_output/                  # Hasil Kompilasi Proyek Startup yang Dihasilkan
+├── workspaces/                       # Direktori Sandbox Proyek Aktif
+├── sandbox_storage/                  # Snapshot Arsip CoW Proyek
+├── knowledge_systerm.md              # Master Knowledge Base & Architectural Specification
+├── CLAUDE.md                         # Developer & AI Assistant Operational Guide
+├── code-quality-rules.md             # Code Quality & Modularity Standards (SRP Rule)
 └── run.py                            # Universal Launcher Otomatis (Full-Stack Bootstrapper)
 ```
 

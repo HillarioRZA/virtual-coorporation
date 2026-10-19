@@ -13,12 +13,12 @@ import pytest_asyncio
 
 from app.core.config import settings
 from app.db.init_db import init_database
-from app.engine.corporate_schemas import CorporateMessageCreate
-from app.engine.dispatcher import task_dispatcher
-from app.engine.event_bus import corporate_event_bus
-from app.engine.memory import MemoryManager
-from app.engine.state import VentureState
-from app.engine.worker_pool import AgentWorkerPool
+from app.engine.schemas.corporate_schemas import CorporateMessageCreate
+from app.engine.runtime.dispatcher import task_dispatcher
+from app.engine.runtime.event_bus import corporate_event_bus
+from app.engine.memory.memory import MemoryManager
+from app.engine.runtime.state import VentureState
+from app.engine.runtime.worker_pool import AgentWorkerPool
 from app.gateway.client import UnifiedLLMClient
 from main import app
 

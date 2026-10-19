@@ -13,8 +13,8 @@ import pytest
 from app.db.init_db import init_database
 from app.db.role_repo import role_repo
 from app.db.wisdom_repo import wisdom_repo
-from app.engine.github_bridge import convert_to_raw_github_url, fetch_github_markdown_skill, fetch_github_python_plugin
-from app.engine.model_router import SovereignModelRouter
+from app.engine.tools.github_bridge import convert_to_raw_github_url, fetch_github_markdown_skill, fetch_github_python_plugin
+from app.engine.runtime.model_router import SovereignModelRouter
 
 
 @pytest.mark.asyncio
@@ -28,7 +28,6 @@ async def test_thinking_level_role_crud_and_escalation(tmp_path: Path) -> None:
         branch_id="branch_main",
         division_id="div_eng",
         name="Staff Principal Architect",
-        slug="principal-architect",
         system_prompt_template="Anda adalah principal architect dengan deep reasoning.",
         thinking_level="high",
         custom_path=db_path,

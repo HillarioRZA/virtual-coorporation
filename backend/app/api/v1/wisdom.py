@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from app.core.logger import logger
 from app.db.pr_repo import pr_repo
 from app.db.wisdom_repo import wisdom_repo
-from app.engine.wisdom_engine import wisdom_engine
+from app.engine.memory.wisdom_engine import wisdom_engine
 
 router = APIRouter(prefix="/wisdom", tags=["Corporate Wisdom Base"])
 
@@ -141,7 +141,7 @@ async def distill_wisdom_from_pr(pr_id: str) -> Dict[str, Any]:
 async def import_github_skill(payload: GitHubImportRequest) -> Dict[str, Any]:
     """Mengimpor berkas Markdown skill/blueprint dari GitHub ke Corporate Wisdom."""
     try:
-        from app.engine.github_bridge import fetch_github_markdown_skill
+        from app.engine.tools.github_bridge import fetch_github_markdown_skill
         return await fetch_github_markdown_skill(
             url=payload.github_url,
             namespace=payload.namespace,
@@ -159,7 +159,7 @@ async def import_github_skill(payload: GitHubImportRequest) -> Dict[str, Any]:
 async def import_github_plugin(payload: PluginImportRequest) -> Dict[str, Any]:
     """Mengimpor dan memvalidasi skrip plugin Python dari GitHub ke proyek sandbox."""
     try:
-        from app.engine.github_bridge import fetch_github_python_plugin
+        from app.engine.tools.github_bridge import fetch_github_python_plugin
         result = await fetch_github_python_plugin(
             project_id=payload.project_id,
             url=payload.github_url,

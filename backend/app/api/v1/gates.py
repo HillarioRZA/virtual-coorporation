@@ -10,8 +10,8 @@ from pydantic import BaseModel, Field
 from app.core.logger import logger
 from app.core.stream import stream_manager
 from app.db.session import get_db_connection
-from app.engine.memory import MemoryManager
-from app.engine.routers import router_gate_1, router_gate_2, router_gate_3
+from app.engine.memory.memory import MemoryManager
+from app.engine.runtime.routers import router_gate_1, router_gate_2, router_gate_3
 
 router = APIRouter(prefix="/projects", tags=["Stage Gates"])
 

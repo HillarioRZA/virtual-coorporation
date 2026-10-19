@@ -8,13 +8,13 @@ import pytest
 import time
 from typing import Dict, Any, List
 
-from app.engine.state_handoff import (
+from app.engine.memory.state_handoff import (
     strip_reasoning_traces,
     export_ast_symbol_table,
     build_state_handoff_payload,
     prepare_differential_continuation,
 )
-from app.engine.model_router import UpstreamChannel, SovereignModelRouter
+from app.engine.runtime.model_router import UpstreamChannel, SovereignModelRouter
 from app.db.init_db import init_database
 
 

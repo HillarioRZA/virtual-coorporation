@@ -60,7 +60,10 @@ export default function DivisionCard({
               )}
             </div>
             {division.description && (
-              <p className="text-xs text-slate-400 mt-0.5">{division.description}</p>
+              <p className="text-xs text-slate-300/90 mt-1 flex items-baseline gap-1.5">
+                <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold font-mono">Tujuan:</span>
+                <span>{division.description}</span>
+              </p>
             )}
           </div>
         </div>

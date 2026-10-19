@@ -87,6 +87,9 @@ Thumbs.db
 # Personal AI Agent Guides & Local Documentation (Private to workspace, NOT for GitHub)
 /*.md
 !/README.md
+!/knowledge_systerm.md
+!/CLAUDE.md
+!/code-quality-rules.md
 /*.png
 tokenomix*.txt
 tokenomix AI.txt

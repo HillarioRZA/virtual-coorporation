@@ -13,16 +13,16 @@ import pytest_asyncio
 from app.core.config import settings
 from app.core.security import SecretVaultManager
 from app.db.init_db import init_database
-from app.engine.memory import MemoryManager
+from app.engine.memory.memory import MemoryManager
 from app.engine.nodes.backend import backend_engineering_node
 from app.engine.nodes.devsecops import devsecops_packaging_node
 from app.engine.nodes.hardening import production_hardening_node
 from app.engine.nodes.legal import legal_compliance_node
 from app.engine.nodes.qa import qa_eval_node
-from app.engine.routers import router_deploy_live, router_gate_3
-from app.engine.schemas import BusinessBriefSchema, SystemArchitectureSchema
-from app.engine.state import VentureState
-from app.engine.state_machine import NativeStateMachine
+from app.engine.runtime.routers import router_deploy_live, router_gate_3
+from app.engine.schemas.schemas import BusinessBriefSchema, SystemArchitectureSchema
+from app.engine.runtime.state import VentureState
+from app.engine.runtime.state_machine import NativeStateMachine
 from app.gateway.client import UnifiedLLMClient
 from main import app
 
@@ -54,17 +54,7 @@ def mock_llm_client() -> UnifiedLLMClient:
         prompt = kwargs.get("prompt", "")
         system_prompt = kwargs.get("system_prompt", "")
         content = f"{prompt} {system_prompt} {' '.join(str(a) for a in args)}"
-        if "Backend Engineer" in content or "alembic_migration.py" in content or "FastAPI" in content:
-            return (
-                '```json\n{\n'
-                '  "main_code": "from fastapi import FastAPI\\napp = FastAPI()\\n@app.get(\'/health\')\\ndef h(): return {\'ok\': True}",\n'
-                '  "models_code": "from sqlalchemy.orm import declarative_base\\nBase = declarative_base()",\n'
-                '  "routers_code": "from fastapi import APIRouter\\nrouter = APIRouter()",\n'
-                '  "migration_code": "def upgrade(): pass\\ndef downgrade(): pass",\n'
-                '  "requirements_content": "fastapi>=0.115.0\\nuvicorn>=0.31.0\\nsqlalchemy>=2.0.0"\n'
-                '}\n```'
-            )
-        elif "Security Auditor" in content or "QualityGateScorecard" in content or "OWASP" in content:
+        if "OWASP" in system_prompt or "Security Auditor" in system_prompt or "QA" in system_prompt:
             return (
                 '```json\n{\n'
                 '  "unit_test_passed": true,\n'
@@ -75,12 +65,22 @@ def mock_llm_client() -> UnifiedLLMClient:
                 '  "reasons": ["Parameterization valid", "No credentials exposed"]\n'
                 '}\n```'
             )
-        elif "Legal Counsel" in content or "Terms of Service" in content:
+        elif "Terms of Service" in system_prompt or "Legal" in system_prompt or "GDPR" in system_prompt:
             return (
                 '```json\n{\n'
                 '  "terms_of_service": "# Terms of Service\\nSelamat datang di platform SaaS ini...",\n'
                 '  "privacy_policy": "# Privacy Policy\\nKami menghormati privasi data Anda sesuai UU PDP...",\n'
                 '  "refund_policy": "# Refund Policy\\nGaransi uang kembali 14 hari kerja..."\n'
+                '}\n```'
+            )
+        elif "Backend" in system_prompt or "alembic" in content or "FastAPI" in system_prompt:
+            return (
+                '```json\n{\n'
+                '  "main_code": "from fastapi import FastAPI\\napp = FastAPI()\\n@app.get(\'/health\')\\ndef h(): return {\'ok\': True}",\n'
+                '  "models_code": "from sqlalchemy.orm import declarative_base\\nBase = declarative_base()",\n'
+                '  "routers_code": "from fastapi import APIRouter\\nrouter = APIRouter()",\n'
+                '  "migration_code": "def upgrade(): pass\\ndef downgrade(): pass",\n'
+                '  "requirements_content": "fastapi>=0.115.0\\nuvicorn>=0.31.0\\nsqlalchemy>=2.0.0"\n'
                 '}\n```'
             )
         else:  # DevSecOps

@@ -12,8 +12,8 @@ import pytest_asyncio
 from app.core.config import settings
 from app.core.stream import stream_manager
 from app.db.init_db import init_database
-from app.engine.memory import MemoryManager
-from app.engine.state import VentureState
+from app.engine.memory.memory import MemoryManager
+from app.engine.runtime.state import VentureState
 from main import app
 
 

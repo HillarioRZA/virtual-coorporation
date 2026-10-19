@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS corporate_roles (
     branch_id TEXT NOT NULL,
     division_id TEXT NOT NULL,
     name TEXT NOT NULL,
-    slug TEXT NOT NULL,
+    job_description TEXT DEFAULT '',
     system_prompt_template TEXT NOT NULL,
     model_provider TEXT NOT NULL DEFAULT 'openrouter',
     model_name TEXT NOT NULL DEFAULT 'deepseek/deepseek-r1:free',
@@ -110,11 +110,11 @@ CREATE TABLE IF NOT EXISTS corporate_roles (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(branch_id) REFERENCES corporate_branches(id) ON DELETE CASCADE,
     FOREIGN KEY(division_id) REFERENCES corporate_divisions(id) ON DELETE CASCADE,
-    UNIQUE(branch_id, slug)
+    UNIQUE(branch_id, name)
 );
 
 CREATE INDEX IF NOT EXISTS idx_roles_branch_division ON corporate_roles(branch_id, division_id);
-CREATE INDEX IF NOT EXISTS idx_roles_branch_slug ON corporate_roles(branch_id, slug);
+CREATE INDEX IF NOT EXISTS idx_roles_branch_name ON corporate_roles(branch_id, name);
 
 -- 9. Tabel Papan Tiket Otonom (Virtual Kanban)
 CREATE TABLE IF NOT EXISTS corporate_tickets (

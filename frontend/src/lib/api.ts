@@ -67,6 +67,18 @@ export async function createProject(payload: {
   return body.data;
 }
 
+export async function deleteProject(projectId: string): Promise<{ status: string; message: string }> {
+  const res = await fetch(`${API_BASE}/projects/${projectId}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.detail || errorBody.message || `Gagal menghapus proyek: ${res.status}`);
+  }
+  return res.json();
+}
+
 export async function postSparringChat(
   projectId: string,
   payload: { message: string; target_agent?: string; attachments?: any[] }

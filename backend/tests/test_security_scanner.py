@@ -5,7 +5,7 @@ Menguji pendeteksian celah keamanan berbahaya pada Python AST dan berkas TypeScr
 
 from pathlib import Path
 import pytest
-from app.engine.security_scanner import StaticSecurityScanner, SecurityFinding
+from app.engine.quality.security_scanner import StaticSecurityScanner, SecurityFinding
 
 
 @pytest.mark.asyncio

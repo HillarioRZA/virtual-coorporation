@@ -41,7 +41,7 @@ export default function PipelineSequenceList({
   return (
     <div className="flex items-center gap-2.5 overflow-x-auto pb-3 pt-2 scrollbar-thin scrollbar-thumb-white/10">
       {stages.map((stage, idx) => (
-        <React.Fragment key={stage.id || `${stage.role_slug}_${idx}`}>
+        <React.Fragment key={stage.id || `${stage.role_id || stage.role_name}_${idx}`}>
           <PipelineStageCard
             stage={stage}
             index={idx}

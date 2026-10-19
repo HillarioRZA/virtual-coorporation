@@ -108,6 +108,7 @@ class SecurityGateMiddleware:
             "/api/v1/auth/status",
             "/api/v1/auth/verify",
             "/api/v1/corporate/office",
+            "/api/v1/corporate/roles",
             "/api/v1/sentinel",
         )
         if any(path == p or path.startswith(p + "/") for p in public_prefixes):

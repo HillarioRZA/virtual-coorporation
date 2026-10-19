@@ -47,4 +47,6 @@ export const AGENT_TOOLS = [
   { id: "validate_api_contract", label: "Validate API Contract" },
   { id: "git_diff_summary", label: "Git Diff Summary" },
   { id: "runtime_tool_builder", label: "Runtime Tool Builder" },
+  { id: "lock_test_suite", label: "Kunci Test Suite (chmod 444 / TDD Guard)" },
+  { id: "write_code_bundle", label: "Tulis Code Bundle (Next.js / FastAPI / Docker / Legal)" },
 ];

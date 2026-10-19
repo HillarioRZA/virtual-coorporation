@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { SentinelAuditLog, SentinelStats } from "../../../lib/types/sentinel";
 import { fetchSentinelAuditLogs, fetchSentinelStats } from "../../../lib/sentinelApi";
+import { fetchRoles } from "../../../lib/corporateApi";
+import { RoleResponse } from "../../../lib/types/corporate";
 
 interface SentinelTelemetryDashboardProps {
   projectId: string;
@@ -39,6 +41,17 @@ export function SentinelTelemetryDashboard({ projectId, lastEvent }: SentinelTel
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
+  const [availableRoles, setAvailableRoles] = useState<RoleResponse[]>([]);
+
+  useEffect(() => {
+    fetchRoles()
+      .then((res) => {
+        if (Array.isArray(res) && res.length > 0) {
+          setAvailableRoles(res);
+        }
+      })
+      .catch((err) => console.warn("Failed fetching roles for sentinel filter:", err));
+  }, []);
 
   const loadData = useCallback(async () => {
     if (!projectId) return;
@@ -173,15 +186,23 @@ export function SentinelTelemetryDashboard({ projectId, lastEvent }: SentinelTel
             className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs focus:outline-none focus:border-cyan-500"
           >
             <option value="ALL">Semua Agen</option>
-            <option value="COS">CoS</option>
-            <option value="CTO">CTO</option>
-            <option value="PM">PM</option>
-            <option value="UI_UX">UI/UX Designer</option>
-            <option value="FRONTEND">Frontend Engineer</option>
-            <option value="BACKEND">Backend Engineer</option>
-            <option value="DEVSECOPS">DevSecOps</option>
-            <option value="QA">QA Engineer</option>
-            <option value="LEGAL">Legal Specialist</option>
+            {availableRoles.length > 0 ? (
+              availableRoles.map((r) => (
+                <option key={r.id} value={r.name.toUpperCase()}>
+                  {r.name}
+                </option>
+              ))
+            ) : (
+              <>
+                <option value="COS">Chief of Staff (COS)</option>
+                <option value="CTO">Chief Technology Officer (CTO)</option>
+                <option value="PM">Product Manager (PM)</option>
+                <option value="UX">UI/UX Architect (UX)</option>
+                <option value="FRONTEND">Frontend Engineer (FRONTEND)</option>
+                <option value="BACKEND">Backend Engineer (BACKEND)</option>
+                <option value="QA">QA & SecOps Engineer (QA)</option>
+              </>
+            )}
           </select>
         </div>
 

@@ -13,7 +13,7 @@ import pytest_asyncio
 from app.core.config import settings
 from app.db.init_db import init_database
 from app.db.ticket_repo import ticket_repo
-from app.engine.circuit_breaker import AgentCircuitBreaker
+from app.engine.governance.circuit_breaker import AgentCircuitBreaker
 from main import app
 
 

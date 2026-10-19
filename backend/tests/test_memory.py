@@ -10,10 +10,10 @@ import pytest_asyncio
 
 from app.db.init_db import init_database
 from app.db.session import get_db_connection
-from app.engine.memory import MemoryManager
-from app.engine.schemas import BusinessBriefSchema
-from app.engine.state import VentureState
-from app.engine.state_machine import NativeStateMachine
+from app.engine.memory.memory import MemoryManager
+from app.engine.schemas.schemas import BusinessBriefSchema
+from app.engine.runtime.state import VentureState
+from app.engine.runtime.state_machine import NativeStateMachine
 
 
 @pytest_asyncio.fixture

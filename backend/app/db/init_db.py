@@ -22,6 +22,8 @@ from app.db.corporate_seeder import (
     migrate_branch_parent_column,
     migrate_role_thinking_level_column,
     migrate_rich_system_prompts,
+    migrate_role_job_description_column,
+    migrate_drop_role_slug_column,
 )
 
 
@@ -45,13 +47,20 @@ async def init_database(custom_path: Optional[str] = None) -> None:
             await migrate_order_index(conn)
             await migrate_role_fallback_chain(conn)
             await migrate_branch_parent_column(conn)
-            await migrate_role_thinking_level_column(conn)
+            await migrate_role_job_description_column(conn)
+            await migrate_drop_role_slug_column(conn)
             await seed_default_corporate_structure(conn)
             await migrate_rich_system_prompts(conn)
             await seed_default_pipeline_stages(conn)
             await seed_default_corporate_wisdom(conn)
             await conn.commit()
             logger.info("Skema basis data SQLite, ledger, PR, & Corporate Wisdom berhasil divalidasi.")
+
+        try:
+            from app.engine.memory.wisdom_engine import wisdom_engine
+            await wisdom_engine.sync_organization_knowledge(custom_path=custom_path)
+        except Exception as e:
+            logger.debug(f"Initial wisdom sync: {e}")
     except aiosqlite.Error as err:
         logger.error(f"Gagal mengeksekusi DDL skema database: {err}")
         raise

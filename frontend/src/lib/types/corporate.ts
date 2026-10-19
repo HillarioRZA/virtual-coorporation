@@ -65,7 +65,7 @@ export interface RoleResponse {
   branch_id: string;
   division_id: string;
   name: string;
-  slug: string;
+  job_description?: string;
   system_prompt_template: string;
   model_provider: string;
   model_name: string;
@@ -85,7 +85,7 @@ export interface RoleCreate {
   branch_id: string;
   division_id: string;
   name: string;
-  slug: string;
+  job_description?: string;
   system_prompt_template: string;
   model_provider?: string;
   model_name?: string;
@@ -98,7 +98,9 @@ export interface RoleCreate {
 }
 
 export interface RoleUpdate {
+  division_id?: string;
   name?: string;
+  job_description?: string;
   system_prompt_template?: string;
   model_provider?: string;
   model_name?: string;

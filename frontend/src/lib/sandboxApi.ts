@@ -7,8 +7,20 @@ import { getApiV1Base } from "./config";
 
 const API_BASE = getApiV1Base();
 
+function getAuthHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
+  const headers = { ...customHeaders };
+  if (typeof window !== "undefined") {
+    const token = sessionStorage.getItem("venture_session_token");
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  }
+  return headers;
+}
+
 export async function fetchSnapshots(projectId: string): Promise<SnapshotItem[]> {
   const res = await fetch(`${API_BASE}/sandbox/snapshots/${projectId}`, {
+    headers: getAuthHeaders(),
     cache: "no-store",
   });
   if (!res.ok) {
@@ -24,7 +36,7 @@ export async function createSnapshot(
 ): Promise<SnapshotItem> {
   const res = await fetch(`${API_BASE}/sandbox/snapshots/${projectId}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ tag, description: description || "" }),
   });
   if (!res.ok) {
@@ -41,6 +53,7 @@ export async function rollbackSnapshot(
     `${API_BASE}/sandbox/snapshots/${projectId}/rollback/${snapshotId}`,
     {
       method: "POST",
+      headers: getAuthHeaders(),
     }
   );
   if (!res.ok) {
@@ -58,6 +71,7 @@ export async function deleteSnapshot(
     `${API_BASE}/sandbox/snapshots/${projectId}/${snapshotId}`,
     {
       method: "DELETE",
+      headers: getAuthHeaders(),
     }
   );
   if (!res.ok) {

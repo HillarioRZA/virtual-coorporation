@@ -6,9 +6,9 @@ from typing import List
 from unittest.mock import AsyncMock, patch
 import pytest
 
-from app.engine.autonomous_healer import AutonomousHealer
-from app.engine.speculative_branch import SpeculativeBranchEngine, SpeculativeBranchMetric
-from app.engine.visual_evaluator import HeadlessVisualEvaluator
+from app.engine.runtime.autonomous_healer import AutonomousHealer
+from app.engine.runtime.speculative_branch import SpeculativeBranchEngine, SpeculativeBranchMetric
+from app.engine.quality.visual_evaluator import HeadlessVisualEvaluator
 
 
 @pytest.mark.asyncio

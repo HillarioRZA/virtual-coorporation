@@ -12,8 +12,8 @@ from main import app
 from app.core.config import settings
 from app.db.init_db import init_database
 from app.db.pr_repo import pr_repo
-from app.engine.diff_engine import generate_file_unified_diff, compute_multi_file_diff
-from app.engine.peer_reviewer import peer_reviewer
+from app.engine.quality.diff_engine import generate_file_unified_diff, compute_multi_file_diff
+from app.engine.quality.peer_reviewer import peer_reviewer
 
 
 def test_diff_engine_calculations() -> None:

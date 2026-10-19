@@ -25,7 +25,7 @@ export default function RoleModal({
 }: RoleModalProps) {
   const [divisionId, setDivisionId] = useState("");
   const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
   const [systemPrompt, setSystemPrompt] = useState("");
   const [modelProvider, setModelProvider] = useState("openrouter");
   const [modelName, setModelName] = useState("deepseek/deepseek-r1:free");
@@ -39,7 +39,9 @@ export default function RoleModal({
 
   useEffect(() => {
     if (initialData) {
-      setDivisionId(initialData.division_id); setName(initialData.name); setSlug(initialData.slug);
+      setDivisionId(initialData.division_id);
+      setName(initialData.name);
+      setJobDescription(initialData.job_description || "");
       setSystemPrompt(initialData.system_prompt_template);
       setModelProvider(initialData.model_provider || "openrouter");
       setModelName(initialData.model_name || "deepseek/deepseek-r1:free");
@@ -50,11 +52,16 @@ export default function RoleModal({
       setFallbacks(initialData.fallback_chain || []);
     } else {
       setDivisionId(preselectedDivisionId || divisions[0]?.id || "");
-      setName(""); setSlug("");
+      setName("");
+      setJobDescription("");
       setSystemPrompt("Anda adalah agen spesialis yang berdedikasi tinggi.");
-      setModelProvider("openrouter"); setModelName("deepseek/deepseek-r1:free");
-      setTemperature(0.2); setTools(["read_file", "write_file"]); setTokenBudget(8000);
-      setThinkingLevel("medium"); setFallbacks([]);
+      setModelProvider("openrouter");
+      setModelName("deepseek/deepseek-r1:free");
+      setTemperature(0.2);
+      setTools(["read_file", "write_file"]);
+      setTokenBudget(8000);
+      setThinkingLevel("medium");
+      setFallbacks([]);
     }
     setError(null);
   }, [initialData, preselectedDivisionId, divisions, isOpen]);
@@ -65,10 +72,6 @@ export default function RoleModal({
     setModelProvider(prov);
     const presets = RECOMMENDED_PRESETS[prov];
     if (presets?.length) setModelName(presets[0]);
-  };
-  const handleNameChange = (val: string) => {
-    setName(val);
-    if (!initialData) setSlug(val.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""));
   };
   const toggleTool = (id: string) => setTools((p) => (p.includes(id) ? p.filter((t) => t !== id) : [...p, id]));
 
@@ -81,7 +84,9 @@ export default function RoleModal({
     setError(null);
     try {
       const payload = {
+        division_id: divisionId,
         name: name.trim(),
+        job_description: jobDescription.trim(),
         system_prompt_template: systemPrompt.trim(),
         model_provider: modelProvider,
         model_name: modelName.trim(),
@@ -93,7 +98,7 @@ export default function RoleModal({
       };
       const res = initialData
         ? await updateRole(initialData.id, payload)
-        : await createRole({ ...payload, branch_id: branchId, division_id: divisionId, slug: slug.trim() });
+        : await createRole({ ...payload, branch_id: branchId, division_id: divisionId });
       onSuccess(res);
       onClose();
     } catch (err: any) {
@@ -113,7 +118,7 @@ export default function RoleModal({
           </div>
           <div>
             <h3 className="text-base font-semibold text-white">{initialData ? "Edit Karyawan AI" : "Tambah Karyawan AI"}</h3>
-            <p className="text-xs text-slate-400">Konfigurasi persona, model LLM, fallback chain & perkakas agen</p>
+            <p className="text-xs text-slate-400">Konfigurasi mandat peran, model LLM, fallback chain & perkakas agen</p>
           </div>
         </div>
 
@@ -125,46 +130,45 @@ export default function RoleModal({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {!initialData && (
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Divisi Penugasan</label>
-              <select
-                value={divisionId} onChange={(e) => setDivisionId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none"
-              >
-                {divisions.map((d) => (
-                  <option key={d.id} value={d.id} className="bg-[#0c0d14]">{d.name} ({d.slug})</option>
-                ))}
-              </select>
-            </div>
-          )}
-
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">Nama Peran</label>
               <input
-                type="text" required value={name} onChange={(e) => handleNameChange(e.target.value)}
+                type="text" required value={name} onChange={(e) => setName(e.target.value)}
                 placeholder="Senior Backend Engineer"
-                className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none"
+                className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-500/50"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Slug</label>
-              <input
-                type="text" disabled={!!initialData} value={slug}
-                onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
-                placeholder="backend"
-                className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-cyan-300 font-mono text-xs focus:outline-none disabled:opacity-50"
-              />
+              <label className="block text-xs font-medium text-slate-300 mb-1">Divisi Organisasi</label>
+              <select
+                value={divisionId} onChange={(e) => setDivisionId(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-500/50"
+              >
+                {divisions.map((d) => (
+                  <option key={d.id} value={d.id} className="bg-[#0c0d14]">{d.name}</option>
+                ))}
+              </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">System Prompt Persona</label>
+            <label className="block text-xs font-medium text-slate-300 mb-1">Fokus Tugas & Jobdesk</label>
+            <input
+              type="text"
+              value={jobDescription}
+              onChange={(e) => setJobDescription(e.target.value)}
+              placeholder="e.g. Merancang REST API FastAPI & arsitektur basis data..."
+              className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-white/30"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-300 mb-1">System Instruction</label>
             <textarea
               rows={3} required value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)}
               placeholder="Instruksi sistem yang mendefinisikan kepribadian..."
-              className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none"
+              className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-500/50"
             />
           </div>
 

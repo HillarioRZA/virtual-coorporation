@@ -9,9 +9,9 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.core.logger import logger
-from app.engine.flight_recorder import agent_flight_recorder
-from app.engine.financial_guardrail import financial_guardrail
-from app.engine.visual_evaluator import visual_evaluator
+from app.engine.governance.flight_recorder import agent_flight_recorder
+from app.engine.governance.financial_guardrail import financial_guardrail
+from app.engine.quality.visual_evaluator import visual_evaluator
 
 router = APIRouter(prefix="/projects/{project_id}/frontier-radar", tags=["Frontier Radar"])
 
