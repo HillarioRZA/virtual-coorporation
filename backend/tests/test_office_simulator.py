@@ -11,14 +11,14 @@ from app.api.v1 import api_v1_router
 from app.engine.office.office_layout import get_canonical_campus_layout, auto_slot_role, SpatialTier
 from app.engine.office.office_simulator import office_sim_engine
 
-test_app = FastAPI()
-test_app.include_router(api_v1_router, prefix="/api/v1")
+_app = FastAPI()
+_app.include_router(api_v1_router, prefix="/api/v1")
 
 
 @pytest.fixture
 def client() -> TestClient:
     """Fixture FastAPI TestClient."""
-    return TestClient(test_app)
+    return TestClient(_app)
 
 
 def test_canonical_campus_layout_structure() -> None:

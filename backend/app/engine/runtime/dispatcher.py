@@ -13,7 +13,7 @@ from app.db.ticket_repo import ticket_repo
 from app.engine.schemas.corporate_schemas import CorporateMessageCreate
 from app.engine.runtime.event_bus import corporate_event_bus
 from app.engine.memory.memory import MemoryManager
-from app.engine.nodes import backend_engineering_node, frontend_prototyping_node
+from app.engine.roles.dynamic_node import execute_dynamic_role_node
 from app.engine.runtime.state import VentureState
 from app.gateway.client import UnifiedLLMClient
 from app.sandbox.proxy import ProxyManager
@@ -85,12 +85,22 @@ class TaskConcurrencyDispatcher:
         sbx = sandbox_mgr or SandboxManager()
         proxy = proxy_mgr or ProxyManager()
 
-        # 2. Definisikan coroutine paralel
-        fe_coro = frontend_prototyping_node(
-            state, llm_client=client, memory_mgr=mem, sandbox_mgr=sbx, proxy_mgr=proxy
+        # 2. Definisikan coroutine paralel peran dinamis
+        fe_coro = execute_dynamic_role_node(
+            role_identifier="fe",
+            state=state,
+            llm_client=client,
+            memory_mgr=mem,
+            sandbox_mgr=sbx,
+            proxy_mgr=proxy,
+            custom_path=custom_path,
         )
-        be_coro = backend_engineering_node(
-            state, llm_client=client, memory_manager=mem
+        be_coro = execute_dynamic_role_node(
+            role_identifier="be",
+            state=state,
+            llm_client=client,
+            memory_mgr=mem,
+            custom_path=custom_path,
         )
 
         # 3. Eksekusi bersamaan via asyncio.gather

@@ -1,8 +1,9 @@
 """
-E2E Headless Browser Visual Evaluator.
+E2E Headless Browser Visual Evaluator & Markup Style Auditor.
 Menilai estetika visual antarmuka (1–100), kontras warna, dan mendeteksi tabrakan elemen UI.
 """
 
+from html.parser import HTMLParser
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
@@ -20,6 +21,23 @@ class VisualScorecard(BaseModel):
     status: str = Field(default="APPROVED", description="Status gate (APPROVED, NEEDS_REVISION).")
 
 
+class MarkupTagCollector(HTMLParser):
+    """Parser HTML untuk mengekstrak token class dan struktur elemen antarmuka."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.tags: List[str] = []
+        self.classes: List[str] = []
+        self.raw_class_strings: List[str] = []
+
+    def handle_starttag(self, tag: str, attrs: List[tuple]) -> None:
+        self.tags.append(tag)
+        for attr, val in attrs:
+            if attr in ("class", "classname") and val:
+                self.raw_class_strings.append(val)
+                self.classes.extend(val.split())
+
+
 class HeadlessVisualEvaluator:
     """Evaluator estetika visual dan integrasi antarmuka pada sandbox webview."""
 
@@ -30,28 +48,37 @@ class HeadlessVisualEvaluator:
     ) -> VisualScorecard:
         """Mengevaluasi kerapian visual antarmuka dari analisis struktur markup dan styling."""
         recommendations: List[str] = []
-        aesthetic_score = 88
+        aesthetic_score = 90
         overlaps = 0
+        contrast_rating = "EXCELLENT"
 
-        # Deteksi tabrakan z-index atau absolute positioning tak terkontrol
-        if "z-[9999]" in html_or_jsx_content or "z-50" in html_or_jsx_content and "fixed" in html_or_jsx_content:
-            if "top-0 left-0" in html_or_jsx_content and "w-full h-full" in html_or_jsx_content:
-                pass
-            else:
-                overlaps += 1
-                aesthetic_score -= 5
-                recommendations.append("Periksa elemen bertingkat (z-index tinggi) agar tidak menutupi navigasi utama.")
+        collector = MarkupTagCollector()
+        try:
+            collector.feed(html_or_jsx_content)
+        except Exception as p_err:
+            logger.debug(f"HTMLParser parsing error: {p_err}")
 
-        # Deteksi kontras dasar (text-gray-300 pada bg-white atau text-slate-800 pada bg-dark)
-        if "text-gray-400" in html_or_jsx_content and "bg-white" in html_or_jsx_content:
-            aesthetic_score -= 8
+        all_classes_str = " ".join(collector.raw_class_strings) or html_or_jsx_content
+
+        # 1. Deteksi tabrakan z-index atau absolute/fixed positioning
+        has_high_z = "z-[9999]" in all_classes_str or "z-50" in all_classes_str
+        is_fixed = "fixed" in all_classes_str
+        is_fullscreen = "top-0 left-0" in all_classes_str and "w-full h-full" in all_classes_str
+
+        if has_high_z and is_fixed and not is_fullscreen:
+            overlaps += 1
+            aesthetic_score -= 10
+            recommendations.append("Periksa elemen bertingkat (z-index tinggi) agar tidak menutupi navigasi utama.")
+
+        # 2. Deteksi kontras dasar (text-gray-400 pada bg-white)
+        if "text-gray-400" in all_classes_str and "bg-white" in all_classes_str:
+            aesthetic_score -= 10
             recommendations.append("Tingkatkan kontras teks abu-abu terang pada latar belakang putih untuk kepatuhan WCAG.")
             contrast_rating = "POOR"
-        else:
-            contrast_rating = "EXCELLENT"
 
-        # Deteksi responsivitas
-        has_responsive_classes = any(tag in html_or_jsx_content for tag in ["md:", "lg:", "sm:", "flex-col", "grid-cols-"])
+        # 3. Deteksi responsivitas
+        responsive_tokens = ["md:", "lg:", "sm:", "flex-col", "grid-cols-", "xl:"]
+        has_responsive_classes = any(tok in all_classes_str for tok in responsive_tokens)
         if not has_responsive_classes:
             aesthetic_score -= 10
             recommendations.append("Tambahkan utilitas layout responsif Tailwind (misal: grid-cols-1 md:grid-cols-3).")
@@ -69,4 +96,5 @@ class HeadlessVisualEvaluator:
         return scorecard
 
 
+MarkupStyleAuditor = HeadlessVisualEvaluator
 visual_evaluator = HeadlessVisualEvaluator()

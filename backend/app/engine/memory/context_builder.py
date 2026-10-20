@@ -6,6 +6,7 @@ Mengimplementasikan Context Projection 3-Tier + Tier 0 Corporate Wisdom Base.
 import json
 from typing import Any, Dict, List, Optional
 from app.core.logger import logger
+from app.engine.memory.context_compactor import context_compactor
 from app.engine.runtime.state import VentureState
 
 COMPACTION_THRESHOLD = 20
@@ -113,13 +114,13 @@ class ContextBuilder:
         messages.extend(cls.get_pinned_contracts(role, state))
 
 
-        # TIER 3: Compaction pesan lama
+        # TIER 3: Compaction pesan lama via Hermes Context Compactor
         total_events = len(scoped_events)
         if total_events > limit_recent_messages:
             split_idx = total_events - limit_recent_messages
-            compacted_msg = cls.compact_older_messages(scoped_events[:split_idx])
-            if compacted_msg:
-                messages.append(compacted_msg)
+            summary_str = context_compactor.summarize_older_turns(scoped_events[:split_idx])
+            if summary_str:
+                messages.append({"role": "system", "content": summary_str})
             recent_events = scoped_events[split_idx:]
         else:
             recent_events = scoped_events
@@ -127,7 +128,7 @@ class ContextBuilder:
         # TIER 2: Sliding Window pesan terbaru
         for ev in recent_events:
             sender = str(ev.get("sender_role", "")).upper()
-            content = str(ev.get("content", ""))
+            content = context_compactor.prune_tool_output(str(ev.get("content", "")))
             if sender in ["CEO", "FOUNDER"]:
                 messages.append({"role": "user", "content": f"[CEO]: {content}"})
             elif sender in ["SYSTEM", "COMPILER", "LINTER"]:

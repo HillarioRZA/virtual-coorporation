@@ -1,13 +1,14 @@
 """
-Multi-Agent Execution Nodes & Backward-Compatibility Registry.
-Mengekspos seluruh handler node fungsional untuk peran agen yang dialihkan
-secara dinamis ke execute_dynamic_role_node() serta meregistrasikan modul virtual.
+Multi-Agent Execution Nodes Bridge & Legacy Interface Registry.
+Menyediakan antarmuka backward-compatibility yang bersih dan terisolasi
+untuk mengarahkan eksekusi node alur kerja ke dynamic execution engine.
 """
 
 import sys
 import types
 from typing import Any, Dict, Optional
 
+from loguru import logger
 from app.engine.roles.dynamic_node import execute_dynamic_role_node
 from app.engine.schemas.envelope_schemas import (
     BackendOutputEnvelope,
@@ -19,6 +20,8 @@ from app.engine.schemas.envelope_schemas import (
 from app.engine.nodes.auto_correction import extract_json_payload, parse_and_repair_schema
 from app.engine.runtime.state import VentureState
 from app.engine.tools.code_bundle_writer import (
+    PROJECTS_OUTPUT_DIR,
+    dispatch_paas_deployment,
     write_backend_files,
     write_deployment_bundle,
     write_frontend_files,
@@ -27,54 +30,60 @@ from app.engine.tools.code_bundle_writer import (
 
 
 async def cos_sparring_node(state: VentureState, llm_client: Optional[Any] = None, memory_mgr: Optional[Any] = None) -> Dict[str, Any]:
-    """Thin wrapper backward-compatibility untuk Chief of Staff Node."""
+    """Bridge backward-compatibility untuk Chief of Staff Node."""
     return await execute_dynamic_role_node("cos", state, llm_client=llm_client, memory_mgr=memory_mgr)
 
 
 async def cto_architecture_node(state: VentureState, llm_client: Optional[Any] = None, memory_mgr: Optional[Any] = None) -> Dict[str, Any]:
-    """Thin wrapper backward-compatibility untuk Chief Technology Officer Node."""
+    """Bridge backward-compatibility untuk Chief Technology Officer Node."""
     return await execute_dynamic_role_node("cto", state, llm_client=llm_client, memory_mgr=memory_mgr)
 
 
 async def pm_spec_freeze_node(state: VentureState, llm_client: Optional[Any] = None, memory_mgr: Optional[Any] = None) -> Dict[str, Any]:
-    """Thin wrapper backward-compatibility untuk Product Manager Node."""
+    """Bridge backward-compatibility untuk Product Manager Node."""
     return await execute_dynamic_role_node("pm", state, llm_client=llm_client, memory_mgr=memory_mgr)
 
 
 async def ui_ux_spec_node(state: VentureState, llm_client: Optional[Any] = None, memory_mgr: Optional[Any] = None) -> Dict[str, Any]:
-    """Thin wrapper backward-compatibility untuk Lead UI/UX Designer Node."""
+    """Bridge backward-compatibility untuk Lead UI/UX Designer Node."""
     return await execute_dynamic_role_node("ui_ux", state, llm_client=llm_client, memory_mgr=memory_mgr)
 
 
 async def frontend_prototyping_node(
-    state: VentureState, llm_client: Optional[Any] = None, memory_mgr: Optional[Any] = None,
-    sandbox_mgr: Optional[Any] = None, proxy_mgr: Optional[Any] = None,
+    state: VentureState,
+    llm_client: Optional[Any] = None,
+    memory_mgr: Optional[Any] = None,
+    sandbox_mgr: Optional[Any] = None,
+    proxy_mgr: Optional[Any] = None,
 ) -> Dict[str, Any]:
-    """Thin wrapper backward-compatibility untuk Frontend Engineer Node."""
+    """Bridge backward-compatibility untuk Frontend Engineer Node."""
     return await execute_dynamic_role_node(
         "frontend", state, llm_client=llm_client, memory_mgr=memory_mgr, sandbox_mgr=sandbox_mgr, proxy_mgr=proxy_mgr
     )
 
 
 async def backend_engineering_node(state: VentureState, llm_client: Optional[Any] = None, memory_manager: Optional[Any] = None) -> Dict[str, Any]:
-    """Thin wrapper backward-compatibility untuk Backend Engineer Node."""
+    """Bridge backward-compatibility untuk Backend Engineer Node."""
     return await execute_dynamic_role_node("backend", state, llm_client=llm_client, memory_mgr=memory_manager)
 
 
 async def qa_eval_node(state: VentureState, llm_client: Optional[Any] = None, memory_manager: Optional[Any] = None) -> Dict[str, Any]:
-    """Thin wrapper backward-compatibility untuk QA & Security Auditor Node."""
+    """Bridge backward-compatibility untuk QA & Security Auditor Node."""
     return await execute_dynamic_role_node("qa", state, llm_client=llm_client, memory_mgr=memory_manager)
 
 
 async def devsecops_packaging_node(
-    state: VentureState, llm_client: Optional[Any] = None, memory_manager: Optional[Any] = None, vault_manager: Optional[Any] = None,
+    state: VentureState,
+    llm_client: Optional[Any] = None,
+    memory_manager: Optional[Any] = None,
+    vault_manager: Optional[Any] = None,
 ) -> Dict[str, Any]:
-    """Thin wrapper backward-compatibility untuk DevSecOps Node."""
+    """Bridge backward-compatibility untuk DevSecOps Node."""
     return await execute_dynamic_role_node("devsecops", state, llm_client=llm_client, memory_mgr=memory_manager, vault_mgr=vault_manager)
 
 
 async def legal_compliance_node(state: VentureState, llm_client: Optional[Any] = None, memory_manager: Optional[Any] = None) -> Dict[str, Any]:
-    """Thin wrapper backward-compatibility untuk Legal & Compliance Node."""
+    """Bridge backward-compatibility untuk Legal & Compliance Node."""
     return await execute_dynamic_role_node("legal", state, llm_client=llm_client, memory_mgr=memory_manager)
 
 
@@ -92,7 +101,13 @@ async def prd_and_specs_phase_node(state: VentureState, llm_client: Optional[Any
     return {"prd_spec": state.prd_spec, "openapi_spec": state.openapi_spec, "ui_spec": state.ui_spec, "project_name": state.project_name}
 
 
-async def mock_prototyping_phase_node(state: VentureState, llm_client: Optional[Any] = None, memory_mgr: Optional[Any] = None, sandbox_mgr: Optional[Any] = None, proxy_mgr: Optional[Any] = None) -> Dict[str, Any]:
+async def mock_prototyping_phase_node(
+    state: VentureState,
+    llm_client: Optional[Any] = None,
+    memory_mgr: Optional[Any] = None,
+    sandbox_mgr: Optional[Any] = None,
+    proxy_mgr: Optional[Any] = None,
+) -> Dict[str, Any]:
     """Composite node Mock Prototyping (Frontend & sandbox)."""
     return await execute_dynamic_role_node("frontend", state, llm_client=llm_client, memory_mgr=memory_mgr, sandbox_mgr=sandbox_mgr, proxy_mgr=proxy_mgr)
 
@@ -105,9 +120,7 @@ async def production_hardening_node(state: VentureState, llm_client: Optional[An
     return {"quality_scorecard": state.quality_scorecard, "token_usage": state.token_usage, "event_logs": state.event_logs}
 
 
-from app.engine.tools.code_bundle_writer import PROJECTS_OUTPUT_DIR, dispatch_paas_deployment
-
-# Registrasi modul virtual backward-compatibility di sys.modules
+# Registrasi modul virtual backward-compatibility pada sys.modules
 _VIRTUAL_MODULES = {
     "cos": {"cos_sparring_node": cos_sparring_node},
     "cto": {"cto_architecture_node": cto_architecture_node},

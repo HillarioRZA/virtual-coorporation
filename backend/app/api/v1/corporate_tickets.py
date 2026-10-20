@@ -112,3 +112,19 @@ async def seed_initial_tickets(
     """Menginisialisasi tiket bawaan Tech Core (PRD, Arsitektur, Frontend, Backend, QA)."""
     tickets = await ticket_repo.seed_initial_project_tickets(project_id, branch_id=branch_id)
     return [TicketResponse(**t) for t in tickets]
+
+
+@router.post("/{project_id}/dispatch")
+async def dispatch_kanban_tickets(
+    project_id: str,
+    branch_id: str = Query("branch_main", description="Branch sasaran"),
+) -> Dict[str, Any]:
+    """Memicu pemindaian dan eksekusi otonom tiket TODO yang dependensinya telah selesai."""
+    from app.engine.runtime.kanban_runner import kanban_runner
+    dispatched = await kanban_runner.scan_and_dispatch_once(project_id, branch_id=branch_id)
+    return {
+        "status": "success",
+        "project_id": project_id,
+        "dispatched_count": len(dispatched),
+        "dispatched_ticket_ids": dispatched,
+    }

@@ -4,7 +4,9 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-14.2%20(Production%20Ready)-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![Oasis 2D Liquid](https://img.shields.io/badge/Command%20HQ-Obsidian%20Liquid%202D-6366f1?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
-[![Pytest](https://img.shields.io/badge/Pytest-180%2F180%20Passed%20(100%25)-brightgreen?style=flat-square&logo=pytest&logoColor=white)](https://pytest.org/)
+[![Pytest](https://img.shields.io/badge/Pytest-189%2F189%20Passed%20(100%25)-brightgreen?style=flat-square&logo=pytest&logoColor=white)](https://pytest.org/)
+[![FastEmbed](https://img.shields.io/badge/Neural%20RAG-FastEmbed%20ONNX%20(384--dim)-00D26A?style=flat-square&logo=onnx&logoColor=white)](backend/app/engine/memory/vector_store.py)
+[![CoV Gatekeeper](https://img.shields.io/badge/Sentinel-Two--Tier%20CoV%20(Critic--Only)-FF6B6B?style=flat-square)](backend/app/engine/sentinel/verifier.py)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![SQLite WAL](https://img.shields.io/badge/Database-SQLite%20WAL-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
@@ -36,7 +38,7 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 │  & Venture State   Pipeline Builder      & Live Lounge WS     Terminal & Snapshots  Command HQ (2D)    │
 │                                                                                                        │
 │  /analytics        /settings             /wisdom              /sparring/[id]                           │
-│  Ledger & Finance  BYOK & Secret Vault   Vector RAG Base      Executive Sparring                       │
+│  Ledger & Finance  BYOK & Secret Vault   FastEmbed 384-dim    Executive Sparring                       │
 └───────────────────────────────────────────────────┬────────────────────────────────────────────────────┘
                                                     │ REST API / WebSocket / SSE Streams
                                                     ▼
@@ -44,17 +46,17 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 │                                   FASTAPI HIGH-CONCURRENCY BACKEND                                     │
 │                                        Pure ASGI Middleware Engine                                     │
 │                                                                                                        │
-│  • SecurityGateMiddleware (Stealth Dynamic PIN + Telegram Auth) • ProcessTimeLoggingMiddleware         │
+│  • SecurityGateMiddleware (Stealth Dynamic PIN + OpenClaw Trust Boundary) • ProcessTimeLoggingMiddleware│
 │  • 21 Modular REST & WebSocket Routers (Corporate, Pipelines, Tickets, Governance, Vault, Office)     │
 └───────────────────────┬───────────────────────────────────────────────────────┬────────────────────────┘
                         │                                                       │
                         ▼                                                       ▼
 ┌──────────────────────────────────────────────┐        ┌────────────────────────────────────────────────┐
-│      DYNAMIC ASYNC KANBAN ENGINE             │        │          CORPORATE EVENT BUS (PUB/SUB)         │
-│ • Ticket Lifecycle: BACKLOG ➔ TODO ➔         │        │ • Non-blocking asyncio.Queue per Project       │
-│   IN_PROGRESS ➔ REVIEW ➔ DONE                │◄──────►│ • SQLite WAL Message Ledger Persistence        │
-│ • Task Concurrency Dispatcher (DAG Gather)   │        │ • Real-time WebSocket Lounge Broadcast        │
-│ • Dependency Resolution & Priority Sorting   │        │ • Agent Dialogue & Incident Escalation Log     │
+│       AUTONOMOUS KANBAN RUNNER ENGINE        │        │          CORPORATE EVENT BUS (PUB/SUB)         │
+│ • SQLite WAL Atomic Claim Query              │        │ • Non-blocking asyncio.Queue per Project       │
+│   (UPDATE ... WHERE id=? AND status='TODO')  │◄──────►│ • SQLite WAL Message Ledger Persistence        │
+│ • Task Concurrency Dispatcher (Semaphore)    │        │ • Real-time WebSocket Lounge Broadcast        │
+│ • FileLockManager (Path Mutex Concurrency)   │        │ • Agent Dialogue & Incident Escalation Log     │
 └───────────────────────┬──────────────────────┘        └───────────────────────┬────────────────────────┘
                         │                                                       │
                         ▼                                                       ▼
@@ -63,21 +65,22 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 │                                                                                                        │
 │  • Agent Decision Envelope: { PROCEED | CONSULT_ROLE | ESCALATE_TO_C_LEVEL | REQUEST_REWORK }          │
 │  • Anti-Infinite Loop Circuit Breaker: Auto-Freeze Ticket on >= 3 Consecutive Debate Turns             │
-│  • Financial Guardrail & Flight Recorder: Hard Quota ($1.50 / 350k tokens) & Time-Travel Replay        │
+│  • Financial Guardrail & Flight Recorder: Hard Quota ($1.50 / 350k tokens) & Dynamic Pricing Ledger    │
 │  • 1-Click CEO Strategic Intervention & Veto (Force Proceed / Chat Directive / Reassign Role)          │
 │  • Three-Way Branch Merge Engine: LCA Graph Traversal for Isolated Corporate Branch Merging            │
 └───────────────────────────────────────────────┬────────────────────────────────────────────────────────┘
                                                 │
                                                 ▼
 ┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                      CORE COGNITIVE & EXECUTION ENGINES                                │
+│                                TWO-TIER COGNITIVE & EXECUTION ENGINES                                  │
 │                                                                                                        │
-│  • Sovereign Model Router: Multi-Channel Failover (9router-style), Quota Limiter (RPM/TPM/RPD)        │
-│  • Dynamic Thinking Level Control: Reasoning Effort (None, Low, Medium, High) with Auto-Escalation    │
-│  • State-First Cognitive Handoff: Context Compaction (>85% Token Saved, 98% Technical Retention)       │
-│  • Autonomous Peer-to-Peer PR Review Engine: Quorum Approval Gate (>= 2 approvals) & AST Verification │
-│  • Corporate Wisdom Base: Embedded 128-dim Vector Memory RAG + 1-Click GitHub Skill/Blueprint Importer │
-│  • Python AST OWASP Security Scanner & Runtime Tool Synthesizer with AST Static Validation             │
+│  • Sovereign Model Router: Multi-Channel Failover (9router-style), Hermes Multi-Key Pool & Radar       │
+│  • Two-Tier CoV Gatekeeper: Tier 1 Deterministic Guard (0ms, 0 Token) & Tier 2 LLM Pre-Flight Critic  │
+│  • Worker Self-Repair Loop: CoV murni sebagai auditor; Agen Peran wajib memperbaiki parameter sendiri │
+│  • Hermes Layered Context Compactor: Tool output pruning (>400 baris) & tail retention 4 giliran       │
+│  • Corporate Wisdom Base: FastEmbed ONNX 384-dim Neural RAG (Thread-Offloaded & Pre-warmed)            │
+│  • Dynamic Tool Registry: Local Tools, Persistent Custom Tools (corporate_custom_tools), & MCP Router │
+│  • Telegram Secretary Daemon: Background Long Polling, Sender Whitelist & Inline Approval Gate         │
 │  • Hardened Docker Subnet Sandbox: Dedicated bridge_net_{project_id} with Hard CPU/RAM Quota           │
 │  • Global Oasis Live Engine: Real-time Multi-Agent Thoughts, Scoped @mentions & 0-Token Watchdog       │
 └────────────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -122,10 +125,19 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
   - 🤝 **Executive Strategic Meeting**: Pertemuan penyelarasan strategi antara Founder dan C-Level.
   - 🧭 **Founder Direction Input**: Penyisipan arahan visi Founder langsung di tengah eksekusi.
 
-### 4. Dynamic Asynchronous Kanban & Event Bus
+### 4. Dynamic Asynchronous Kanban, Autonomous Runner & File Locks
 * **Manajemen Tiket Otonom**: Setiap tugas venture direpresentasikan dalam kartu tiket (`corporate_tickets`) lengkap dengan branch, divisi, penanggung jawab, lini produk, prioritas, dan dependensi prasyarat.
 * **Siklus Hidup 5 Kolom**: `BACKLOG ➔ TODO ➔ IN_PROGRESS ➔ REVIEW ➔ DONE`. Agen mendeteksi tiket yang siap dikerjakan secara mandiri begitu seluruh dependensi terpenuhi.
-* **Task Concurrency Dispatcher (`dispatcher.py`)**: Mengeksekusi tugas-tugas rekayasa yang independen secara paralel menggunakan `asyncio.gather()`, memangkas durasi produksi hingga 40–50%.
+* **Autonomous Non-Blocking Scheduler (`kanban_runner.py`)**: Daemon background task yang memantau tiket siap kerja secara kontinu dan mengeksekusi agen secara otonom tanpa memerlukan intervensi tombol manual di UI.
+* **SQLite WAL Atomic Claim Query**:
+  ```sql
+  UPDATE corporate_tickets 
+  SET status = 'IN_PROGRESS', updated_at = CURRENT_TIMESTAMP 
+  WHERE id = ? AND status = 'TODO' 
+  RETURNING *;
+  ```
+  Menjamin ketiadaan eksekusi ganda (*zero double-execution*) di antara beberapa worker paralel.
+* **FileLockManager (`file_lock_manager.py`)**: Manajemen *mutex lock* asinkron per jalur berkas (`asyncio.Lock` per absolute file path), mengeliminasi tabrakan penulisan (*race conditions*) saat beberapa agen bekerja paralel pada kode sumber yang berdekatan.
 * **Corporate Event Bus Asinkron (`event_bus.py`)**: Arsitektur pub/sub non-blocking berbasis `asyncio.Queue` per proyek yang mendistribusikan sinyal tugas ke antarmuka web, WebSocket Lounge, dan telemetri secara instan.
 
 ### 5. Executive Governance Hub & Anti-Infinite Loop Circuit Breaker
@@ -137,19 +149,23 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
   - `REASSIGN`: Mengalihkan tugas ke peran karyawan AI lain.
 * **Eskalasi C-Level Langsung**: CTO atau CoS memformulasikan laporan ringkas Opsi A vs Opsi B untuk keputusan cepat Founder.
 
-### 6. Sovereign Model Router, Quota Shield & Dynamic Thinking Level
-* **Multi-Channel Fallback Cascade (ala 9router)**: Orkestrasi perutean hulu cerdas dengan rantai model cadangan otomatis jika model utama mengalami kegagalan (HTTP 429 rate limit atau HTTP 500 server error).
-* **Pre-flight Quota Limiter**: Memantau batas RPM (Requests Per Minute), TPM (Tokens Per Minute), dan RPD (Requests Per Day) per kanal penyedia dengan mekanisme *self-healing cooldown*.
-* **Dynamic Thinking Level Control**: Pengaturan kedalaman penalaran model (`none`, `low`, `medium`, `high`) per peran AI. Pada saat terjadi rework (`turn_count == 2`), router secara otomatis meningkatkan level penalaran ke `high` (*auto-escalation*) untuk memecahkan bug sulit.
-* **State-First Cognitive Handoff**: Saat alih-tangan atau failover antar-agen/model, sistem tidak mengirim riwayat percakapan mentah. Sistem memadatkan konteks berbasis status arsitektur (AST symbols, schema contracts, file diffs) dan membuang tag penalaran `<think>`, **menghemat $>85\%$ konsumsi token** sembari mempertahankan **98% retensi konteks teknis**.
+### 6. Sovereign Model Router, Polymorphic Contracts & Dynamic Accounting
+* **Polymorphic Contract Strategy (`contract_handlers.py`)**: Menghilangkan rantai `if-elif` rapuh dan menggantikannya dengan strategi handler polimorfik terstruktur untuk validasi arsitektur, PRD, komponen UI, berkas kode, dan scorecard penjaminan mutu.
+* **Dynamic Pricing & Real CFO Ledger**: Menggantikan kalkulasi statis $0.02 dengan perhitungan riil per-token aktual sesuai model dan mencatat penggunaannya langsung ke tabel transaksi `corporate_token_ledger`.
+* **Pre-Flight & Post-Flight Financial Guardrail**: Sinkronisasi aktif dengan `financial_guardrail.py`, memberlakukan *pre-flight validation* batas kuota pengeluaran ($1.50 atau 350.000 token per tiket) dengan pembekuan otomatis (*auto-freeze* `FROZEN_PENDING_APPROVAL`).
+* **Multi-Channel Fallback Cascade & Hermes Credential Pool**: Orkestrasi perutean hulu cerdas dengan rantai model cadangan otomatis, rotasi multi-kunci, *exponential backoff*, dan *self-healing cooldown* saat menerima HTTP 429 atau 503.
+* **Dynamic Thinking Level Control**: Pengaturan kedalaman penalaran model (`none`, `low`, `medium`, `high`) per peran AI dengan auto-escalation ke `high` saat terjadi rework.
+* **State-First Cognitive Handoff**: Pemadatan konteks berbasis status arsitektur (AST symbols, schema contracts, file diffs) yang membuang tag penalaran `<think>`, **menghemat $>85\%$ konsumsi token** sembari mempertahankan **98% retensi konteks teknis**.
 
 ### 7. Autonomous Peer-to-Peer PR Review Engine & Quorum Gate
 * **Siklus Hidup Pull Request Otomatis**: Kode hasil pekerjaan agen dikemas menjadi Pull Request lengkap dengan tampilan diff Git-style (`+`/`-`).
 * **Review Multi-Disiplin Terisolasi**: Menugaskan peninjauan kode ke spesialis yang relevan (QA Engineer menguji keamanan dan test case, CTO memeriksa kepatuhan arsitektur, dan Backend/Frontend memeriksa kontrak data).
 * **Quorum Approval Gate**: Kode hanya dapat digabungkan (*merged*) jika mendapatkan **minimal $\ge 2$ persetujuan (*approvals*)** dari agen peninjau tanpa komentar penolakan aktif.
 
-### 8. Corporate Wisdom Base & Vector Memory RAG
-* **Pencarian Semantik Sub-2ms**: Database vektor lokal tersemat 128-dimensi ($L_2$ normalized) yang beroperasi tanpa dependensi cloud eksternal yang lambat.
+### 8. Corporate Wisdom Base & FastEmbed ONNX Local Neural RAG
+* **Local Neural Semantic Embeddings (384-Dimensi)**: Menggunakan model dense vector **FastEmbed ONNX** lokal (`BAAI/bge-small-en-v1.5`) dengan normalisasi $L_2$ dan cosine similarity, menghasilkan pencarian semantik berpresisi tinggi tanpa latensi API eksternal.
+* **Non-Blocking Asynchronous Offloading**: Pembuatan vektor dijalankan terisolasi melalui thread worker pool menggunakan `asyncio.to_thread()`, menjamin *event loop* asyncio tetap responsif.
+* **Lifespan Startup Pre-warming**: Model embedding diinisialisasi dan di-cache saat boot server FastAPI, mengeliminasi lonjakan latensi (*cold start penalty*) pada permintaan pertama.
 * **1-Click GitHub Skill & Blueprint Importer (`/wisdom`)**: Mengimpor berkas pengetahuan, aturan rekayasa, atau dokumen arsitektur langsung dari URL GitHub publik ke dalam repositori pengetahuan korporat.
 * **Cross-Venture Knowledge Sharing**: Best-practice, solusi bug masa lalu, dan pola optimasi secara otomatis disuntikkan ke dalam *working memory* agen (Tier 0 Context) saat menghadapi masalah serupa.
 
@@ -182,23 +198,20 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 * **Interactive Web PTY Terminal**: Terminal CLI live dua arah berbasis WebSocket di antarmuka `/preview/[id]` dengan guardrail pencegah perintah destruktif sistem operasi (`rm -rf /`, `mkfs`, dll).
 * **Copy-on-Write (CoW) Snapshots**: Snapshot direktori proyek otomatis dengan garansi *Zero Data Loss* (pembuatan cadangan instan `AUTO_PRE_ROLLBACK` sebelum rollback dijalankan).
 
-### 14. Internal Chain-of-Verification (CoV) Pre-Flight Gatekeeper & Sentinel Observability Engine
-* **Pemisahan Peran Kognitif & Penjaga Keselamatan Teknis**:
-  - **Peralihan ke Kontrak Fleksibel**: Menggantikan validasi skema yang kaku (`extra="forbid"`) dengan **Open Flexible Contracts (`extra="allow"`)**, memberikan kebebasan bagi agen untuk merancang inovasi UI modern (animasi, glow tokens, micro-interactions).
-  - **Internal Pre-Flight Sentinel**: Sebagai penyeimbang kebebasan kreatif, agen internal CoV bertindak sebagai penjaga kelaikan teknis (*Pre-Flight Inspector*) sebelum respons disiarkan atau perkakas dieksekusi, mencegah runtime crash (500 Internal Server Error).
+### 14. Two-Tier Chain-of-Verification (CoV) Pre-Flight Gatekeeper & Worker Repair Loop
+* **Arsitektur Dua Tingkat (Two-Tier Architecture)**:
+  - **Tier 1 (Deterministik Python — 0ms, 0 Token)**: Memeriksa validitas skema Pydantic, tipe parameter, dan izin peran (*role tool permissions*). Seluruh pemanggilan alat baca (*read-only tools* seperti `read_codebase`, `search_codebase`, `inspect_db_schema`, `git_diff_summary`) yang lolos Tier 1 langsung disetujui (`APPROVED`) tanpa memanggil model LLM kedua.
+  - **Tier 2 (LLM Pre-Flight Inspector)**: Khusus mengaudit pemanggilan alat mutasi (*mutating tools* seperti `write_codebase`, `synthesize_and_register_tool`, `lock_test_suite`) dan artefak kontrak data tonggak akhir.
+* **Filosofi Ketat "Critic-Only" (Tanpa Pembajakan & Tanpa Self-Repair)**:
+  - CoV **HANYA** bertindak sebagai auditor/kritikus teknis independen. CoV dilarang keras melakukan perbaikan mandiri atau mengeksekusi perkakas atas namanya sendiri.
+  - Jika ada parameter yang kurang atau pemanggilan cacat, CoV menetapkan status `REPAIR_REQUIRED` dan menghasilkan `repair_feedback` yang spesifik (misal: "Alat OWASP membutuhkan parameter a, b, c, d, tetapi hanya a, b, c yang dikirim").
+* **Autonomous Role-Worker Self-Repair Loop**:
+  - Agen peran pemanggil menerima umpan balik koreksi CoV, memperbaiki parameternya secara mandiri menggunakan konteks domain lengkapnya, dan mengirimkan kembali respons hasil perbaikan.
+  - Setelah CoV memvalidasi dan memberikan lampu hijau (`APPROVED`), **agen peran itu sendiri yang mengeksekusi perkakasnya** dan menerima observasi langsung (*Non-Hijacking Execution*).
 * **Konfigurasi Internal Terkunci di Server (Zero UI Exposure)**:
-  - Seluruh konfigurasi model, provider, dan API key CoV (`COV_PROVIDER`, `COV_MODEL`, `COV_BASE_URL`, `COV_API_KEY`) diatur secara eksklusif via `.env` dan `config.py`.
-  - **Zero UI Exposure**: Pengaturan CoV tidak pernah diekspos ke antarmuka `/settings` maupun `/organization` demi menjaga integritas agen pengawas internal.
-* **Lean Tool Manifest (~150-200 Tokens) & Dynamic Stage Filtering**:
-  - CoV hanya menerima deskripsi tanda tangan fungsi dan parameter kunci (*lean manifest*), bukan kode implementasi yang panjang.
-  - **Stage-Aware Filtering**: Tahap Ideasi murni menyuntikkan 0 tools (menghemat token secara maksimal), sedangkan tahap Engineering hanya menyuntikkan perkakas relevan (`inspect_db_schema`, `validate_api_contract`, `git_diff_summary`, `search_codebase`, `runtime_tool_builder`).
-* **Autonomous Role-Agent Self-Healing (Bukan CoV yang Memperbaiki Sendiri)**:
-  - Jika pemanggilan perkakas cacat atau parameter wajib kurang, CoV bertindak sebagai **Auditor/Kritikus** dengan status `REPAIR_REQUIRED` dan menghasilkan `repair_feedback` yang spesifik.
-  - Sistem mengirimkan teguran internal tersebut **kembali ke Agen Role pemanggil (CTO, Backend, Frontend, dll.)**, sehingga **Agen Role sendiri yang memperbaiki respons dan parameternya** secara mandiri menggunakan konteks domain lengkapnya.
-  - Setelah diperbaiki oleh Agen Role dan disetujui oleh CoV (`APPROVED` / `REPAIRED`), perkakas dieksekusi atas nama agen asli dan hasil observasi dikembalikan langsung ke agen tersebut (*Non-Hijacking Tool Execution*).
+  - Seluruh konfigurasi CoV (`COV_PROVIDER`, `COV_MODEL`, `COV_BASE_URL`, `COV_API_KEY`) diatur secara eksklusif via `.env` dan `config.py` tanpa pernah diekspos ke antarmuka `/settings` maupun `/organization`.
 * **CoV Sentinel Observability Dashboard (`/office`)**:
-  - Antarmuka telemetri real-time yang transparan di Command HQ dengan Bento Grid (Total Pre-Flight Audits, Skor Reliabilitas %, Jumlah Auto-Repairs, Rerata Latensi ms).
-  - Filter interaktif berdasarkan peran agen dan status (APPROVED, REPAIRED, REJECTED).
+  - Antarmuka telemetri real-time di Command HQ dengan Bento Grid (Total Pre-Flight Audits, Skor Reliabilitas %, Jumlah Auto-Repairs, Rerata Latensi ms).
   - Laci inspeksi detail dengan tampilan **Diff Sisi-ke-Sisi (Kandidat Asli vs Hasil Verifikasi)**, catatan teguran koreksi CoV, dan penampil JSON parameter perkakas.
   - **Event-Driven WebSocket Sync**: Terhubung langsung ke WebSocket Oasis (`/corporate/ws/office/{project_id}`) untuk pembaruan instan tanpa *HTTP polling spam*.
   - Lencana visual `[🛡️ CoV Verified]` pada setiap kartu respons agen di Oasis Chat.
@@ -218,10 +231,9 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
   - Seluruh berkas node peran statis di `backend/app/engine/nodes/` dan berkas `backend/prompts/*.md` telah dihapus secara fisik demi transisi ke arsitektur dinamis sejati.
   - Tabel SQLite `corporate_roles` bertindak sebagai **Satu-Satunya Sumber Kebenaran (*Single Source of Truth*)** untuk seluruh konfigurasi peran: nama, slug, deskripsi tugas & fokus jobdesk (`job_description`), instruksi persona sistem (`system_prompt_template`), model LLM, provider, temperature, batas token, dan izin perkakas.
 * **Mesin Eksekusi Polimorfik Tunggal (`execute_dynamic_role_node`)**:
-  - Seluruh peran dieksekusi oleh mesin tunggal di `app/engine/dynamic_node.py` yang secara dinamis memuat konfigurasi peran, menjalankan loop perkakas (`_handle_agent_tools`), menyelaraskan skema output (`role_output_processor.py`), dan mencatat publikasi artefak ke memori blackboard (`role_event_logger.py`).
+  - Seluruh peran dieksekusi oleh mesin tunggal di `app/engine/roles/dynamic_node.py` yang secara dinamis memuat konfigurasi peran, menjalankan loop perkakas (`_handle_agent_tools`), menyelaraskan skema output (`role_output_processor.py`), dan mencatat publikasi artefak ke memori blackboard (`role_event_logger.py`).
 * **Injeksi Hierarki Pohon Organisasi (*Org-Tree Scoped Context*)**:
   - Agen eksekutif (CoS, CTO, PM) secara otomatis menerima konteks menyeluruh mengenai struktur organisasi perusahaan terkini: daftar divisi, tujuan/mandat divisi (`purpose`), seluruh peran AI di dalam divisi, serta fokus tugas dan jobdesk masing-masing (`job_description`).
-  - Hal ini memberdayakan para pimpinan eksekutif untuk mendelegasikan tugas ke tiket Kanban secara otonom sesuai kapasitas divisi yang ada.
 * **Executive Baton Relay & `@mention` Routing Terarah**:
   - Percakapan antar-agen di Oasis HQ maupun Sparring Room mendukung pengalihan estafet tongkat komando (*Baton Relay*).
   - Dilengkapi guardrail batas estafet maksimum `MAX_RELAY_HOPS = 3` dan pengabaian *self-mention* untuk mencegah *infinite ping-pong loop* antar-agen.
@@ -229,6 +241,24 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
   - Logika isolasi penguncian berkas tes (*read-only* & `chmod 444`) kini dipisahkan sepenuhnya dari nama berkas python statis dan dialihkan menjadi izin perkakas `lock_test_suite` di antarmuka organisasi.
 * **Manajemen Visual Tujuan Divisi & Jobdesk Peran di UI**:
   - Antarmuka visual `/organization` memungkinkan Founder mengubah Tujuan Divisi (*Division Purpose*) dan Fokus Jobdesk Karyawan AI (*Role Job Description*) secara langsung tanpa menyentuh kode backend.
+
+### 17. Remote Executive Liaison: Telegram Secretary Daemon & Dynamic Tool Synthesis
+* **Long Polling Daemon Background Worker (`telegram_daemon.py`)**: Berjalan di latar belakang menggunakan `httpx.AsyncClient` tanpa memerlukan konfigurasi webhook publik atau port forwarding.
+* **OpenClaw Trust Boundary (Whitelist Protection)**: Memeriksa identitas pengirim di gerbang terluar. Hanya pesan dari `user_id` yang terdaftar dalam `TELEGRAM_ALLOWED_USER_IDS` yang diproses. Upaya akses tanpa izin langsung ditolak dan dicatat sebagai *security probe* ke `flight_recorder.py`.
+* **Dynamic Role Secretary Integration (`secretary_resolver.py`)**: Agen eksekutif personal Founder yang terdaftar resmi di tabel `corporate_roles` (di bawah divisi `div_exec` atau memiliki permission `chat_telegram`), menjembatani instruksi Founder di aplikasi Telegram dengan operasional multi-agen. Parameter model, prompt kustom, dan persona dari UI langsung digunakan secara dinamis.
+* **Remote Dynamic Tool Synthesis**: Founder dapat berdiskusi bebas dengan Sekretaris dan memerintahkannya membuat perkakas sistem baru via Telegram. Sekretaris menghasilkan fungsi Python yang secara otomatis didaftarkan ke `dynamic_tool_registry.py` dengan status `PENDING_APPROVAL`.
+* **Inline Tool Approval Gate**: Saat Sekretaris menyintesis perkakas baru, ringkasan fungsi dan nama tool dikirimkan ke Telegram Founder. Founder dapat langsung mengaktifkannya dengan membalas `/approve <nama_tool>` atau menolak dengan `/reject <nama_tool>`.
+* **Live Command Telemetri**: Perintah `/status` untuk ringkasan real-time Kanban korporat, serta diskusi bebas untuk konsultasi eksekutif jarak jauh.
+
+### 18. Extensible Dynamic Tool Registry & SQLite Custom Tool Persistence
+* **Dynamic Tool Registry (`dynamic_tool_registry.py`)**: Registri perkakas yang dapat diperluas (*extensible*), menggantikan percabangan statis dengan routing dinamis untuk perkakas internal, server eksternal berbasis **Model Context Protocol (MCP)**, dan perkakas kustom runtime.
+* **SQLite Persistence (`corporate_custom_tools`)**: Menyimpan definisi perkakas yang disintesis (nama perkakas, deskripsi, skema JSON parameter, source code Python, peran pembuat, dan flag persetujuan) ke dalam database SQLite.
+* **Crash-Resistant Startup Reloader**: Saat server FastAPI boot (`lifespan`), seluruh perkakas yang berstatus `is_approved = 1` secara otomatis dikompilasi ulang secara aman dan didaftarkan kembali ke registri runtime, mencegah *wipeout* saat restart.
+
+### 19. Hermes Layered Context Compactor & Memory Optimization
+* **Tool Output Pruning (`context_compactor.py`)**: Memotong keluaran observasi perkakas yang sangat panjang (>400 baris atau data biner) menjadi intisari status arsitektural padat.
+* **Progressive Executive Summarization**: Jika akumulasi token mencapai $\ge 70\%$ dari batas jendela konteks model, riwayat pesan awal dipadatkan secara otomatis menjadi ringkasan status teknis.
+* **Tail Retention Guarantee**: Mempertahankan 4 giliran percakapan terbaru (*last 4 turns*) secara utuh tanpa pemotongan agar agen tidak kehilangan instruksi dan konteks operasional terkini.
 
 ---
 
@@ -355,6 +385,7 @@ Seluruh endpoint REST API dan WebSocket terpusat di bawah prefix `/api/v1` denga
 │   │   ├── db/                       # Basis Data SQLite Asinkron (aiosqlite WAL)
 │   │   │   ├── branch_repo.py        # Isolasi Branching & Forking Database
 │   │   │   ├── corporate_repo.py     # Unified Corporate Facade Database
+│   │   │   ├── custom_tools_schema.py# DDL Tabel corporate_custom_tools (Secretary Tools)
 │   │   │   ├── division_repo.py      # Operasi Divisi Organisasi
 │   │   │   ├── role_repo.py          # Operasi Peran Karyawan AI (100% Slug-Free)
 │   │   │   ├── pipeline_repo.py      # Multi-Product Pipelines
@@ -365,17 +396,18 @@ Seluruh endpoint REST API dan WebSocket terpusat di bawah prefix `/api/v1` denga
 │   │   │   ├── sentinel_repo.py      # CoV Pre-flight Inspection Records
 │   │   │   └── session.py            # SQLite WAL Connection Pool (`busy_timeout = 5000`)
 │   │   ├── engine/                   # Modular Cognitive & Execution Engines
-│   │   │   ├── runtime/              # Model Router, State Machine, State Handoff, Dispatcher
-│   │   │   ├── roles/                # Dynamic Polymorphic Role Node, Role Event Logger
+│   │   │   ├── runtime/              # Model Router, Autonomous Kanban Runner, State Machine
+│   │   │   ├── roles/                # Dynamic Polymorphic Role Node, Contract Handlers
 │   │   │   ├── governance/           # Circuit Breaker, Financial Guardrail, Flight Recorder
-│   │   │   ├── memory/               # Blackboard Memory, Venture State, Vector Store
-│   │   │   ├── tools/                # DB Inspector, Contract Validator, Tool Synthesizer
+│   │   │   ├── memory/               # Blackboard Memory, Context Compactor, Vector Store (FastEmbed)
+│   │   │   ├── tools/                # FileLockManager, DynamicToolRegistry, Tool Synthesizer
+│   │   │   ├── secretary/            # TelegramSecretaryDaemon (Long Polling & Trust Boundary)
 │   │   │   ├── quality/              # AST Security Scanner, P2P Reviewer, Visual Evaluator
 │   │   │   ├── office/               # Actor Event Bus & Oasis Lounge Engine
-│   │   │   └── sentinel/             # CoV Pre-Flight Gatekeeper & Inspector
+│   │   │   └── sentinel/             # Two-Tier CoV Pre-Flight Gatekeeper & Inspector
 │   │   ├── gateway/                  # Unified Multi-Provider BYOK Client (Adapters)
 │   │   └── sandbox/                  # Docker Sandbox Runner & Caddy Proxy Manager
-│   ├── tests/                        # Unit & Integration Test Suites (100% Passed)
+│   ├── tests/                        # Unit & Integration Test Suites (189 Passed / 100%)
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
@@ -463,7 +495,12 @@ Untuk menjalankan seluruh rangkaian pengujian backend:
 ```bash
 pytest backend/tests -q
 ```
-**Status Pengujian: 174 / 174 Pengujian Lolos (100% PASSED, Zero Failure)**.
+**Status Pengujian: 189 / 189 Pengujian Lolos (100% PASSED, Zero Failure)**.
+
+Rangkaian uji terbagi dalam 3 gelombang verifikasi ketat:
+* **Gelombang 1 (Fondasi & Desentralisasi Kognitif)**: Pembersihan dead code legacy, Polymorphic Contract Handler (`contract_handlers.py`), Sovereign Router live token pricing ledger, dan FastEmbed ONNX 384-dim neural RAG.
+* **Gelombang 2 (Keselamatan & Efisiensi Memori)**: Two-Tier CoV Pre-Flight Gatekeeper (Tier 1 0ms/0-token passing vs Tier 2 mutating critic), Autonomous Role-Worker Self-Repair Loop, dan Hermes Layered Context Compactor.
+* **Gelombang 3 (Otonomi Korporat & Ekstensi Remote)**: Autonomous Kanban Runner dengan SQLite Atomic Claim Query, FileLockManager anti-race condition mutex, DynamicToolRegistry SQLite persistence (`corporate_custom_tools`), dan Telegram Secretary Daemon dengan dynamic tool synthesis.
 
 ---
 

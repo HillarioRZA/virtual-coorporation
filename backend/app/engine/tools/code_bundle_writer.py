@@ -10,6 +10,23 @@ from app.engine.tools.scaffolding import scaffold_standalone_backend, scaffold_s
 
 
 PROJECTS_OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent / "projects_output"
+_custom_projects_dir: Optional[Path] = None
+
+
+def set_projects_output_dir(path: Path) -> None:
+    """Mengatur direktori output proyek kustom untuk pengujian atau lingkungan terisolasi."""
+    global _custom_projects_dir
+    _custom_projects_dir = path
+
+
+def _get_base_dir() -> Path:
+    """Mengambil direktori dasar output proyek dengan fallback backward-compatible."""
+    import sys
+    legacy = (
+        getattr(sys.modules.get("app.engine.nodes.backend"), "PROJECTS_OUTPUT_DIR", None)
+        or getattr(sys.modules.get("app.engine.nodes.frontend"), "PROJECTS_OUTPUT_DIR", None)
+    )
+    return _custom_projects_dir or legacy or PROJECTS_OUTPUT_DIR
 
 
 def write_backend_files(
@@ -18,8 +35,7 @@ def write_backend_files(
     read_only_files: Optional[List[str]] = None,
 ) -> Path:
     """Menulis berkas backend FastAPI produksi dan scaffolding pendukung."""
-    import sys
-    base_dir = getattr(sys.modules.get("app.engine.nodes.backend"), "PROJECTS_OUTPUT_DIR", None) or PROJECTS_OUTPUT_DIR
+    base_dir = _get_base_dir()
     output_dir = Path(base_dir) / project_id / "backend"
     output_dir.mkdir(parents=True, exist_ok=True)
     read_only = set(read_only_files or [])
@@ -50,8 +66,7 @@ def write_frontend_files(
     read_only_files: Optional[List[str]] = None,
 ) -> Path:
     """Menyimpan berkas Next.js yang dihasilkan ke projects_output/<id>/frontend."""
-    import sys
-    base_dir = getattr(sys.modules.get("app.engine.nodes.frontend"), "PROJECTS_OUTPUT_DIR", None) or PROJECTS_OUTPUT_DIR
+    base_dir = _get_base_dir()
     fe_dir = Path(base_dir) / project_id / "frontend"
     for sub in ["src/services", "src/components", "src/app"]:
         (fe_dir / sub).mkdir(parents=True, exist_ok=True)

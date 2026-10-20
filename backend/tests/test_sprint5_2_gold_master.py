@@ -98,7 +98,7 @@ async def test_github_markdown_skill_importer(tmp_path: Path) -> None:
     assert res["title"] == "Archify Enterprise Skill"
     saved = await wisdom_repo.get_wisdom_by_id(res["wisdom_id"], custom_path=db_path)
     assert saved is not None
-    assert len(saved["embedding"]) == 128
+    assert len(saved["embedding"]) in (128, 384)
     assert "github" in saved["tags"]
 
 

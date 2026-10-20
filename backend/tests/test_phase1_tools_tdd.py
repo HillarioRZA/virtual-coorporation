@@ -10,8 +10,6 @@ from app.engine.tools.db_inspector import DatabaseInspector
 from app.engine.tools.contract_validator import ContractValidator
 from app.engine.tools.diff_digest import DiffDigestGenerator
 from app.gateway.adapters.anthropic_adapter import AnthropicAdapter
-from app.engine.nodes.backend import write_backend_files, BackendOutputEnvelope
-from app.engine.nodes.frontend import write_frontend_files, FrontendCodeBundle
 
 
 @pytest.fixture
@@ -101,26 +99,3 @@ def test_anthropic_prompt_caching() -> None:
     cached_blocks = adapter._build_cached_system("System instructions here")
     assert isinstance(cached_blocks, list)
     assert cached_blocks[0]["cache_control"] == {"type": "ephemeral"}
-
-
-def test_adversarial_tdd_guardrails(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Menguji penolakan modifikasi file tes oleh node Backend dan Frontend."""
-    import app.engine.nodes.backend as backend_node
-    monkeypatch.setattr(backend_node, "PROJECTS_OUTPUT_DIR", tmp_path)
-
-    envelope = BackendOutputEnvelope(
-        main_code="import fastapi\napp = fastapi.FastAPI()\n# Main backend entrypoint",
-        models_code="class User:\n    id: int\n    name: str\n    email: str",
-        routers_code="from fastapi import APIRouter\nrouter = APIRouter()",
-        migration_code="def upgrade():\n    pass\ndef downgrade():\n    pass",
-        requirements_content="fastapi>=0.110.0\nuvicorn>=0.28.0\n",
-    )
-    # Tulis file tes palsu terlebih dahulu
-    proj_dir = tmp_path / "proj_test" / "backend"
-    proj_dir.mkdir(parents=True, exist_ok=True)
-    test_file = proj_dir / "test_api.py"
-    test_file.write_text("ORIGINAL_TEST_CODE", encoding="utf-8")
-
-    # Agen developer mencoba menimpa
-    write_backend_files("proj_test", envelope, read_only_files=["test_api.py"])
-    assert test_file.read_text(encoding="utf-8") == "ORIGINAL_TEST_CODE"

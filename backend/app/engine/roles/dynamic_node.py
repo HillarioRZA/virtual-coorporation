@@ -16,8 +16,8 @@ from app.gateway.client import UnifiedLLMClient
 
 
 async def execute_dynamic_role_node(
-    role_identifier: str,
-    state: VentureState,
+    role_identifier: str = "",
+    state: Optional[VentureState] = None,
     ticket_context: Optional[Dict[str, Any]] = None,
     llm_client: Optional[UnifiedLLMClient] = None,
     memory_mgr: Optional[Any] = None,
@@ -25,9 +25,13 @@ async def execute_dynamic_role_node(
     proxy_mgr: Optional[Any] = None,
     vault_mgr: Optional[Any] = None,
     custom_path: Optional[str] = None,
+    role_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Eksekutor otonom tunggal untuk peran apa pun di dalam organisasi."""
-    norm_id = role_identifier.replace("role_", "").lower()
+    effective_role = role_id or role_identifier
+    if not effective_role:
+        raise ValueError("Parameter role_identifier atau role_id wajib disertakan.")
+    norm_id = effective_role.replace("role_", "").lower()
     client = llm_client or UnifiedLLMClient()
     model, provider = settings.get_agent_model_and_provider(norm_id.upper())
     temperature = 0.5
@@ -73,11 +77,42 @@ async def execute_dynamic_role_node(
             logger.warning(f"Konteks memori [{norm_id}] gagal dimuat: {e}")
 
     logger.info(f"Dynamic Node [@{norm_id.upper()}] executing for [{state.project_id}] via {provider}/{model}")
-    raw = await client.complete(
-        prompt=user_prompt, system_prompt=system_prompt, model=model, provider=provider, temperature=temperature
-    )
-    raw = await _handle_agent_tools(
-        state.project_id, raw, client, system_prompt, user_prompt, model, provider, temperature
+    from app.engine.runtime.model_router import sovereign_router
+    actual_cost: Optional[float] = None
+    try:
+        raw, ledger_entry = await sovereign_router.execute_routed_completion(
+            prompt=user_prompt,
+            system_prompt=system_prompt,
+            primary_provider=provider,
+            primary_model=model,
+            temperature=temperature,
+            role_id=norm_id,
+            project_id=state.project_id if state else None,
+            ticket_id=ticket_context.get("id") if ticket_context else None,
+            custom_path=custom_path,
+        )
+        if ledger_entry and "cost_usd" in ledger_entry:
+            actual_cost = ledger_entry["cost_usd"]
+    except Exception as route_err:
+        logger.warning(f"Sovereign router fallback ke client.complete() untuk [{norm_id}]: {route_err}")
+        raw = await client.complete(
+            prompt=user_prompt, system_prompt=system_prompt, model=model, provider=provider, temperature=temperature
+        )
+
+    from app.engine.roles.dynamic_node_tools import handle_agent_tools
+
+    raw = await handle_agent_tools(
+        project_id=state.project_id if state else "default_proj",
+        raw_response=raw,
+        client=client,
+        sys_p=system_prompt,
+        usr_p=user_prompt,
+        model=model,
+        provider=provider,
+        temp=temperature,
+        agent_role=norm_id,
+        stage=state.stage if state else "development",
+        custom_path=custom_path,
     )
     return await process_role_output(
         role_id=norm_id,
@@ -91,6 +126,7 @@ async def execute_dynamic_role_node(
         sbx=sandbox_mgr,
         proxy=proxy_mgr,
         vault=vault_mgr,
+        actual_cost=actual_cost,
     )
 
 
@@ -116,29 +152,3 @@ def _build_task_prompt(state: VentureState, ticket_context: Optional[Dict[str, A
         "Jalankan analisis, perancangan, atau produksi sesuai mandat peran Anda."
     )
 
-
-async def _handle_agent_tools(
-    project_id: str,
-    raw_response: str,
-    client: Any,
-    sys_p: str,
-    usr_p: str,
-    model: str,
-    provider: str,
-    temp: float,
-) -> str:
-    """Menjalankan loop perkakas agen jika model memanggil tool call."""
-    from app.engine.tools.agent_tool_dispatcher import agent_tool_dispatcher
-
-    step_count, cur_resp, accum = 0, raw_response, usr_p
-    while step_count < agent_tool_dispatcher.max_steps:
-        tc = agent_tool_dispatcher.parse_tool_call(cur_resp)
-        if not tc:
-            break
-        obs = await agent_tool_dispatcher.execute_tool(project_id, tc["tool"], tc["parameters"])
-        accum += f"\n[OBSERVATION dari {tc['tool']}]: {obs}\nLanjutkan tugas Anda."
-        cur_resp = await client.complete(
-            prompt=accum, system_prompt=sys_p, model=model, provider=provider, temperature=temp
-        )
-        step_count += 1
-    return cur_resp

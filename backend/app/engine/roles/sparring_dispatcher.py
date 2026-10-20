@@ -124,11 +124,23 @@ async def dispatch_sparring_response(
 
         # Baton Relay untuk mention agen lain dalam balasan
         if can_relay(relay_hop):
+            from app.engine.governance.circuit_breaker import agent_circuit_breaker
             active_roles = await role_repo.get_roles(active_only=True)
             mentioned_ids = extract_relay_mentions(final_reply, role_name, active_roles)
             for m_id in mentioned_ids:
                 tgt_role = next((r for r in active_roles if r["id"] == m_id or r["name"].lower() == m_id.lower()), None)
                 if tgt_role:
+                    is_blocked = await agent_circuit_breaker.record_consultation_turn(
+                        ticket_id=f"sparring_{project_id}",
+                        project_id=project_id,
+                        branch_id="branch_main",
+                        sender_role=role_name,
+                        recipient_role=tgt_role["name"],
+                        topic_summary=final_reply[:120],
+                    )
+                    if is_blocked:
+                        logger.warning(f"Circuit Breaker memblokir estafet sparring [{role_name}] -> [{tgt_role['name']}].")
+                        break
                     logger.info(f"Relaying baton dari [{role_name}] ke [{tgt_role['name']}] (Hop: {relay_hop + 1})...")
                     relay_msg = f"Tanggapan dari @{role_name}: \"{final_reply[:300]}\". Berikan pandangan/tindak lanjut."
                     asyncio.create_task(

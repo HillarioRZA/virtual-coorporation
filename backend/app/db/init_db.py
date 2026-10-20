@@ -13,6 +13,7 @@ from app.db.ledger_schema import LEDGER_DDL_SCHEMA
 from app.db.pr_schema import PR_DDL_SCHEMA
 from app.db.wisdom_schema import WISDOM_DDL_SCHEMA
 from app.db.sentinel_schema import SENTINEL_DDL_SCHEMA
+from app.db.custom_tools_schema import CUSTOM_TOOLS_DDL_SCHEMA
 from app.db.corporate_seeder import (
     seed_default_corporate_structure,
     seed_default_pipeline_stages,
@@ -44,6 +45,7 @@ async def init_database(custom_path: Optional[str] = None) -> None:
             await conn.executescript(PR_DDL_SCHEMA)
             await conn.executescript(WISDOM_DDL_SCHEMA)
             await conn.executescript(SENTINEL_DDL_SCHEMA)
+            await conn.executescript(CUSTOM_TOOLS_DDL_SCHEMA)
             await migrate_order_index(conn)
             await migrate_role_fallback_chain(conn)
             await migrate_branch_parent_column(conn)

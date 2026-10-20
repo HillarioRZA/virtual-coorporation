@@ -126,8 +126,29 @@ class AutonomousPeerReviewer:
         custom_path: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Memvalidasi keselarasan kontrak antarmuka API dan DTO oleh peran rekanan (Frontend/Backend)."""
-        verdict = "APPROVED"
-        summary = "Peer Review: Kontrak payload, respons DTO, dan integrasi antar-komponen selaras."
+        inline_comments: List[Dict[str, Any]] = []
+        violations = 0
+        for f in files:
+            path = f.get("path", "")
+            code = f.get("new_content", "")
+            if path.endswith(".py") and code.strip():
+                try:
+                    ast.parse(code)
+                except SyntaxError as syn_err:
+                    violations += 1
+                    inline_comments.append({
+                        "file_path": path,
+                        "line_number": syn_err.lineno or 1,
+                        "comment": f"Syntax error pada kontrak Python: {syn_err}",
+                        "code_suggestion": "# Perbaiki sintaks Python sebelum integrasi DTO",
+                    })
+
+        verdict = "APPROVED" if violations == 0 else "CHANGES_REQUESTED"
+        summary = (
+            f"Peer Review [{reviewer_name}]: Kontrak payload, respons DTO, dan integrasi antar-komponen selaras."
+            if verdict == "APPROVED"
+            else f"Peer Review [{reviewer_name}]: Ditemukan {violations} ketidakselarasan kontrak kode."
+        )
 
         return await pr_repo.add_review(
             pr_id=pr_id,
@@ -135,8 +156,8 @@ class AutonomousPeerReviewer:
             reviewer_name=reviewer_name,
             verdict=verdict,
             summary=summary,
-            inline_comments=[],
-            security_score=100,
+            inline_comments=inline_comments,
+            security_score=100 if verdict == "APPROVED" else 60,
             custom_path=custom_path,
         )
 

@@ -13,14 +13,14 @@ from app.sandbox.docker_network import docker_network_mgr
 from app.sandbox.docker_runner import docker_multi_runner
 from app.sandbox.fallback_runner import fallback_runner
 
-test_app = FastAPI()
-test_app.include_router(api_v1_router, prefix="/api/v1")
+_app = FastAPI()
+_app.include_router(api_v1_router, prefix="/api/v1")
 
 
 @pytest.fixture
 def client() -> TestClient:
     """Fixture FastAPI TestClient."""
-    return TestClient(test_app)
+    return TestClient(_app)
 
 
 @pytest.mark.asyncio

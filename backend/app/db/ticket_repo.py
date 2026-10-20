@@ -140,6 +140,19 @@ class TicketRepository:
         logger.info(f"Tiket [{ticket_id}] Transisi: {existing['status']} -> {new_status}")
         return await self.get_ticket_by_id(ticket_id, custom_path)
 
+    async def claim_ticket_atomic(
+        self, ticket_id: str, custom_path: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Mengklaim tiket berstatus TODO menjadi IN_PROGRESS secara atomik."""
+        query = "UPDATE corporate_tickets SET status = 'IN_PROGRESS', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'TODO';"
+        async with get_db_connection(custom_path) as conn:
+            cur = await conn.execute(query, (ticket_id,))
+            await conn.commit()
+            if cur.rowcount > 0:
+                logger.info(f"Tiket [{ticket_id}] berhasil diklaim secara atomik (TODO -> IN_PROGRESS)")
+                return await self.get_ticket_by_id(ticket_id, custom_path)
+            return None
+
     async def delete_ticket(self, ticket_id: str, custom_path: Optional[str] = None) -> bool:
         """Menghapus tiket tugas dari papan Kanban."""
         async with get_db_connection(custom_path) as conn:

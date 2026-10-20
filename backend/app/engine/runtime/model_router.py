@@ -42,17 +42,13 @@ class UpstreamChannel:
     async def throttle_if_needed(self, estimated_tokens: int = 2000) -> None:
         """Menahan request sejenak jika laju request mendekati batas RPM/TPM."""
         now = time.time()
-        # Bersihkan rekaman lebih dari 60 detik
         self.request_timestamps = [t for t in self.request_timestamps if now - t < 60]
         self.token_window = [(t, tok) for t, tok in self.token_window if now - t < 60]
-
-        current_rpm = len(self.request_timestamps)
-        current_tpm = sum(tok for _, tok in self.token_window)
+        current_rpm, current_tpm = len(self.request_timestamps), sum(tok for _, tok in self.token_window)
 
         if current_rpm >= self.rpm_limit or (current_tpm + estimated_tokens) >= self.tpm_limit:
-            wait_time = 2.0
-            logger.info(f"Pre-flight throttling kanal [{self.provider}] selama {wait_time}s (RPM: {current_rpm}/{self.rpm_limit}).")
-            await asyncio.sleep(wait_time)
+            logger.info(f"Pre-flight throttling kanal [{self.provider}] (RPM: {current_rpm}/{self.rpm_limit}).")
+            await asyncio.sleep(2.0)
 
         self.request_timestamps.append(time.time())
         self.token_window.append((time.time(), estimated_tokens))
@@ -91,7 +87,16 @@ class SovereignModelRouter:
         ticket_id: Optional[str] = None,
         thinking_level: str = "medium",
     ) -> Tuple[str, Dict[str, Any]]:
-        """Mengeksekusi completion teks dengan auto-failover, throttle, dan pencatatan ledger."""
+        if ticket_id:
+            try:
+                from app.engine.governance.financial_guardrail import financial_guardrail
+                if financial_guardrail.is_ticket_frozen(ticket_id):
+                    raise RuntimeError(f"Tiket [{ticket_id}] dibekukan karena melebihi batas anggaran token/biaya.")
+            except Exception as fg_err:
+                if "dibekukan" in str(fg_err):
+                    raise fg_err
+                logger.debug(f"Pengecekan financial guardrail dilewati: {fg_err}")
+
         if ticket_id and turn_count == 1:
             try:
                 from app.engine.governance.circuit_breaker import agent_circuit_breaker
@@ -164,6 +169,19 @@ class SovereignModelRouter:
                     is_fallback=is_fb,
                     custom_path=custom_path,
                 )
+
+                if ticket_id:
+                    try:
+                        from app.engine.governance.financial_guardrail import financial_guardrail
+                        financial_guardrail.record_usage(
+                            ticket_id,
+                            tokens=in_tok + out_tok,
+                            cost_dollars=cost,
+                            project_id=project_id,
+                        )
+                    except Exception as fg_err:
+                        logger.debug(f"Pencatatan financial guardrail dilewati: {fg_err}")
+
                 return output, ledger_entry
             except (httpx.HTTPError, RuntimeError, Exception) as err:
                 last_error = err

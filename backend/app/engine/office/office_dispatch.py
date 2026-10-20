@@ -23,6 +23,7 @@ async def dispatch_office_agent_response(
     instruction: str,
     attachments: Optional[List[Dict[str, Any]]] = None,
     relay_hop: int = 0,
+    ticket_id: Optional[str] = None,
 ) -> None:
     """Menghasilkan tanggapan otomatis LLM dari agen sasaran di Oasis Live Command HQ."""
     agent = office_sim_engine.agents.get(role_id)
@@ -78,13 +79,27 @@ async def dispatch_office_agent_response(
 
         client = UnifiedLLMClient()
         logger.info(f"Oasis LLM Response diproses untuk [{role_name}] via {provider}/{model}...")
-        reply = await client.complete(
-            prompt="\n\n".join(prompt_parts),
-            system_prompt=sys_prompt,
-            model=model,
-            provider=provider,
-            thinking_level=thinking_level,
-        )
+        from app.engine.runtime.model_router import sovereign_router
+        try:
+            reply, _ = await sovereign_router.execute_routed_completion(
+                prompt="\n\n".join(prompt_parts),
+                system_prompt=sys_prompt,
+                primary_provider=provider,
+                primary_model=model,
+                thinking_level=thinking_level,
+                role_id=role_id,
+                project_id=project_id,
+                ticket_id=ticket_id,
+            )
+        except Exception as route_err:
+            logger.warning(f"Sovereign router fallback di Oasis: {route_err}")
+            reply = await client.complete(
+                prompt="\n\n".join(prompt_parts),
+                system_prompt=sys_prompt,
+                model=model,
+                provider=provider,
+                thinking_level=thinking_level,
+            )
 
         # CoV Gatekeeper Pre-Flight Inspection
         from app.engine.sentinel.verifier import cov_gatekeeper
@@ -157,20 +172,15 @@ async def dispatch_office_agent_response(
             content=final_reply,
         ))
 
-        if can_relay(relay_hop):
-            active_roles = await role_repo.get_roles()
-            for tgt_id in extract_relay_mentions(final_reply, role_name, active_roles):
-                tgt_role = await role_repo.get_role_by_id(tgt_id)
-                tgt_name = tgt_role["name"] if tgt_role else tgt_id
-                logger.info(f"Relaying baton from [{role_name}] to [{tgt_name}] (Hop: {relay_hop + 1})...")
-                asyncio.create_task(
-                    dispatch_office_agent_response(
-                        project_id=project_id,
-                        role_id=tgt_id,
-                        instruction=f"@{tgt_name}, berikut tanggapan dari @{role_name}: \"{final_reply[:300]}\". Berikan tanggapan dari keahlian Anda.",
-                        relay_hop=relay_hop + 1,
-                    )
-                )
+        from app.engine.office.office_relay import relay_office_mentions
+        await relay_office_mentions(
+            project_id=project_id,
+            sender_role_name=role_name,
+            reply_content=final_reply,
+            relay_hop=relay_hop,
+            dispatch_fn=dispatch_office_agent_response,
+            ticket_id=ticket_id,
+        )
     except Exception as err:
         logger.error(f"Gagal memproses respons agen [{role_id}] di Oasis: {err}")
         if agent:
