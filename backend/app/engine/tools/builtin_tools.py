@@ -76,8 +76,24 @@ async def tool_write_code_bundle(project_id: str, **parameters: Any) -> Dict[str
     return {"status": "SUCCESS", "output_dir": str(out_path)}
 
 
+async def tool_run_lsp_diagnostics(project_id: str, **parameters: Any) -> Dict[str, Any]:
+    """Mengecek error tipe fatal (Pyright / TypeScript) pada berkas tertentu."""
+    from app.engine.lsp.lsp_service import lsp_service
+    file_path = parameters.get("file_path", "")
+    if not file_path:
+        return {"error": "Parameter 'file_path' wajib diisi."}
+    diags = await lsp_service.get_diagnostics(project_id, file_path)
+    return {
+        "status": "SUCCESS",
+        "file_path": file_path,
+        "errors_count": len(diags),
+        "diagnostics": diags,
+    }
+
+
 def get_builtin_tools() -> Dict[str, Callable[..., Any]]:
     """Mengembalikan peta perkakas standar bawaan sistem."""
+    from app.engine.skills.skill_agent_tools import tool_consult_skill_library, tool_read_skill_detail
     return {
         "inspect_db_schema": tool_inspect_db_schema,
         "validate_api_contract": tool_validate_api_contract,
@@ -86,4 +102,7 @@ def get_builtin_tools() -> Dict[str, Callable[..., Any]]:
         "runtime_tool_builder": tool_runtime_tool_builder,
         "lock_test_suite": tool_lock_test_suite,
         "write_code_bundle": tool_write_code_bundle,
+        "consult_skill_library": tool_consult_skill_library,
+        "read_skill_detail": tool_read_skill_detail,
+        "run_lsp_diagnostics": tool_run_lsp_diagnostics,
     }

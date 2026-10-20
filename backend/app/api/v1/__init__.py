@@ -61,6 +61,12 @@ api_v1_router.include_router(branch_merge_router)
 api_v1_router.include_router(office_router)
 api_v1_router.include_router(office_ws_router)
 
+from app.api.v1.mcp_routes import router as mcp_router
+from app.api.v1.skills_routes import router as skills_router
+
+api_v1_router.include_router(mcp_router)
+api_v1_router.include_router(skills_router)
+
 __all__ = ["api_v1_router"]
 
 

@@ -19,12 +19,24 @@ from app.gateway.client import UnifiedLLMClient
 
 READ_ONLY_TOOLS: Set[str] = {
     "inspect_db_schema", "validate_api_contract", "git_diff_summary",
-    "search_codebase", "read_codebase",
+    "search_codebase", "read_codebase", "consult_skill_library", "read_skill_detail",
+    "run_lsp_diagnostics",
 }
 MUTATING_TOOLS: Set[str] = {
     "write_code_bundle", "lock_test_suite", "runtime_tool_builder",
     "write_codebase", "synthesize_and_register_tool",
 }
+
+
+def is_read_only_tool(tool_name: str) -> bool:
+    """Menentukan apakah perkakas bersifat baca deterministik (Tier 1) atau mutasi (Tier 2)."""
+    if tool_name in READ_ONLY_TOOLS:
+        return True
+    if tool_name.startswith("mcp:"):
+        action = tool_name.split(":")[-1]
+        read_prefixes = ("get_", "list_", "read_", "search_", "inspect_", "describe_")
+        return any(action.startswith(prefix) for prefix in read_prefixes)
+    return False
 
 
 class CoVInspectionResult(BaseModel):
@@ -130,7 +142,7 @@ class CoVGatekeeper:
         if not t1_valid:
             status = "REPAIR_REQUIRED"
             feedback = t1_err
-        elif t_name in READ_ONLY_TOOLS:
+        elif is_read_only_tool(t_name):
             # Lolos Tier 1 langsung disetujui (0ms, 0 LLM tokens)
             status = "APPROVED"
         else:

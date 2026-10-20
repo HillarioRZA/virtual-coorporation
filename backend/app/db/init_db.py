@@ -14,6 +14,7 @@ from app.db.pr_schema import PR_DDL_SCHEMA
 from app.db.wisdom_schema import WISDOM_DDL_SCHEMA
 from app.db.sentinel_schema import SENTINEL_DDL_SCHEMA
 from app.db.custom_tools_schema import CUSTOM_TOOLS_DDL_SCHEMA
+from app.db.mcp_skills_schema import MCP_SKILLS_DDL_SCHEMA, DEFAULT_SKILL_CATEGORIES
 from app.db.corporate_seeder import (
     seed_default_corporate_structure,
     seed_default_pipeline_stages,
@@ -21,22 +22,14 @@ from app.db.corporate_seeder import (
     migrate_order_index,
     migrate_role_fallback_chain,
     migrate_branch_parent_column,
-    migrate_role_thinking_level_column,
-    migrate_rich_system_prompts,
     migrate_role_job_description_column,
     migrate_drop_role_slug_column,
+    migrate_rich_system_prompts,
 )
 
 
 async def init_database(custom_path: Optional[str] = None) -> None:
-    """Menginisialisasi seluruh skema tabel, indeks, ledger, PR, dan wisdom base pada SQLite.
-
-    Args:
-        custom_path: Path basis data opsional (misal untuk testing).
-
-    Raises:
-        aiosqlite.Error: Jika terjadi kegagalan eksekusi skrip DDL.
-    """
+    """Menginisialisasi seluruh skema tabel, indeks, ledger, PR, wisdom base, MCP, dan skills."""
     logger.info("Memulai inisialisasi skema basis data SQLite...")
     try:
         async with get_db_connection(custom_path) as conn:
@@ -46,6 +39,7 @@ async def init_database(custom_path: Optional[str] = None) -> None:
             await conn.executescript(WISDOM_DDL_SCHEMA)
             await conn.executescript(SENTINEL_DDL_SCHEMA)
             await conn.executescript(CUSTOM_TOOLS_DDL_SCHEMA)
+            await conn.executescript(MCP_SKILLS_DDL_SCHEMA)
             await migrate_order_index(conn)
             await migrate_role_fallback_chain(conn)
             await migrate_branch_parent_column(conn)
@@ -55,8 +49,13 @@ async def init_database(custom_path: Optional[str] = None) -> None:
             await migrate_rich_system_prompts(conn)
             await seed_default_pipeline_stages(conn)
             await seed_default_corporate_wisdom(conn)
+            for cat in DEFAULT_SKILL_CATEGORIES:
+                await conn.execute(
+                    "INSERT OR IGNORE INTO corporate_skill_categories (id, name, slug, description) VALUES (?, ?, ?, ?);",
+                    (cat["id"], cat["name"], cat["slug"], cat["description"]),
+                )
             await conn.commit()
-            logger.info("Skema basis data SQLite, ledger, PR, & Corporate Wisdom berhasil divalidasi.")
+            logger.info("Skema basis data SQLite, MCP, & Skills berhasil divalidasi.")
 
         try:
             from app.engine.memory.wisdom_engine import wisdom_engine

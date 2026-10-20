@@ -135,6 +135,20 @@ class DynamicToolRegistry:
             return await res
         return res
 
+    def register_callable(self, name: str, fn: Callable[..., Any]) -> None:
+        """Mendaftarkan fungsi callable secara langsung ke memori aktif (misal proxy MCP)."""
+        self._active_tools[name] = fn
+        logger.debug(f"Perkakas [{name}] berhasil didaftarkan ke memori DynamicToolRegistry.")
+
+    def unregister_tool(self, name: str) -> None:
+        """Mencabut perkakas dari registri memori aktif."""
+        self._active_tools.pop(name, None)
+        logger.debug(f"Perkakas [{name}] dicabut dari memori DynamicToolRegistry.")
+
+    def get_registered_tool_names(self) -> List[str]:
+        """Mengembalikan daftar seluruh perkakas aktif yang terdaftar."""
+        return list(self._active_tools.keys())
+
     def is_tool_registered(self, name: str) -> bool:
         """Memeriksa apakah perkakas telah aktif di memori."""
         return name in self._active_tools

@@ -50,6 +50,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         from app.engine.tools.dynamic_tool_registry import dynamic_tool_registry
         await dynamic_tool_registry.load_approved_tools_from_db()
 
+        from app.engine.mcp.mcp_manager import mcp_manager
+        await mcp_manager.rehydrate_active_servers()
+
         # Pre-warm model FastEmbed neural embedding secara asinkron di worker thread
         try:
             from app.engine.memory.vector_store import vector_store

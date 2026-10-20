@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
-import { Sparkles, Settings, LayoutGrid, ShieldCheck, Terminal, Network, Activity, Building2 } from "lucide-react";
+import { Sparkles, Settings, LayoutGrid, ShieldCheck, Terminal, Network, Activity, Building2, Cpu, BookOpen } from "lucide-react";
 import AuthGateModal from "../components/auth/AuthGateModal";
 
 export const metadata: Metadata = {
@@ -75,6 +75,22 @@ export default function RootLayout({
               >
                 <Network className="w-3.5 h-3.5 text-slate-400" />
                 <span>Organization</span>
+              </Link>
+
+              <Link
+                href="/mcp"
+                className="flex items-center space-x-1.5 text-xs font-medium text-slate-300 hover:text-white px-3 py-1.5 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all"
+              >
+                <Cpu className="w-3.5 h-3.5 text-purple-400" />
+                <span>MCP Hub</span>
+              </Link>
+
+              <Link
+                href="/skills"
+                className="flex items-center space-x-1.5 text-xs font-medium text-slate-300 hover:text-white px-3 py-1.5 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Skills</span>
               </Link>
 
               <Link

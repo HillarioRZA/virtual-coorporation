@@ -4,7 +4,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-14.2%20(Production%20Ready)-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![Oasis 2D Liquid](https://img.shields.io/badge/Command%20HQ-Obsidian%20Liquid%202D-6366f1?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
-[![Pytest](https://img.shields.io/badge/Pytest-189%2F189%20Passed%20(100%25)-brightgreen?style=flat-square&logo=pytest&logoColor=white)](https://pytest.org/)
+[![Pytest](https://img.shields.io/badge/Pytest-203%2F203%20Passed%20(100%25)-brightgreen?style=flat-square&logo=pytest&logoColor=white)](https://pytest.org/)
 [![FastEmbed](https://img.shields.io/badge/Neural%20RAG-FastEmbed%20ONNX%20(384--dim)-00D26A?style=flat-square&logo=onnx&logoColor=white)](backend/app/engine/memory/vector_store.py)
 [![CoV Gatekeeper](https://img.shields.io/badge/Sentinel-Two--Tier%20CoV%20(Critic--Only)-FF6B6B?style=flat-square)](backend/app/engine/sentinel/verifier.py)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org/)
@@ -37,8 +37,8 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 │  Portfolio Hub     Org Studio & DND      Mission Control      Live Sandbox, PTY     Global Oasis Live  │
 │  & Venture State   Pipeline Builder      & Live Lounge WS     Terminal & Snapshots  Command HQ (2D)    │
 │                                                                                                        │
-│  /analytics        /settings             /wisdom              /sparring/[id]                           │
-│  Ledger & Finance  BYOK & Secret Vault   FastEmbed 384-dim    Executive Sparring                       │
+│  /mcp              /skills               /analytics           /settings             /wisdom            │
+│  MCP Server Hub    Public Skill Library  Ledger & Finance     BYOK & Secret Vault   FastEmbed 384-dim  │
 └───────────────────────────────────────────────────┬────────────────────────────────────────────────────┘
                                                     │ REST API / WebSocket / SSE Streams
                                                     ▼
@@ -259,6 +259,34 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 * **Tool Output Pruning (`context_compactor.py`)**: Memotong keluaran observasi perkakas yang sangat panjang (>400 baris atau data biner) menjadi intisari status arsitektural padat.
 * **Progressive Executive Summarization**: Jika akumulasi token mencapai $\ge 70\%$ dari batas jendela konteks model, riwayat pesan awal dipadatkan secara otomatis menjadi ringkasan status teknis.
 * **Tail Retention Guarantee**: Mempertahankan 4 giliran percakapan terbaru (*last 4 turns*) secara utuh tanpa pemotongan agar agen tidak kehilangan instruksi dan konteks operasional terkini.
+
+### 20. Model Context Protocol (MCP) Server Hub & Permission Pool (`/mcp`)
+* **Instalasi & Manajemen Server MCP Tanpa Koding**: Antarmuka visual `/mcp` memungkinkan Founder memasang server MCP eksternal berbasis stdio JSON-RPC 2.0 (seperti GitHub MCP, Postgres MCP, Filesystem MCP) hanya dengan mengisi command, argumen, dan variabel lingkungan.
+* **Brankas Rahasia Terenkripsi AES-256-GCM**: Variabel lingkungan sensitif (misal `GITHUB_PERSONAL_ACCESS_TOKEN`, `DATABASE_URL`) dienkripsi secara aman di tabel `corporate_mcp_servers` sebelum disimpan ke basis data SQLite.
+* **Registrasi Permission Otomatis & Rehidrasi Saat Boot**: Perkakas yang diekspos oleh server MCP langsung diubah menjadi permission korporat dinamis (`mcp:<server_name>:<tool_name>`) dan dapat langsung dicentang pada konfigurasi peran di `/organization`. Saat server restart, seluruh proxy perkakas aktif direhidrasi secara otomatis.
+* **Referential Dependency Guardrail (Anti-Accidental Deletion)**: Mencegah penghapusan server MCP jika masih ada peran AI aktif yang memegang izin perkakas dari server tersebut (mengembalikan HTTP 409 Conflict beserta daftar nama peran terkait).
+* **Two-Tier CoV Routing Cerdas**: Perkakas pembacaan (`mcp:*:get_*`, `list_*`, `read_*`) dialirkan langsung ke Tier 1 Deterministic Verifier (0ms latency & 0 token overhead), sedangkan perkakas mutasi (`create_*`, `delete_*`, `execute_*`) dialirkan ke Tier 2 CoV LLM Critic.
+
+### 21. Public Skills Library & Dynamic Taxonomy Hub (`/skills`)
+* **Arsitektur Bundle Folder Terisolasi**: Skills disimpan sebagai bundle direktori mandiri di bawah `skills/<category>/<skill_name>/` yang memuat berkas `SKILL.md` (metadata, panduan agen), skrip pembantu, dan referensi aset.
+* **0% Beban Vektor ONNX (Zero Vector Bloat)**: Berbeda dari Corporate Wisdom Base yang mengonsumsi kapasitas embedding neural ONNX 384-dim, Skills Library beroperasi murni sebagai perpustakaan publik berbasis indeks teks penuh SQLite FTS5 (BM25 ranking).
+* **Dynamic Auto-Category Taxonomy**: Jika pengguna memasang skill dengan kategori baru (misal: `business-management`, `cloud-native`), sistem mendeteksi keberadaan kategori secara otomatis dan mendaftarkannya ke tabel `corporate_skill_categories` tanpa intervensi manual.
+* **Proteksi Path Traversal Ketat**: Mekanisme sanitasi memblokir upaya eksploitasi path traversal (`../` atau `..\\`) saat ekstraksi bundle skill dari arsip zip atau git.
+* **Autonomous Agent Self-Discovery**: Agen memiliki dua perkakas bawaan:
+  - `consult_skill_library(category, keyword)`: Agen dapat menelusuri perpustakaan skill secara mandiri sesuai kebutuhan tugas.
+  - `read_skill_detail(skill_name, category)`: Agen membaca panduan implementasi `SKILL.md` secara selektif saat mengerjakan tiket.
+
+### 22. In-Sandbox Language Server Protocol (LSP) Engine & PR Gatekeeper
+* **Dual-Mode LSP Diagnostics**:
+  - **On-Demand Agent Tool (`run_lsp_diagnostics`)**: Agen perekayasa (Frontend & Backend) dapat menjalankan diagnostik tipe dan sintaksis kapan saja saat menyunting kode.
+  - **Automated Pre-PR Quality Gate (`lsp_gatekeeper.py`)**: Sebelum Pull Request disetujui dalam quorum P2P (`peer_reviewer.py`), sistem memicu verifikasi diagnostik LSP. Jika terdeteksi galat fatal (`error`), PR otomatis ditolak dengan umpan balik perbaikan.
+* **Project-Wide TypeScript Compiler Filtering**: Menjalankan `tsc --project tsconfig.json` pada root proyek, namun menyaring diagnostik fatal hanya pada berkas yang diubah dalam PR untuk mengeliminasi *false positives* dari berkas sandbox lain.
+* **Python AST & Syntax Fallback**: Validasi sintaksis Python berbasis Abstract Syntax Tree (AST) untuk mendeteksi `SyntaxError` secara deterministik tanpa dependensi eksternal.
+
+### 23. Telegram Secretary Dry-Run & Secret Credential Interceptor
+* **Dry-Run Intent Detection**: Saat Founder meminta instalasi MCP atau Skills melalui Telegram (misal: *"install mcp github token=ghp_xxx"*), Sekretaris mendeteksi niat, memverifikasi parameter, dan memberikan pratinjau dry-run sebelum mengeksekusi instalasi.
+* **Secret Interception & Vault Storage**: Token rahasia (`token=...`, `key=...`) diekstraksi sebelum pesan dikirimkan ke model LLM atau log publik, dan disimpan langsung ke brankas rahasia terenkripsi AES-256-GCM.
+* **Scrubbing & Auto-Delete Telegram History**: Menyamarkan token dalam teks balasan (`token=***`) dan memanggil endpoint Telegram Bot API `deleteMessage` untuk menghapus pesan asli Founder dari riwayat obrolan Telegram demi keamanan maksimal.
 
 ---
 
@@ -495,12 +523,13 @@ Untuk menjalankan seluruh rangkaian pengujian backend:
 ```bash
 pytest backend/tests -q
 ```
-**Status Pengujian: 189 / 189 Pengujian Lolos (100% PASSED, Zero Failure)**.
+**Status Pengujian: 203 / 203 Pengujian Lolos (100% PASSED, Zero Failure)**.
 
-Rangkaian uji terbagi dalam 3 gelombang verifikasi ketat:
+Rangkaian uji terbagi dalam 4 gelombang verifikasi ketat:
 * **Gelombang 1 (Fondasi & Desentralisasi Kognitif)**: Pembersihan dead code legacy, Polymorphic Contract Handler (`contract_handlers.py`), Sovereign Router live token pricing ledger, dan FastEmbed ONNX 384-dim neural RAG.
 * **Gelombang 2 (Keselamatan & Efisiensi Memori)**: Two-Tier CoV Pre-Flight Gatekeeper (Tier 1 0ms/0-token passing vs Tier 2 mutating critic), Autonomous Role-Worker Self-Repair Loop, dan Hermes Layered Context Compactor.
 * **Gelombang 3 (Otonomi Korporat & Ekstensi Remote)**: Autonomous Kanban Runner dengan SQLite Atomic Claim Query, FileLockManager anti-race condition mutex, DynamicToolRegistry SQLite persistence (`corporate_custom_tools`), dan Telegram Secretary Daemon dengan dynamic tool synthesis.
+* **Gelombang 4 (Integrasi Ekosistem & Gerbang Mutu LSP)**: MCP Server Dynamic Bridge & Dependency Guardrail (`test_mcp_manager.py`), Public Skills Hub & Auto-Taxonomy FTS5 (`test_skills_hub.py`), In-Sandbox LSP Diagnostics & Gatekeeper (`test_lsp_service.py`), serta Telegram Secretary Dry-Run & Secret Interceptor (`test_telegram_installer.py`).
 
 ---
 

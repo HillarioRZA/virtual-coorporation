@@ -36,8 +36,8 @@
 │  Portfolio Hub     Org Studio & DND      Mission Control      Live Sandbox, PTY   Global Oasis   │
 │  & Venture State   Pipeline Builder      & Live Lounge WS     Terminal & Backup   Command HQ     │
 │                                                                                                  │
-│  /analytics        /settings             /wisdom              /sparring/[id]                     │
-│  CFO Observability BYOK & Secret Vault   FastEmbed 384-dim    Executive Sparring                 │
+│  /mcp              /skills               /analytics           /settings           /wisdom        │
+│  MCP Server Hub    Public Skill Library  CFO Observability    BYOK & Vault        FastEmbed ONNX │
 └─────────────────────────────────┬────────────────────────────────────────────────────────────────┘
                                   │ REST API / WebSocket / SSE Streams
                                   ▼
@@ -235,6 +235,31 @@ Semua endpoint beroperasi di bawah base URL `/api/v1` dengan autentikasi header 
 - `POST /wisdom/query`: Pencarian semantik vector RAG terhadap memori korporat.
 - `POST /wisdom/import-github`: Impor skill/blueprint repositori GitHub menjadi wisdom korporat.
 
+### 4.10 MCP Server Hub & Dynamic Permissions (`/mcp`)
+- `GET /mcp/servers`: Daftar seluruh server MCP terpasang, status, konfigurasi, dan daftar perkakas.
+- `POST /mcp/dry-run`: Uji coba instan server MCP (discovery tool & simulasi payload) tanpa commit database.
+- `POST /mcp/install`: Instalasi/pembaruan server MCP dari UI tanpa menyentuh kode. Environment variables terenkripsi aman via AES-256-GCM. Perkakas MCP otomatis didaftarkan sebagai permission korporat (`mcp:<server_name>:<tool_name>`).
+- `DELETE /mcp/servers/{server_id}`: Uninstal server MCP dengan **Referential Dependency Guardrail** (HTTP 409 Conflict jika ada peran AI aktif yang masih memegang izin perkakas tersebut).
+- `GET /mcp/all-tools`: Mengembalikan katalog perkakas MCP terdaftar untuk picker izin peran dinamis di `/organization`.
+- **Two-Tier CoV Routing**: Perkakas pembacaan (`mcp:*:get_*`, `list_*`, dll) diarahkan ke Tier 1 Deterministic Verifier (0 token overhead), sedangkan perkakas mutasi dialirkan ke Tier 2 Chain-of-Verification Critic.
+
+### 4.11 Public Skills Library & Auto-Taxonomy (`/skills`)
+- `GET /skills/categories`: Daftar seluruh kategori keahlian publik dengan statistik jumlah skill.
+- `GET /skills`: Katalog keahlian publik dengan filter kategori dan pencarian instan via SQLite FTS5 (BM25 ranking).
+- `POST /skills/install`: Instalasi open-source skill bundle (arsitektur folder `skills/<category>/<skill_name>/` berisi `SKILL.md`, skrip, aset) tanpa perlu RAG embedding (0% ONNX vector bloat).
+- **Dynamic Auto-Category**: Otomatis mendeteksi atau menambahkan kategori baru jika belum terdaftar.
+- **Path Traversal Guard**: Mencegah serangan path traversal (`../` atau `..\\`) saat ekstraksi bundle.
+- **Autonomous Agent Tools**: Agen dapat berkonsultasi mandiri ke perpustakaan skill via perkakas bawaan `consult_skill_library` dan membaca detail via `read_skill_detail`.
+
+### 4.12 In-Sandbox LSP (Language Server Protocol)
+- **Dual-Mode Diagnostics**: Agen pengembang dapat memanggil perkakas `run_lsp_diagnostics` secara mandiri saat menyunting berkas, dan sistem secara otomatis menjalankan gatekeeper pra-PR (`lsp_gatekeeper.py` terintegrasi ke `peer_reviewer.py`).
+- **Project-Wide TypeScript Compiler**: Diagnostik TypeScript menggunakan `tsc --project tsconfig.json` dan memfilter galat fatal hanya pada berkas terkait (mencegah false positive dari berkas sandbox lain).
+- **Python AST & Syntax Fallback**: Validasi sintaksis Python berbasis Abstract Syntax Tree (AST) untuk mendeteksi `SyntaxError` secara deterministik.
+
+### 4.13 Telegram Secretary Dry-Run & Secret Interceptor
+- **Dry-Run Intent Detection**: Sekretaris Telegram mendeteksi perintah instalasi MCP/Skill, memvalidasi URL/format, dan menampilkan ringkasan perkakas sebelum eksekusi.
+- **Secret Token Interception & Scrubbing**: Mendeteksi pola kredensial sensitif (`token=...`, `key=...`), menyimpannya langsung ke brankas AES-256-GCM, menyamarkan pesan balasan (`token=***`), dan memanggil Telegram API `deleteMessage` untuk menghapus riwayat obrolan sensitif secara permanen.
+
 ---
 
 ## 5. Standar Rekayasa & Kualitas Kode
@@ -252,9 +277,10 @@ Sesuai aturan ketat pada `code-quality-rules.md`:
    - Wajib menggunakan `try-except` spesifik pada seluruh operasi I/O, koneksi basis data, network call, dan parsing data. Dilarang menggunakan bare `except:`.
 6. **Code Hygiene & Anti-Heuristic (Point B Solved)**:
    - Pembersihan dead code, ladder `if-elif` statis 50 baris diganti registri dinamis, HTML DOM parser menggantikan substring regex, dan AST syntax parser menggantikan hardcoded verdict.
-7. **Jaminan Uji Menyeluruh (189/189 Tests Passed — 100% Green)**:
-   - Setiap modul diverifikasi secara ketat melalui 3 gelombang pengujian otomatis di `backend/tests/`:
+7. **Jaminan Uji Menyeluruh (203/203 Tests Passed — 100% Green)**:
+   - Setiap modul diverifikasi secara ketat melalui 4 gelombang pengujian otomatis di `backend/tests/`:
      - **Gelombang 1**: Pembersihan dead code, Polymorphic Contract Handler (`contract_handlers.py`), Sovereign Router live pricing ledger, dan FastEmbed ONNX local RAG.
      - **Gelombang 2**: Two-Tier CoV Pre-Flight Gatekeeper (Tier 1 0ms/0-token & Tier 2 critic), Autonomous Worker Self-Repair Loop, dan Hermes Context Compactor.
      - **Gelombang 3**: Autonomous Kanban Runner (`kanban_runner.py` atomic claim), FileLockManager mutex per path, DynamicToolRegistry SQLite persistence (`corporate_custom_tools`), dan Telegram Secretary Daemon dengan dynamic tool synthesis.
-   - Status akhir pengujian: **189 / 189 Passed (100% PASSED, Zero Failure)**.
+     - **Gelombang 4**: MCP Server Dynamic Bridge & Dependency Guardrail (`test_mcp_manager.py`), Public Skills Hub & Auto-Taxonomy FTS5 (`test_skills_hub.py`), In-Sandbox LSP Diagnostics & Gatekeeper (`test_lsp_service.py`), serta Telegram Secretary Dry-Run & Secret Interceptor (`test_telegram_installer.py`).
+   - Status akhir pengujian: **203 / 203 Passed (100% PASSED, Zero Failure)**.

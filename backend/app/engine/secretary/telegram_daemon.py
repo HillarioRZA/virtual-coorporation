@@ -88,13 +88,7 @@ class TelegramSecretaryDaemon:
             for t in tickets:
                 st = t.get("status", "TODO")
                 counts[st] = counts.get(st, 0) + 1
-            reply = (
-                f"📊 *Status Kanban Korporat*:\n"
-                f"- TODO: {counts['TODO']}\n"
-                f"- IN PROGRESS: {counts['IN_PROGRESS']}\n"
-                f"- DONE: {counts['DONE']}\n"
-                f"- FAILED: {counts['FAILED']}"
-            )
+            reply = f"📊 *Status Kanban Korporat*: TODO: {counts['TODO']} | IN_PROGRESS: {counts['IN_PROGRESS']} | DONE: {counts['DONE']} | FAILED: {counts['FAILED']}"
             await self.send_message(chat_id, reply)
         elif text.startswith("/approve "):
             target = text.replace("/approve ", "").strip()
@@ -107,6 +101,18 @@ class TelegramSecretaryDaemon:
             reply = f"🚫 Perkakas `{target}` berhasil ditolak." if res else f"❌ Perkakas `{target}` tidak ditemukan."
             await self.send_message(chat_id, reply)
         else:
+            # Periksa intent instalasi MCP / Skills atau penangkapan token rahasia
+            from app.engine.secretary.secretary_installer import handle_installer_intent
+            inst_reply = await handle_installer_intent(
+                text=text,
+                chat_id=chat_id,
+                message_id=message.get("message_id"),
+                bot_token=self.bot_token,
+            )
+            if inst_reply:
+                await self.send_message(chat_id, inst_reply)
+                return
+
             # Chat dialogis eksekutif via LLM & Dynamic Secretary Role
             from app.engine.secretary.secretary_resolver import (
                 resolve_secretary_role,

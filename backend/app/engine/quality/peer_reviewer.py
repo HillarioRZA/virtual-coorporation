@@ -56,14 +56,9 @@ class AutonomousPeerReviewer:
         )
 
         return await pr_repo.add_review(
-            pr_id=pr_id,
-            reviewer_role_id="role_qa_lead",
-            reviewer_name="QA & DevSecOps Specialist",
-            verdict=verdict,
-            summary=summary,
-            inline_comments=inline_comments,
-            security_score=security_score,
-            custom_path=custom_path,
+            pr_id=pr_id, reviewer_role_id="role_qa_lead", reviewer_name="QA & DevSecOps Specialist",
+            verdict=verdict, summary=summary, inline_comments=inline_comments,
+            security_score=security_score, custom_path=custom_path,
         )
 
     async def review_architecture_cto(
@@ -183,12 +178,16 @@ class AutonomousPeerReviewer:
         peer_name = "Senior Frontend Specialist" if "backend" in author else "Senior Backend Specialist"
         peer_rev = await self.review_peer_contracts(pr_id, peer_role, peer_name, files, custom_path)
 
+        # 4. In-Sandbox LSP Type Check Gate
+        from app.engine.quality.lsp_gatekeeper import lsp_gatekeeper
+        lsp_rev = await lsp_gatekeeper.review_pr_type_diagnostics(pr_id, files, custom_path)
+
         updated_pr = await pr_repo.get_pull_request(pr_id, custom_path)
         logger.info(f"Siklus Peer Review untuk PR {pr_id} selesai. Status akhir: {updated_pr['status'] if updated_pr else 'UNKNOWN'}")
 
         return {
             "pr": updated_pr,
-            "reviews": [qa_rev, cto_rev, peer_rev],
+            "reviews": [qa_rev, cto_rev, peer_rev, lsp_rev],
             "quorum_reached": updated_pr["status"] == "APPROVED" if updated_pr else False,
         }
 
