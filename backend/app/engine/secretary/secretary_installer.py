@@ -35,35 +35,37 @@ async def handle_installer_intent(
     """Mendeteksi intent dry-run dan mengintersepsi token rahasia sebelum masuk ke log/LLM."""
     clean_text = text.strip()
 
-    # 1. Intersepsi balasan token / konfirmasi
+    # 1. Intersepsi balasan token / konfirmasi MCP
     token_match = re.search(r"token\s*=\s*([^\s]+)", clean_text, re.I)
-    if token_match and chat_id in _PENDING_MCP_INSTALL:
-        secret_token = token_match.group(1).strip()
-        logger.info(f"Secretary Interceptor: Menerima token rahasia Founder (redacted: token=***)")
-
-        # Hapus pesan pengguna yang memuat token rahasia
-        if message_id:
-            await delete_telegram_message(bot_token, chat_id, message_id)
+    is_confirm_mcp = clean_text.lower().startswith("/confirm_mcp") or clean_text.lower() in ("ya", "setuju", "pasang mcp", "lanjutkan")
+    if (token_match or is_confirm_mcp) and chat_id in _PENDING_MCP_INSTALL:
+        secret_token = token_match.group(1).strip() if token_match else ""
+        if secret_token:
+            logger.info("Secretary Interceptor: Menerima token rahasia Founder (redacted: token=***)")
+            if message_id:
+                await delete_telegram_message(bot_token, chat_id, message_id)
 
         pending = _PENDING_MCP_INSTALL.pop(chat_id)
         cmd = pending["command"]
         name = pending["name"]
-        env_vars = {"GITHUB_TOKEN": secret_token} if "github" in name.lower() else {"API_TOKEN": secret_token}
+        env_vars = {}
+        if secret_token:
+            env_vars = {"GITHUB_TOKEN": secret_token} if "github" in name.lower() else {"API_TOKEN": secret_token}
 
         try:
             res = await mcp_manager.register_mcp_server(
                 name=name, command_or_url=cmd, env_vars=env_vars
             )
+            token_status = "🔒 *[Token Diamankan & Pesan Dihapus]*\n" if secret_token else ""
             return (
-                f"🔒 *[Token Diamankan & Pesan Dihapus]*\n"
-                f"✅ Server MCP `{res['name']}` berhasil diinstal dengan {res['tools_count']} perkakas aktif!\n"
+                f"{token_status}✅ Server MCP `{res['name']}` berhasil diinstal dengan {res['tools_count']} perkakas aktif!\n"
                 f"Perkakas telah didaftarkan ke permission pool korporat."
             )
         except Exception as err:
             return f"❌ Gagal memasang server MCP: {err}"
 
-    # 2. Permintaan instalasi MCP ("install mcp ...")
-    mcp_req = re.search(r"(?:install|pasang)\s+mcp\s+([a-zA-Z0-9_\-/@]+)", clean_text, re.I)
+    # 2. Permintaan instalasi / analisa MCP ("install mcp ...", "analisa mcp ...")
+    mcp_req = re.search(r"(?:install|pasang|analisa|analisis|cek)\s+mcp\s+([a-zA-Z0-9_\-/@]+)", clean_text, re.I)
     if mcp_req:
         target = mcp_req.group(1).strip()
         server_name = re.sub(r"[^a-zA-Z0-9_-]", "", target.split("/")[-1].lower())
@@ -77,13 +79,14 @@ async def handle_installer_intent(
             f"🔍 *[Dry-Run MCP Inspection]*:\n"
             f"Target: `{cmd}`\n"
             f"Server Name: `{server_name}`\n"
-            f"Kebutuhan Token: `GITHUB_TOKEN` (jika menggunakan API privat).\n\n"
+            f"Kebutuhan Token: `GITHUB_TOKEN` (opsional jika menggunakan API privat).\n\n"
             f"Apakah Anda setuju memasang MCP ini? Balas dengan:\n"
-            f"`Ya, token=ghp_xxx` (pesan akan langsung dihapus otomatis demi keamanan)."
+            f"• `Ya, token=ghp_xxx` (pesan token akan otomatis dihapus demi keamanan)\n"
+            f"• `/confirm_mcp` (jika tanpa token rahasia)."
         )
 
-    # 3. Permintaan instalasi Skill ("install skill ...")
-    skill_req = re.search(r"(?:install|pasang)\s+skill[s]?\s+(?:dari\s+)?([^\s]+)", clean_text, re.I)
+    # 3. Permintaan instalasi / analisa Skill ("install skill ...", "analisa skill ...")
+    skill_req = re.search(r"(?:install|pasang|analisa|analisis|cek)\s+skill[s]?\s+(?:dari\s+)?([^\s]+)", clean_text, re.I)
     if skill_req:
         target_url = skill_req.group(1).strip()
         return (

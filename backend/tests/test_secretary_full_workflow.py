@@ -116,3 +116,48 @@ async def test_telegram_daemon_dispatches_task_bridge(tmp_path: Path, monkeypatc
     await daemon.handle_message(msg_task)
     assert len(sent_messages) == 2
     assert "Tiket Berhasil Didaftarkan" in sent_messages[1]
+
+    # Uji kirim /help
+    msg_help = {"from": {"id": 111}, "chat": {"id": 111}, "text": "/help"}
+    await daemon.handle_message(msg_help)
+    assert len(sent_messages) == 3
+    assert "Halo Founder! Saya adalah Sekretaris Eksekutif" in sent_messages[2]
+
+
+@pytest.mark.asyncio
+async def test_secretary_installer_tokenless_mcp(tmp_path: Path):
+    """Menguji dry-run dan instalasi server MCP tanpa token via /confirm_mcp."""
+    from app.engine.secretary.secretary_installer import _PENDING_MCP_INSTALL
+    # 1. Trigger dry-run
+    dry_reply = await handle_installer_intent(
+        text="pasang mcp @modelcontextprotocol/server-memory",
+        chat_id="chat_mem",
+        message_id=1,
+        bot_token="test_token",
+    )
+    assert dry_reply is not None
+    assert "Dry-Run MCP Inspection" in dry_reply
+    assert "server-memory" in dry_reply
+
+    # 2. Konfirmasi tanpa token rahasia
+    with patch("app.engine.mcp.mcp_manager.mcp_manager.register_mcp_server", new=AsyncMock(return_value={"name": "server-memory", "tools_count": 5})):
+        confirm_reply = await handle_installer_intent(
+            text="/confirm_mcp",
+            chat_id="chat_mem",
+            message_id=2,
+            bot_token="test_token",
+        )
+        assert confirm_reply is not None
+        assert "server-memory" in confirm_reply
+        assert "5 perkakas aktif" in confirm_reply
+
+
+@pytest.mark.asyncio
+async def test_resolve_secretary_role_prefers_seeded_secretary(tmp_path: Path):
+    """Menguji bahwa resolve_secretary_role menemukan role_secretary yang terdaftar di database."""
+    from app.engine.secretary.secretary_resolver import resolve_secretary_role
+    db_file = tmp_path / "test_sec_res.db"
+    await init_database(str(db_file))
+    sec_role = await resolve_secretary_role(custom_path=str(db_file))
+    assert sec_role["id"] == "role_secretary"
+    assert "chat_telegram" in sec_role.get("tool_permissions", [])

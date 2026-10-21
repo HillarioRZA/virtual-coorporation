@@ -305,7 +305,7 @@ Sesuai aturan ketat pada `code-quality-rules.md`:
    - Wajib menggunakan `try-except` spesifik pada seluruh operasi I/O, koneksi basis data, network call, dan parsing data. Dilarang menggunakan bare `except:`.
 6. **Code Hygiene & Anti-Heuristic**:
    - Pembersihan dead code, ladder `if-elif` statis diganti registri dinamis, HTML DOM parser menggantikan substring regex, dan AST syntax parser menggantikan hardcoded verdict.
-7. **Jaminan Uji Menyeluruh (214/214 Tests Passed — 100% Green)**:
+7. **Jaminan Uji Menyeluruh (216/216 Tests Passed — 100% Green)**:
    - Setiap modul diverifikasi secara ketat melalui 6 gelombang pengujian otomatis di `backend/tests/`:
      - **Gelombang 1**: Pembersihan dead code, Polymorphic Contract Handler (`contract_handlers.py`), Sovereign Router live pricing ledger, dan FastEmbed ONNX local RAG.
      - **Gelombang 2**: Two-Tier CoV Pre-Flight Gatekeeper (Tier 1 0ms/0-token & Tier 2 critic), Autonomous Worker Self-Repair Loop, dan Hermes Context Compactor.
@@ -313,4 +313,4 @@ Sesuai aturan ketat pada `code-quality-rules.md`:
      - **Gelombang 4**: MCP Server Dynamic Bridge & Dependency Guardrail (`test_mcp_manager.py`), Public Skills Hub & Auto-Taxonomy FTS5 (`test_skills_hub.py`), In-Sandbox LSP Diagnostics & Gatekeeper (`test_lsp_service.py`), serta Telegram Secretary Dry-Run & Secret Interceptor (`test_telegram_installer.py`).
      - **Gelombang 5**: Layered Cognition & Anti-Persona Drift (`test_persona_prompt_and_3layer.py`), Table-Driven State Transition Matrix FSM (`routers.py`), dynamic workstation auto-slotting (`office_simulator.py`), perakitan 3-layer system prompt (`dynamic_node.py`), serta proteksi konsistensi persona saat fallback model aktif.
      - **Gelombang 6**: Git Skill Importer Multi-File Bundles (`test_skills_git_importer.py`), Workflow Terpadu 5 Pilar Telegram Secretary (`test_secretary_full_workflow.py`), serta Unified Role Permissions Aggregator (`test_unified_all_tools_permissions.py`).
-   - Status akhir pengujian: **214 / 214 Passed (100% PASSED, Zero Failure)**.
+   - Status akhir pengujian: **216 / 216 Passed (100% PASSED, Zero Failure)**.

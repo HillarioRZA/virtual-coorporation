@@ -119,6 +119,8 @@ class CorporateEventBus:
         # Broadcast in-memory non-blocking ke subscriber aktif
         async with self._lock:
             subscribers = self._subscribers.get(event.project_id, set()).copy()
+            if "*" in self._subscribers:
+                subscribers.update(self._subscribers["*"])
 
         for sub_queue in subscribers:
             try:

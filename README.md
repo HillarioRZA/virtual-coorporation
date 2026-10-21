@@ -4,7 +4,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-14.2%20(Production%20Ready)-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![Oasis 2D Liquid](https://img.shields.io/badge/Command%20HQ-Obsidian%20Liquid%202D-6366f1?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
-[![Pytest](https://img.shields.io/badge/Pytest-214%2F214%20Passed%20(100%25)-brightgreen?style=flat-square&logo=pytest&logoColor=white)](https://pytest.org/)
+[![Pytest](https://img.shields.io/badge/Pytest-216%2F216%20Passed%20(100%25)-brightgreen?style=flat-square&logo=pytest&logoColor=white)](https://pytest.org/)
 [![3-Layer Prompting](https://img.shields.io/badge/Prompting-3--Layer%20(Soul%20•%20SOP%20•%20Context)-8B5CF6?style=flat-square)](backend/app/engine/roles/dynamic_node.py)
 [![FastEmbed](https://img.shields.io/badge/Neural%20RAG-FastEmbed%20ONNX%20(384--dim)-00D26A?style=flat-square&logo=onnx&logoColor=white)](backend/app/engine/memory/vector_store.py)
 [![CoV Gatekeeper](https://img.shields.io/badge/Sentinel-Two--Tier%20CoV%20(Critic--Only)-FF6B6B?style=flat-square)](backend/app/engine/sentinel/verifier.py)
@@ -448,7 +448,7 @@ Seluruh endpoint REST API dan WebSocket terpusat di bawah prefix `/api/v1` denga
 │   │   │   └── sentinel/             # Two-Tier CoV Pre-Flight Gatekeeper & Inspector
 │   │   ├── gateway/                  # Unified Multi-Provider BYOK Client (Adapters)
 │   │   └── sandbox/                  # Docker Sandbox Runner & Caddy Proxy Manager
-│   ├── tests/                        # Unit & Integration Test Suites (214 Passed / 100%)
+│   ├── tests/                        # Unit & Integration Test Suites (216 Passed / 100%)
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
@@ -536,14 +536,14 @@ Untuk menjalankan seluruh rangkaian pengujian backend:
 ```bash
 pytest backend/tests -q
 ```
-**Status Pengujian: 214 / 214 Pengujian Lolos (100% PASSED, Zero Failure)**.
+**Status Pengujian: 216 / 216 Pengujian Lolos (100% PASSED, Zero Failure)**.
 
 Rangkaian uji terbagi dalam 6 gelombang verifikasi ketat:
 * **Gelombang 1 (Fondasi & Desentralisasi Kognitif)**: Pembersihan dead code legacy, Polymorphic Contract Handler (`contract_handlers.py`), Sovereign Router live token pricing ledger, dan FastEmbed ONNX 384-dim neural RAG.
 * **Gelombang 2 (Keselamatan & Efisiensi Memori)**: Two-Tier CoV Pre-Flight Gatekeeper (Tier 1 0ms/0-token passing vs Tier 2 mutating critic), Autonomous Role-Worker Self-Repair Loop, dan Hermes Layered Context Compactor.
 * **Gelombang 3 (Otonomi Korporat & Ekstensi Remote)**: Autonomous Kanban Runner dengan SQLite Atomic Claim Query, FileLockManager anti-race condition mutex, DynamicToolRegistry SQLite persistence (`corporate_custom_tools`), dan Telegram Secretary Daemon dengan dynamic tool synthesis.
 * **Gelombang 4 (Integrasi Ekosistem & Gerbang Mutu LSP)**: MCP Server Dynamic Bridge & Dependency Guardrail (`test_mcp_manager.py`), Public Skills Hub & Auto-Taxonomy FTS5 (`test_skills_hub.py`), In-Sandbox LSP Diagnostics & Gatekeeper (`test_lsp_service.py`), serta Telegram Secretary Dry-Run & Secret Interceptor (`test_telegram_installer.py`).
-* **Gelombang 5 (Layered Cognition & Anti-Drift Architecture)**: Pengujian `persona_prompt` pada skema database `corporate_roles`, migrasi otomatis & seeding 7 peran bawaan, validasi kontrak API Pydantic, perakitan 3-layer system prompt (`dynamic_node.py`), eliminasi dead code denah furnitur statis, serta pencegahan persona drift saat fallback model router aktif (`test_persona_prompt_and_3layer.py`).
+* **Gelombang 5 (Layered Cognition & Anti-Drift Architecture)**: Pengujian `persona_prompt` pada skema database `corporate_roles`, migrasi otomatis & seeding 8 peran bawaan (termasuk Sekretaris Eksekutif), validasi kontrak API Pydantic, perakitan 3-layer system prompt (`dynamic_node.py`), eliminasi dead code denah furnitur statis, serta pencegahan persona drift saat fallback model router aktif (`test_persona_prompt_and_3layer.py`).
 * **Gelombang 6 (Git Multi-File Skill Importer, Secretary 5-Pillars & Unified Role Permissions)**: Pengujian kloning dangkal git & ekstraksi hierarki multi-file repositori kompleks seperti `ui-ux-pro-max-skill` (`test_skills_git_importer.py`), alur kerja terpadu 5 pilar Telegram Secretary dari `/task` dispatch hingga event bus reporting (`test_secretary_full_workflow.py`), serta agregasi perizinan perkakas terpadu di `/api/v1/mcp/all-tools` (`test_unified_all_tools_permissions.py`).
 
 ---

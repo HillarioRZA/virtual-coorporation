@@ -87,7 +87,20 @@ class TelegramSecretaryDaemon:
 
         logger.info(f"Telegram Secretary menerima arahan dari Founder [{sender_id}]: {text}")
 
-        if text.startswith("/status"):
+        if text in ("/help", "/start"):
+            reply = (
+                "👋 *Halo Founder! Saya adalah Sekretaris Eksekutif Anda.*\n\n"
+                "Saya bertindak sebagai perantara operasional korporat multi-agen saat Anda tidak membuka laptop:\n"
+                "• 💬 *Diskusi Taktis*: Kirim instruksi/ide langsung untuk brainstorming strategi.\n"
+                "• 📊 `/status`: Cek ringkasan progres tiket Kanban korporat.\n"
+                "• 📋 `/tasks`: Daftar tiket aktif dan peran penanggung jawab.\n"
+                "• 📌 `/task <arahan>`: Buat dan delegasikan tiket baru ke Kanban.\n"
+                "• 📦 `pasang mcp <target>` / `pasang skill <url>`: Analisa & dry-run MCP/Skill.\n"
+                "• 🛠️ `Buatkan tool <nama>`: Desain perkakas internal baru (Approve via `/approve <tool>`).\n"
+                "• 📢 *Laporan Proaktif*: Event bus otomatis mengirim update tugas selesai atau kendala ke sini."
+            )
+            await self.send_message(chat_id, reply)
+        elif text.startswith("/status"):
             reply = await handle_status_command()
             await self.send_message(chat_id, reply)
         elif text.startswith("/tasks"):

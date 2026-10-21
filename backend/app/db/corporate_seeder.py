@@ -50,6 +50,7 @@ async def seed_default_corporate_structure(conn: aiosqlite.Connection) -> None:
         ("role_fe", "branch_main", "div_eng", "Frontend Engineer", "Implementasi UI Next.js 14 App Router, React, & komponen interaktif.", DEFAULT_PERSONA_PROMPTS["frontend"], DEFAULT_ROLE_PROMPTS["frontend"], "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file"]', 12000, 1, 1, 4),
         ("role_be", "branch_main", "div_eng", "Backend Engineer", "Implementasi REST API FastAPI, skema data Pydantic, & integrasi SQLite.", DEFAULT_PERSONA_PROMPTS["backend"], DEFAULT_ROLE_PROMPTS["backend"], "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file"]', 12000, 1, 1, 5),
         ("role_qa", "branch_main", "div_eng", "QA & SecOps Engineer", "Adversarial TDD test suite, AST security scan, audit OWASP, & penguncian tes.", DEFAULT_PERSONA_PROMPTS["qa"], DEFAULT_ROLE_PROMPTS["qa"], "openrouter", "deepseek/deepseek-r1:free", 0.1, '["read_file", "ast_scan"]', 8000, 1, 1, 6),
+        ("role_secretary", "branch_main", "div_exec", "Sekretaris Eksekutif", "Liaison eksekutif Founder, delegasi tugas Kanban, pemantauan status agen, analisa MCP/Skills, & sintesis perkakas internal via Telegram.", DEFAULT_PERSONA_PROMPTS["secretary"], DEFAULT_ROLE_PROMPTS["secretary"], "openrouter", "deepseek/deepseek-r1:free", 0.4, '["chat_telegram", "runtime_tool_builder", "inspect_db_schema", "read_file"]', 8000, 1, 1, 7),
     ]
     await conn.executemany(
         """

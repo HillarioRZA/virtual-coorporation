@@ -94,6 +94,7 @@ class Settings(BaseSettings):
     AUTH_GATE_ENABLED: bool = Field(default=False, description="Aktifkan gembok popup autentikasi Telegram")
     TELEGRAM_BOT_TOKEN: Optional[str] = Field(default="", description="Token bot Telegram dari @BotFather")
     TELEGRAM_CHAT_ID: Optional[str] = Field(default="", description="ID chat Telegram dari @userinfobot")
+    TELEGRAM_ALLOWED_USER_IDS: Optional[str] = Field(default="", description="Daftar ID Telegram yang diizinkan (dipisah koma)")
     AUTH_ROTATION_HOURS: int = Field(default=6, description="Interval rotasi password otomatis dalam jam")
 
     # Internal Chain-of-Verification (CoV) Sentinel Gatekeeper (Zero UI Exposure)

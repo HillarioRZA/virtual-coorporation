@@ -38,7 +38,7 @@ class SecretaryReporter:
 
         ticket_id = event.get("ticket_id") or payload.get("ticket_id", "N/A")
         role_id = event.get("sender_role_id") or payload.get("role_id", "Sistem")
-        desc = payload.get("message") or payload.get("description") or "Pembaruan status operasional."
+        desc = event.get("content") or payload.get("message") or payload.get("description") or "Pembaruan status operasional."
 
         if etype == "TASK_COMPLETED":
             return (
@@ -68,7 +68,7 @@ class SecretaryReporter:
     async def _listen_loop(self) -> None:
         """Loop asinkron berlangganan event bus korporat."""
         from app.engine.secretary.telegram_daemon import telegram_secretary
-        queue = await corporate_event_bus.subscribe("default_proj")
+        queue = await corporate_event_bus.subscribe("*")
         try:
             while self._is_running:
                 try:
@@ -85,7 +85,7 @@ class SecretaryReporter:
                 except Exception as err:
                     logger.debug(f"Error dalam loop listening event bus: {err}")
         finally:
-            await corporate_event_bus.unsubscribe("default_proj", queue)
+            await corporate_event_bus.unsubscribe("*", queue)
 
     def start(self) -> None:
         """Memulai listener reporter laporan proaktif."""

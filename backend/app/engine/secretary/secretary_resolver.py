@@ -21,11 +21,15 @@ async def resolve_secretary_role(custom_path: Optional[str] = None) -> Dict[str,
             # Prioritas 1: Peran dengan izin eksplisit 'chat_telegram' atau 'telegram'
             if "chat_telegram" in perms or "telegram" in perms:
                 return r
-            # Prioritas 2: ID atau nama peran Sekretaris / Chief of Staff
-            if r.get("id") in ("role_secretary", "role_cos"):
+            # Prioritas 2: ID peran role_secretary atau nama sekretaris
+            if r.get("id") == "role_secretary":
                 return r
             r_name = str(r.get("name", "")).lower()
             if "secretary" in r_name or "sekretaris" in r_name:
+                return r
+        # Prioritas 3: Fallback ke Chief of Staff jika belum ada peran sekretaris
+        for r in roles:
+            if r.get("id") == "role_cos":
                 return r
     except Exception as err:
         logger.warning(f"Gagal memuat peran sekretaris dari DB: {err}")
@@ -73,33 +77,26 @@ async def extract_and_register_tool_proposal(
     custom_path: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """Mengekstrak blok proposal perkakas dari respons LLM dan mendaftarkannya ke DynamicToolRegistry."""
-    pattern = r"```(?:tool_proposal|json)?\s*(\{[\s\S]*?\"name\"[\s\S]*?\"python_code\"[\s\S]*?\})\s*```"
-    match = re.search(pattern, llm_reply)
-    if not match:
-        return None
-
-    try:
-        raw_json = match.group(1)
-        data = json.loads(raw_json)
-        name = str(data.get("name", "")).strip().lower()
-        if not name or not data.get("python_code"):
-            return None
-
-        # Daftarkan ke DynamicToolRegistry
-        proposal = await dynamic_tool_registry.propose_tool(
-            name=name,
-            description=data.get("description", "Perkakas dinamis dibuat oleh Sekretaris via Telegram"),
-            parameters_schema=data.get("parameters_schema", {}),
-            python_code=data.get("python_code", ""),
-            created_by=creator_role_id,
-            custom_path=custom_path,
-        )
-        logger.info(f"Sekretaris berhasil mendaftarkan perkakas baru via Telegram: [{name}]")
-        return proposal
-    except json.JSONDecodeError as j_err:
-        logger.debug(f"JSON proposal perkakas dari Telegram tidak valid: {j_err}")
-    except Exception as err:
-        logger.warning(f"Gagal memproses proposal perkakas dari Telegram: {err}")
+    pattern = r"```(?:tool_proposal|json)?\s*(\{[\s\S]*?\})\s*```"
+    matches = re.finditer(pattern, llm_reply)
+    for m in matches:
+        try:
+            data = json.loads(m.group(1))
+            name = str(data.get("name", "")).strip().lower()
+            code = data.get("python_code")
+            if name and code:
+                proposal = await dynamic_tool_registry.propose_tool(
+                    name=name,
+                    description=data.get("description", "Perkakas dinamis dibuat oleh Sekretaris via Telegram"),
+                    parameters_schema=data.get("parameters_schema", {}),
+                    python_code=code,
+                    created_by=creator_role_id,
+                    custom_path=custom_path,
+                )
+                logger.info(f"Sekretaris berhasil mendaftarkan perkakas baru via Telegram: [{name}]")
+                return proposal
+        except (json.JSONDecodeError, Exception) as err:
+            logger.debug(f"Pengecekan proposal perkakas Telegram dilewati: {err}")
     return None
 
 
