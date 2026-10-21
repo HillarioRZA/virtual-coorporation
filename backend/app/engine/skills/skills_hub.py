@@ -117,7 +117,26 @@ class SkillsHub:
         top_k: int = 10,
         custom_db_path: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        """Mencari skills secara cepat menggunakan pencarian teks penuh FTS5 dan filter kategori."""
+        """Mencari skills secara cepat menggunakan pencarian teks penuh FTS5 atau menyaring kategori."""
+        clean_query = query.strip()
+
+        # Jika query kosong (hanya browsing/kategori), gunakan SELECT langsung tanpa MATCH FTS5
+        if not clean_query:
+            base_sql = """
+                SELECT s.id, s.name, s.description, s.folder_path, c.name as category_name, c.slug as category_slug
+                FROM corporate_skills s
+                JOIN corporate_skill_categories c ON s.category_id = c.id
+            """
+            params: List[Any] = []
+            if category_slug:
+                base_sql += " WHERE c.slug = ?"
+                params.append(category_slug)
+            base_sql += " ORDER BY s.name ASC LIMIT ?;"
+            params.append(top_k)
+            async with get_db_connection(custom_db_path) as conn:
+                async with conn.execute(base_sql, tuple(params)) as cur:
+                    return [dict(r) for r in await cur.fetchall()]
+
         sql = """
             SELECT s.id, s.name, s.description, s.folder_path, c.name as category_name, c.slug as category_slug
             FROM corporate_skills s
@@ -125,31 +144,34 @@ class SkillsHub:
             JOIN corporate_skills_fts fts ON fts.skill_id = s.id
             WHERE corporate_skills_fts MATCH ?
         """
-        params: List[Any] = [f"{query}*"]
+        params = [f"{clean_query}*"]
         if category_slug:
             sql += " AND c.slug = ?"
             params.append(category_slug)
         sql += " LIMIT ?;"
         params.append(top_k)
 
-        results = []
         try:
             async with get_db_connection(custom_db_path) as conn:
                 async with conn.execute(sql, tuple(params)) as cur:
-                    rows = await cur.fetchall()
-                    results = [dict(r) for r in rows]
+                    return [dict(r) for r in await cur.fetchall()]
         except Exception as err:
             logger.warning(f"Pencarian FTS5 skills gagal, fallback ke LIKE: {err}")
             fallback_sql = """
                 SELECT s.id, s.name, s.description, s.folder_path, c.name as category_name, c.slug as category_slug
                 FROM corporate_skills s
                 JOIN corporate_skill_categories c ON s.category_id = c.id
-                WHERE s.name LIKE ? OR s.description LIKE ?
+                WHERE (s.name LIKE ? OR s.description LIKE ?)
             """
+            fallback_params: List[Any] = [f"%{clean_query}%", f"%{clean_query}%"]
+            if category_slug:
+                fallback_sql += " AND c.slug = ?"
+                fallback_params.append(category_slug)
+            fallback_sql += " LIMIT ?;"
+            fallback_params.append(top_k)
             async with get_db_connection(custom_db_path) as conn:
-                async with conn.execute(fallback_sql, (f"%{query}%", f"%{query}%")) as cur:
-                    results = [dict(r) for r in await cur.fetchall()]
-        return results
+                async with conn.execute(fallback_sql, tuple(fallback_params)) as cur:
+                    return [dict(r) for r in await cur.fetchall()]
 
     async def list_categories(self, custom_db_path: Optional[str] = None) -> List[Dict[str, Any]]:
         """Mendapatkan seluruh kategori skills yang tersedia di sistem."""

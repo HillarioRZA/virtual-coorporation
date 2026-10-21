@@ -88,6 +88,11 @@ async def test_skills_search_fts5(skills_test_env):
     assert len(results) >= 1
     assert results[0]["name"] == "stripe-checkout"
 
+    # Verifikasi browsing saat query kosong (tidak memicu kesalahan FTS5 MATCH '*')
+    browse_results = await hub.search_skills("", custom_db_path=db_file)
+    assert len(browse_results) >= 1
+    assert browse_results[0]["name"] == "stripe-checkout"
+
 
 @pytest.mark.asyncio
 async def test_agent_tools_consult_and_read(skills_test_env, monkeypatch):
