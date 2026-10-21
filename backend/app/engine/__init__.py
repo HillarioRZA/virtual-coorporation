@@ -15,7 +15,7 @@ Modular multi-agent operating engine, dikategorikan ke dalam sub-paket:
 import importlib
 import sys
 
-# Subpackage Modules Mapping untuk backward compatibility
+# Subpackage Modules Mapping untuk backward compatibility (PEP 562 lazy loading)
 _FORWARDING_MODULES = {
     "dynamic_node": "app.engine.roles.dynamic_node",
     "role_output_processor": "app.engine.roles.role_output_processor",
@@ -29,7 +29,6 @@ _FORWARDING_MODULES = {
     "state_machine": "app.engine.runtime.state_machine",
     "checkpointer": "app.engine.runtime.checkpointer",
     "autonomous_healer": "app.engine.runtime.autonomous_healer",
-    "speculative_branch": "app.engine.runtime.speculative_branch",
     "model_router": "app.engine.runtime.model_router",
     "worker_pool": "app.engine.runtime.worker_pool",
     "routers": "app.engine.runtime.routers",
@@ -37,7 +36,6 @@ _FORWARDING_MODULES = {
     "circuit_breaker": "app.engine.governance.circuit_breaker",
     "financial_guardrail": "app.engine.governance.financial_guardrail",
     "flight_recorder": "app.engine.governance.flight_recorder",
-    "branch_merge": "app.engine.governance.branch_merge",
 
     "episodic_memory": "app.engine.memory.episodic_memory",
     "vector_store": "app.engine.memory.vector_store",
@@ -59,7 +57,6 @@ _FORWARDING_MODULES = {
     "office_simulator": "app.engine.office.office_simulator",
 
     "corporate_schemas": "app.engine.schemas.corporate_schemas",
-    "workflow_schemas": "app.engine.schemas.workflow_schemas",
     "envelope_schemas": "app.engine.schemas.envelope_schemas",
 
     "agent_tool_dispatcher": "app.engine.tools.agent_tool_dispatcher",
@@ -71,13 +68,15 @@ _FORWARDING_MODULES = {
     "scaffolding": "app.engine.tools.scaffolding",
 }
 
-for _sub_name, _target_path in _FORWARDING_MODULES.items():
-    _full_old = f"app.engine.{_sub_name}"
-    try:
-        _mod = importlib.import_module(_target_path)
-        sys.modules[_full_old] = _mod
-    except Exception:
-        pass
+
+def __getattr__(name: str):
+    """Lazy module resolver for backward compatibility."""
+    if name in _FORWARDING_MODULES:
+        target_path = _FORWARDING_MODULES[name]
+        mod = importlib.import_module(target_path)
+        sys.modules[f"app.engine.{name}"] = mod
+        return mod
+    raise AttributeError(f"module 'app.engine' has no attribute '{name}'")
 
 # Re-export core abstractions
 from app.engine.runtime.state import VentureState

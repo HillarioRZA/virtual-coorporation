@@ -89,8 +89,9 @@ class ContextBuilder:
         scoped_events: List[Dict[str, Any]],
         limit_recent_messages: int = 6,
         wisdom_items: Optional[List[Dict[str, Any]]] = None,
+        role_permissions: Optional[List[str]] = None,
     ) -> List[Dict[str, str]]:
-        """Merakit working memory lengkap dari Tier 0 (Wisdom), Tier 1, Tier 2, dan Tier 3."""
+        """Merakit working memory lengkap dari Tier 0 (Wisdom), Tier 1, Tier 1.5 (Repo Map), Tier 2, dan Tier 3."""
         role = target_role.upper()
         messages: List[Dict[str, str]] = []
 
@@ -112,6 +113,23 @@ class ContextBuilder:
 
         # TIER 1: Pinned Contracts
         messages.extend(cls.get_pinned_contracts(role, state))
+
+        # TIER 1.5: Project Repository Symbol Map (Aider-style Day-2 Codebase Awareness)
+        from app.core.config import BASE_DIR
+        from app.engine.memory.repo_map import repo_mapper
+
+        code_tools = {"write_file", "read_file", "ast_scan", "code_bundle_writer", "lsp_diagnostics", "run_tests", "patch_file"}
+        has_code_perms = bool(role_permissions and any(p in code_tools for p in role_permissions))
+        is_technical_role = role in {"BACKEND", "FRONTEND", "QA", "DEVSECOPS", "CTO", "ENGINEER", "DEVELOPER", "FULLSTACK", "ARCHITECT", "CODER"}
+
+        if (has_code_perms or is_technical_role) and state.project_id:
+            proj_dir = BASE_DIR / "projects_output" / state.project_id
+            sym_map = repo_mapper.generate_symbol_map(proj_dir)
+            if sym_map:
+                messages.append({
+                    "role": "system",
+                    "content": sym_map,
+                })
 
 
         # TIER 3: Compaction pesan lama via Hermes Context Compactor

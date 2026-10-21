@@ -11,7 +11,7 @@ from app.core.logger import logger
 from app.engine.governance.circuit_breaker import agent_circuit_breaker
 from app.engine.schemas.corporate_schemas import CorporateMessageCreate
 from app.engine.runtime.event_bus import corporate_event_bus
-from app.engine.schemas.workflow_schemas import (
+from app.engine.schemas.governance_schemas import (
     CircuitBreakerOverrideRequest,
     CircuitBreakerStatus,
     ExecutiveDecisionRequest,

@@ -12,7 +12,7 @@ import pytest_asyncio
 from app.core.prompts import clear_prompt_cache, load_prompt
 from app.db.init_db import init_database
 from app.engine.memory.memory import MemoryManager
-from app.engine.schemas.auto_correction import extract_json_payload, parse_and_repair_schema
+from app.engine.roles.role_output_processor import _try_parse_payload
 from app.engine.roles.dynamic_node import execute_dynamic_role_node
 from app.engine.runtime.routers import apply_gate_decision, router_gate_1, router_sparring
 from app.engine.schemas.schemas import BusinessBriefSchema, SystemArchitectureSchema
@@ -71,64 +71,35 @@ def test_load_prompts_registry() -> None:
     assert "UNKNOWN_ROLE" in fallback
 
 
-def test_extract_json_payload() -> None:
-    """Menguji utilitas ekstraksi JSON dari blok markdown dan teks polos."""
-    raw_markdown = "```json\n{\"key\": \"value\"}\n```"
-    assert extract_json_payload(raw_markdown) == '{"key": "value"}'
+def test_try_parse_payload_markdown_and_raw() -> None:
+    """Menguji utilitas ekstraksi payload JSON dari blok markdown dan teks polos."""
+    raw_markdown = "```json\n{\"archetype_id\": 2, \"backend_framework\": \"FastAPI\"}\n```"
+    parsed = _try_parse_payload(raw_markdown)
+    assert parsed is not None
+    assert parsed["archetype_id"] == 2
+    assert parsed["backend_framework"] == "FastAPI"
 
-    raw_plain = '{"key": "value"}'
-    assert extract_json_payload(raw_plain) == '{"key": "value"}'
+    raw_embedded = "Berikut rancangannya:\n{\"archetype_id\": 3, \"frontend_framework\": \"Next.js\"}\nSelesai."
+    parsed_embedded = _try_parse_payload(raw_embedded)
+    assert parsed_embedded is not None
+    assert parsed_embedded["archetype_id"] == 3
+
+    assert _try_parse_payload("bukan json sama sekali") is None
 
 
-@pytest.mark.asyncio
-async def test_auto_correction_loop_success_on_repair() -> None:
-    """TASK-3.2.3: Menguji auto-correction loop saat output awal error lalu diperbaiki."""
-    mock_client = AsyncMock(spec=UnifiedLLMClient)
-
-    # Output awal: JSON rusak (sintaks salah)
-    # Output perbaikan: JSON valid mematuhi SystemArchitectureSchema
-    valid_json = """{
+def test_schema_direct_validation() -> None:
+    """Menguji validasi skema arsitektur dan business brief Pydantic secara langsung."""
+    data = {
         "archetype_id": 2,
         "frontend_framework": "Next.js 14",
         "backend_framework": "FastAPI",
         "database": "PostgreSQL",
         "estimated_inference_cost_per_user": 0.15,
-        "circuit_breaker_limits": {"max_iterations": 5, "timeout_seconds": 90}
-    }"""
-    mock_client.complete.side_effect = [valid_json]
-
-    result = await parse_and_repair_schema(
-        llm_client=mock_client,
-        raw_response="ini bukan json { invalid }",
-        system_prompt="system",
-        schema_cls=SystemArchitectureSchema,
-        model="mock-model",
-        provider="mock",
-        max_repairs=2,
-    )
-
-    assert result.archetype_id == 2
-    assert result.database == "PostgreSQL"
-    assert mock_client.complete.call_count == 1  # Dipanggil 1x untuk perbaikan
-
-
-@pytest.mark.asyncio
-async def test_auto_correction_loop_exceeded_raises_error() -> None:
-    """TASK-3.2.3: Menguji bahwa jika perbaikan habis maka melempar ValueError."""
-    mock_client = AsyncMock(spec=UnifiedLLMClient)
-    mock_client.complete.return_value = "tetap bukan json"
-
-    with pytest.raises(ValueError) as exc_info:
-        await parse_and_repair_schema(
-            llm_client=mock_client,
-            raw_response="bukan json",
-            system_prompt="system",
-            schema_cls=SystemArchitectureSchema,
-            model="mock",
-            provider="mock",
-            max_repairs=1,
-        )
-    assert "Failed to produce valid SystemArchitectureSchema" in str(exc_info.value)
+        "circuit_breaker_limits": {"max_iterations": 5, "timeout_seconds": 90},
+    }
+    arch = SystemArchitectureSchema.model_validate(data)
+    assert arch.archetype_id == 2
+    assert arch.database == "PostgreSQL"
 
 
 @pytest.mark.asyncio

@@ -114,37 +114,6 @@ class BranchRepository:
                             (new_role_id, new_branch_id, target_div_id, r["name"], jd, r["system_prompt_template"], r["model_provider"], r["model_name"], r["temperature"], r["tool_permissions"], r["token_budget_per_task"], r["is_active"], r["order_index"] if "order_index" in r.keys() else 0, tl),
                         )
 
-                # 5. Kloning pipeline
-                async with conn.execute("SELECT * FROM corporate_pipelines WHERE branch_id = ?;", (source_branch_id,)) as cur:
-                    source_pipelines = await cur.fetchall()
-
-                pipe_map: Dict[str, str] = {}
-                for pipe in source_pipelines:
-                    new_pipe_id = f"pipe_{pipe['slug']}_{uuid.uuid4().hex[:6]}"
-                    pipe_map[pipe["id"]] = new_pipe_id
-                    await conn.execute(
-                        "INSERT INTO corporate_pipelines (id, branch_id, name, slug, product_line, description, is_default) VALUES (?, ?, ?, ?, ?, ?, ?);",
-                        (new_pipe_id, new_branch_id, pipe["name"], pipe["slug"], pipe["product_line"], pipe["description"], pipe["is_default"]),
-                    )
-
-                # 6. Kloning stages
-                async with conn.execute("SELECT * FROM corporate_pipeline_stages WHERE branch_id = ?;", (source_branch_id,)) as cur:
-                    source_stages = await cur.fetchall()
-
-                for stg in source_stages:
-                    new_stg_id = f"stg_{uuid.uuid4().hex[:8]}"
-                    t_pipe_id = pipe_map.get(stg["pipeline_id"], "pipe_software_main")
-                    new_r_id = role_map.get(stg["role_id"]) if stg["role_id"] else None
-                    await conn.execute(
-                        """
-                        INSERT INTO corporate_pipeline_stages
-                        (id, branch_id, pipeline_id, stage_index, stage_type, role_id, ceo_gate_type, custom_label, custom_instructions)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-                        """,
-                        (new_stg_id, new_branch_id, t_pipe_id, stg["stage_index"], stg["stage_type"],
-                         new_r_id, stg["ceo_gate_type"], stg["custom_label"], stg["custom_instructions"]),
-                    )
-
                 await conn.commit()
                 logger.info(f"Berhasil forking branch baru '{new_branch_id}' ({name}) dari '{source_branch_id}'.")
             except Exception as err:

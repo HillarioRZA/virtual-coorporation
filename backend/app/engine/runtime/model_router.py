@@ -147,6 +147,15 @@ class SovereignModelRouter:
                         prompt=prompt, system_prompt=system_prompt, model=mdl,
                         provider=prov, temperature=temperature,
                     )
+                from app.engine.runtime.turn_guard import turn_guard
+                is_valid, cleaned_output, err_msg = turn_guard.validate_turn_output(output, f"{prov}/{mdl}")
+                if not is_valid:
+                    logger.warning(f"Turn Guard menolak output [{prov}/{mdl}]: {err_msg}. Memilih kandidat fallback...")
+                    channel.set_cooldown(seconds=30)
+                    last_error = ValueError(err_msg)
+                    continue
+                output = cleaned_output
+
                 latency = int((time.time() - start_time) * 1000)
                 in_tok = len(prompt) // 4
                 out_tok = len(output) // 4

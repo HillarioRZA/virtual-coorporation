@@ -97,7 +97,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(
     title="Virtual Tech Startup Multi-Agent System API",
-    description="Native Python Orchestration Engine & Universal Venture Incubator Hub",
+    description="Sovereign Autonomous Web-App & SaaS MVP Production Factory (FastAPI Python + Next.js/React TypeScript)",
     version="1.0.0",
     lifespan=lifespan,
 )

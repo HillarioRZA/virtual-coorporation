@@ -129,4 +129,14 @@ async def merge_pull_request(
 
     merged = await pr_repo.update_pr_status(pr_id, "MERGED")
     logger.info(f"PR '{pr_id}' berhasil di-merge ke {pr['target_branch']}.")
+
+    try:
+        from app.engine.tools.git_exporter import git_exporter
+        await git_exporter.export_project_checkpoint(
+            project_id=pr["project_id"],
+            commit_message=f"feat(pr): merge PR #{pr_id} - {pr.get('title', '')}",
+        )
+    except Exception as g_err:
+        logger.warning(f"Git export untuk PR [{pr_id}] dilewati: {g_err}")
+
     return {"status": "MERGED", "pr": merged}

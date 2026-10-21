@@ -66,7 +66,7 @@ export function OasisAllHandsWarRoom({
                 <span>Chief of Staff (CoS)</span>
               </div>
               <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                "Fokuskan alokasi sumber daya pada 2 tiket kritis: Penyelesaian OpenAPI spec dan validasi keamanan Docker."
+                &ldquo;Fokuskan alokasi sumber daya pada 2 tiket kritis: Penyelesaian OpenAPI spec dan validasi keamanan Docker.&rdquo;
               </p>
             </div>
 
@@ -77,7 +77,7 @@ export function OasisAllHandsWarRoom({
                 <span>Chief Technology Officer (CTO)</span>
               </div>
               <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                "Lintas dependensi frontend & backend harus dikunci via contract-first. Hindari waking 12 worker agents."
+                &ldquo;Lintas dependensi frontend & backend harus dikunci via contract-first. Hindari waking 12 worker agents.&rdquo;
               </p>
             </div>
           </div>

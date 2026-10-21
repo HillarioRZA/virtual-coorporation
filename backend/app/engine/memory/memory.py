@@ -95,7 +95,12 @@ class MemoryManager:
         return await self.checkpointer.load_latest_checkpoint(project_id)
 
     async def build_context_for_agent(
-        self, project_id: str, target_role: str, state: VentureState, limit_recent_messages: int = 6,
+        self,
+        project_id: str,
+        target_role: str,
+        state: VentureState,
+        limit_recent_messages: int = 6,
+        role_permissions: Optional[List[str]] = None,
     ) -> List[Dict[str, str]]:
         """Merakit working memory 3-tier untuk pemanggilan model LLM agen tertentu."""
         role = target_role.upper()
@@ -111,8 +116,11 @@ class MemoryManager:
                 scoped_events = [dict(r) for r in rows]
 
             return ContextBuilder.assemble_context(
-                target_role=role, state=state, scoped_events=scoped_events,
+                target_role=role,
+                state=state,
+                scoped_events=scoped_events,
                 limit_recent_messages=limit_recent_messages,
+                role_permissions=role_permissions,
             )
         except aiosqlite.Error as err:
             logger.error(f"Gagal merakit konteks memori untuk role [{role}]: {err}")

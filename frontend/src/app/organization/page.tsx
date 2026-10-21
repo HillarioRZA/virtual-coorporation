@@ -1,46 +1,38 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
-import { Building2, AlertCircle, CheckCircle2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Building2, AlertCircle, CheckCircle2, Plus } from "lucide-react";
 import { BranchResponse, DivisionResponse, RoleResponse } from "@/lib/types/corporate";
 import {
   fetchBranches, fetchDivisions, fetchRoles,
-  activateBranch, deleteBranch, deleteDivision, deleteRole, updateRole,
+  deleteDivision, deleteRole, updateRole,
 } from "@/lib/corporateApi";
-import BranchBar from "@/components/organization/BranchBar";
 import DivisionCard from "@/components/organization/DivisionCard";
-import BranchForkModal from "@/components/organization/BranchForkModal";
-import BranchMergeModal from "@/components/organization/BranchMergeModal";
 import DivisionModal from "@/components/organization/DivisionModal";
 import RoleModal from "@/components/organization/RoleModal";
 
 export default function OrganizationPage() {
-  const [branches, setBranches] = useState<BranchResponse[]>([]);
-  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("branch_main");
   const [divisions, setDivisions] = useState<DivisionResponse[]>([]);
   const [roles, setRoles] = useState<RoleResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-  const [forkModalOpen, setForkModalOpen] = useState(false);
-  const [mergeModalOpen, setMergeModalOpen] = useState(false);
   const [divisionModalOpen, setDivisionModalOpen] = useState(false);
   const [editingDivision, setEditingDivision] = useState<DivisionResponse | null>(null);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<RoleResponse | null>(null);
   const [preselectedDivisionId, setPreselectedDivisionId] = useState<string | null>(null);
 
-  const selectedBranch = branches.find((b) => b.id === selectedBranchId) || branches[0] || null;
-
   const loadBranches = async () => {
     try {
       const list = await fetchBranches();
-      setBranches(list);
-      if (!selectedBranchId && list.length > 0) {
-        setSelectedBranchId((list.find((b) => b.is_active_main) || list[0]).id);
+      if (list.length > 0) {
+        const active = list.find((b) => b.is_active_main) || list[0];
+        setSelectedBranchId(active.id);
       }
     } catch (err: any) {
-      setFeedback({ type: "error", message: err.message || "Gagal memuat branches." });
+      setFeedback({ type: "error", message: err.message || "Gagal memuat status organisasi." });
     }
   };
 
@@ -60,39 +52,50 @@ export default function OrganizationPage() {
   useEffect(() => { loadBranches(); }, []);
   useEffect(() => { if (selectedBranchId) loadStructure(selectedBranchId); }, [selectedBranchId]);
 
-  const handleActivateBranch = async (id: string) => {
-    try { await activateBranch(id); setFeedback({ type: "success", message: "Branch dipromosikan sebagai alur utama!" }); await loadBranches(); }
-    catch (err: any) { setFeedback({ type: "error", message: err.message }); }
-  };
-  const handleDeleteBranch = async (id: string) => {
-    if (!confirm("Hapus branch ini?")) return;
-    try { await deleteBranch(id); setFeedback({ type: "success", message: "Branch dihapus." }); setSelectedBranchId("branch_main"); await loadBranches(); }
-    catch (err: any) { setFeedback({ type: "error", message: err.message }); }
-  };
   const handleDeleteDivision = async (div: DivisionResponse) => {
     if (!confirm(`Hapus divisi '${div.name}'?`)) return;
-    try { await deleteDivision(div.id); setFeedback({ type: "success", message: `Divisi '${div.name}' dihapus.` }); if (selectedBranchId) loadStructure(selectedBranchId); }
-    catch (err: any) { setFeedback({ type: "error", message: err.message }); }
+    try {
+      await deleteDivision(div.id);
+      setFeedback({ type: "success", message: `Divisi '${div.name}' dihapus.` });
+      if (selectedBranchId) loadStructure(selectedBranchId);
+    } catch (err: any) {
+      setFeedback({ type: "error", message: err.message });
+    }
   };
+
   const handleDeleteRole = async (r: RoleResponse) => {
     if (!confirm(`Hapus peran '${r.name}'?`)) return;
-    try { await deleteRole(r.id); setFeedback({ type: "success", message: `Peran '${r.name}' dihapus.` }); if (selectedBranchId) loadStructure(selectedBranchId); }
-    catch (err: any) { setFeedback({ type: "error", message: err.message }); }
+    try {
+      await deleteRole(r.id);
+      setFeedback({ type: "success", message: `Peran '${r.name}' dihapus.` });
+      if (selectedBranchId) loadStructure(selectedBranchId);
+    } catch (err: any) {
+      setFeedback({ type: "error", message: err.message });
+    }
   };
+
   const handleToggleActiveRole = async (r: RoleResponse) => {
-    try { await updateRole(r.id, { is_active: !r.is_active }); if (selectedBranchId) loadStructure(selectedBranchId); }
-    catch (err: any) { setFeedback({ type: "error", message: err.message }); }
+    try {
+      await updateRole(r.id, { is_active: !r.is_active });
+      if (selectedBranchId) loadStructure(selectedBranchId);
+    } catch (err: any) {
+      setFeedback({ type: "error", message: err.message });
+    }
   };
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full space-y-6">
       <div className="flex items-center space-x-2">
-        <span className="p-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"><Building2 className="w-4 h-4" /></span>
+        <span className="p-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          <Building2 className="w-4 h-4" />
+        </span>
         <span className="text-xs font-mono uppercase tracking-wider text-indigo-400">Virtual Org Studio</span>
       </div>
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white mt-1">Bagan Organisasi & Dewan Direksi AI</h1>
-        <p className="text-xs md:text-sm text-slate-400 mt-0.5">Kelola divisi, karyawan AI, 3-layer prompt (Soul Persona & SOP), dan konfigurasi model LLM secara terpadu.</p>
+        <p className="text-xs md:text-sm text-slate-400 mt-0.5">
+          Kelola divisi, karyawan AI, 3-layer prompt (Soul Persona & SOP), dan konfigurasi model LLM secara terpadu.
+        </p>
       </div>
 
       {feedback && (
@@ -105,16 +108,22 @@ export default function OrganizationPage() {
         </div>
       )}
 
-      <BranchBar
-        branches={branches}
-        selectedBranch={selectedBranch}
-        onSelectBranch={setSelectedBranchId}
-        onOpenForkModal={() => setForkModalOpen(true)}
-        onOpenMergeModal={() => setMergeModalOpen(true)}
-        onOpenDivisionModal={() => { setEditingDivision(null); setDivisionModalOpen(true); }}
-        onActivateBranch={handleActivateBranch}
-        onDeleteBranch={handleDeleteBranch}
-      />
+      {/* Action Header */}
+      <div className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/10">
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-mono text-slate-400">Alur Organisasi Utama:</span>
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            {selectedBranchId}
+          </span>
+        </div>
+        <button
+          onClick={() => { setEditingDivision(null); setDivisionModalOpen(true); }}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition shadow-lg shadow-indigo-500/20"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>Tambah Divisi</span>
+        </button>
+      </div>
 
       {loading ? (
         <div className="py-20 text-center space-y-3">
@@ -123,8 +132,11 @@ export default function OrganizationPage() {
         </div>
       ) : divisions.length === 0 ? (
         <div className="py-20 text-center border border-dashed border-white/10 rounded-2xl bg-white/[0.01]">
-          <p className="text-sm text-slate-400 mb-3">Belum ada divisi pada branch alur kerja ini.</p>
-          <button onClick={() => { setEditingDivision(null); setDivisionModalOpen(true); }} className="px-4 py-2 rounded-xl bg-white/10 text-white text-xs font-medium border border-white/15">
+          <p className="text-sm text-slate-400 mb-3">Belum ada divisi pada struktur organisasi ini.</p>
+          <button
+            onClick={() => { setEditingDivision(null); setDivisionModalOpen(true); }}
+            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-medium border border-white/15 transition"
+          >
             + Buat Divisi Pertama
           </button>
         </div>
@@ -132,38 +144,21 @@ export default function OrganizationPage() {
         <div className="space-y-6">
           {divisions.map((div) => (
             <DivisionCard
-              key={div.id} division={div} roles={roles.filter((r) => r.division_id === div.id)}
-              isMainBranch={selectedBranch?.slug === "main"}
+              key={div.id}
+              division={div}
+              roles={roles.filter((r) => r.division_id === div.id)}
+              isMainBranch={true}
               onEditDivision={(d) => { setEditingDivision(d); setDivisionModalOpen(true); }}
               onDeleteDivision={handleDeleteDivision}
               onAddRole={(divId) => { setPreselectedDivisionId(divId); setEditingRole(null); setRoleModalOpen(true); }}
               onEditRole={(r) => { setEditingRole(r); setPreselectedDivisionId(r.division_id); setRoleModalOpen(true); }}
-              onDeleteRole={handleDeleteRole} onToggleActiveRole={handleToggleActiveRole}
+              onDeleteRole={handleDeleteRole}
+              onToggleActiveRole={handleToggleActiveRole}
             />
           ))}
         </div>
       )}
 
-      <BranchForkModal
-        isOpen={forkModalOpen}
-        sourceBranch={selectedBranch}
-        onClose={() => setForkModalOpen(false)}
-        onSuccess={async (b) => {
-          setFeedback({ type: "success", message: `Workflow di-fork ke '${b.name}'!` });
-          await loadBranches();
-          setSelectedBranchId(b.id);
-        }}
-      />
-      <BranchMergeModal
-        isOpen={mergeModalOpen}
-        sourceBranch={selectedBranch}
-        onClose={() => setMergeModalOpen(false)}
-        onMerged={async () => {
-          setFeedback({ type: "success", message: `Branch '${selectedBranch?.name}' di-merge ke Main!` });
-          await loadBranches();
-          if (selectedBranchId) loadStructure(selectedBranchId);
-        }}
-      />
       <DivisionModal
         isOpen={divisionModalOpen}
         branchId={selectedBranchId}

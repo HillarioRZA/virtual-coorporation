@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   reactStrictMode: true,
   allowedDevOrigins: ["192.168.1.30", "192.168.1.*", "192.168.*", "localhost:3000"],
   async rewrites() {

@@ -38,6 +38,7 @@ async def execute_dynamic_role_node(
     system_prompt = load_prompt(norm_id)
 
     persona_prompt = ""
+    role_perms = []
     try:
         role_data = await role_repo.resolve_role(role_identifier, custom_path=custom_path)
         if role_data:
@@ -45,6 +46,7 @@ async def execute_dynamic_role_node(
             provider = role_data.get("model_provider") or provider
             temperature = float(role_data.get("temperature", temperature))
             persona_prompt = (role_data.get("persona_prompt") or "").strip()
+            role_perms = role_data.get("tool_permissions") or []
             if role_data.get("system_prompt_template"):
                 system_prompt = role_data["system_prompt_template"]
             elif role_data.get("system_prompt"):
@@ -80,7 +82,9 @@ async def execute_dynamic_role_node(
     user_prompt = _build_task_prompt(state, ticket_context)
     if memory_mgr:
         try:
-            msgs = await memory_mgr.build_context_for_agent(state.project_id, norm_id.upper(), state)
+            msgs = await memory_mgr.build_context_for_agent(
+                state.project_id, norm_id.upper(), state, role_permissions=role_perms
+            )
             history = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in msgs])
             if history.strip():
                 user_prompt = f"Riwayat Diskusi:\n{history}\n\n{user_prompt}"

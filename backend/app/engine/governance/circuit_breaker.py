@@ -9,7 +9,7 @@ from app.core.logger import logger
 from app.db.ticket_repo import ticket_repo
 from app.engine.schemas.corporate_schemas import CorporateMessageCreate
 from app.engine.runtime.event_bus import corporate_event_bus
-from app.engine.schemas.workflow_schemas import CircuitBreakerStatus
+from app.engine.schemas.governance_schemas import CircuitBreakerStatus
 
 MAX_CONSECUTIVE_TURNS = 3
 

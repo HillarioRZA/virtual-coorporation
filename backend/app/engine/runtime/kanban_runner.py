@@ -10,8 +10,6 @@ from app.core.logger import logger
 
 from app.db.session import get_db_connection
 from app.db.ticket_repo import ticket_repo
-from app.engine.runtime.state import VentureState
-from app.engine.roles.dynamic_node import execute_dynamic_role_node
 from app.engine.runtime.event_bus import corporate_event_bus
 from app.engine.schemas.corporate_schemas import CorporateMessageCreate
 
@@ -70,39 +68,39 @@ class AutonomousKanbanRunner:
             logger.info(f"Memulai eksekusi otonom tiket [{ticket_id}] oleh peran @{role_id}")
             await self._publish_bus_event(branch_id, project_id, role_id, ticket_id, "TASK_STARTED", f"@{role_id} mulai mengeksekusi tiket [{ticket_id}]: '{title}'")
             try:
-                from app.engine.memory.memory import MemoryManager
-                mem = MemoryManager(db_path=custom_path)
-                state = await mem.load_latest_checkpoint(project_id)
-                if not state:
-                    state = VentureState(project_id=project_id, project_name=title)
+                from app.engine.runtime.kanban_recovery import execute_ticket_with_recovery
+                success, state, last_err = await execute_ticket_with_recovery(ticket, custom_path=custom_path)
 
-                await execute_dynamic_role_node(
-                    role_identifier=role_id,
-                    state=state,
-                    ticket_context=ticket,
-                    memory_mgr=mem,
-                    custom_path=custom_path,
-                )
-                await mem.save_checkpoint(state)
+                if success:
+                    art_refs = [f"artifact_{role_id}"]
+                    if state.artifacts and role_id in state.artifacts:
+                        art_refs.append(f"artifact_{role_id}_{ticket_id}")
 
-                art_refs = [f"artifact_{role_id}"]
-                if state.artifacts and role_id in state.artifacts:
-                    art_refs.append(f"artifact_{role_id}_{ticket_id}")
+                    await ticket_repo.transition_ticket_status(
+                        ticket_id=ticket_id,
+                        new_status="DONE",
+                        artifact_refs=art_refs,
+                        custom_path=custom_path,
+                    )
+                    logger.info(f"Tiket [{ticket_id}] sukses dieksekusi -> DONE")
 
-                await ticket_repo.transition_ticket_status(
-                    ticket_id=ticket_id,
-                    new_status="DONE",
-                    artifact_refs=art_refs,
-                    custom_path=custom_path,
-                )
-                logger.info(f"Tiket [{ticket_id}] sukses dieksekusi -> DONE")
-                await self._publish_bus_event(branch_id, project_id, role_id, ticket_id, "TASK_COMPLETED", f"Tiket [{ticket_id}] '{title}' selesai oleh @{role_id} -> DONE.")
-                return True
-            except Exception as err:
-                logger.error(f"Kegagalan eksekusi tiket [{ticket_id}]: {err}")
-                await ticket_repo.transition_ticket_status(ticket_id=ticket_id, new_status="FAILED", custom_path=custom_path)
-                await self._publish_bus_event(branch_id, project_id, role_id, ticket_id, "TASK_FAILED", f"Eksekusi tiket [{ticket_id}] gagal: {err}")
-                return False
+                    # Git Exporter otomatis pada status DONE
+                    try:
+                        from app.engine.tools.git_exporter import git_exporter
+                        await git_exporter.export_project_checkpoint(
+                            project_id=project_id,
+                            commit_message=f"feat(kanban): resolve ticket [{ticket_id}] - {title}",
+                        )
+                    except Exception as g_err:
+                        logger.debug(f"Git export saat ticket DONE dilewati: {g_err}")
+
+                    await self._publish_bus_event(branch_id, project_id, role_id, ticket_id, "TASK_COMPLETED", f"Tiket [{ticket_id}] '{title}' selesai oleh @{role_id} -> DONE.")
+                    return True
+                else:
+                    logger.error(f"Kegagalan total eksekusi tiket [{ticket_id}] setelah {max_retries} perbaikan: {last_err}")
+                    await ticket_repo.transition_ticket_status(ticket_id=ticket_id, new_status="FAILED", custom_path=custom_path)
+                    await self._publish_bus_event(branch_id, project_id, role_id, ticket_id, "TASK_FAILED", f"Eksekusi tiket [{ticket_id}] gagal: {last_err}")
+                    return False
             finally:
                 self.active_ticket_ids.discard(ticket_id)
 

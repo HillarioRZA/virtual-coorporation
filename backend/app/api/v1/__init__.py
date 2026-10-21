@@ -9,7 +9,6 @@ from app.api.v1.auth import router as auth_router
 from app.api.v1.corporate import router as corporate_router
 from app.api.v1.corporate_events import router as corporate_events_router
 from app.api.v1.corporate_tickets import router as corporate_tickets_router
-from app.api.v1.corporate_workflow import router as corporate_workflow_router
 from app.api.v1.corporate_ws import router as corporate_ws_router
 from app.api.v1.gates import router as gates_router
 from app.api.v1.governance import router as governance_router
@@ -22,7 +21,6 @@ from app.api.v1.vault import router as vault_router
 from app.api.v1.analytics import router as analytics_router
 from app.api.v1.pull_requests import router as pull_requests_router
 from app.api.v1.wisdom import router as wisdom_router
-from app.api.v1.branch_merge import router as branch_merge_router
 from app.api.v1.sandbox_network import router as sandbox_network_router
 from app.api.v1.office import router as office_router
 from app.api.v1.office_ws import router as office_ws_router
@@ -48,7 +46,6 @@ api_v1_router.include_router(auth_router)
 api_v1_router.include_router(corporate_router)
 api_v1_router.include_router(corporate_events_router)
 api_v1_router.include_router(corporate_tickets_router)
-api_v1_router.include_router(corporate_workflow_router)
 api_v1_router.include_router(corporate_ws_router)
 api_v1_router.include_router(sandbox_snapshots_router)
 api_v1_router.include_router(sandbox_terminal_router)
@@ -57,7 +54,6 @@ api_v1_router.include_router(governance_router)
 api_v1_router.include_router(analytics_router)
 api_v1_router.include_router(pull_requests_router)
 api_v1_router.include_router(wisdom_router)
-api_v1_router.include_router(branch_merge_router)
 api_v1_router.include_router(office_router)
 api_v1_router.include_router(office_ws_router)
 
