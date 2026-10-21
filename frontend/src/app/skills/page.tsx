@@ -13,6 +13,7 @@ import {
   X,
   Sparkles,
 } from "lucide-react";
+import { getAuthHeaders } from "@/lib/api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -58,7 +59,9 @@ export default function SkillsPage() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch(`${API_BASE}/skills/categories`);
+      const res = await fetch(`${API_BASE}/skills/categories`, {
+        headers: getAuthHeaders(),
+      });
       if (res.ok) setCategories(await res.json());
     } catch (e) {
       console.error("Gagal mengambil kategori:", e);
@@ -71,7 +74,9 @@ export default function SkillsPage() {
       const params = new URLSearchParams();
       if (searchQuery.trim()) params.append("q", searchQuery.trim());
       if (selectedCategory !== "all") params.append("category", selectedCategory);
-      const res = await fetch(`${API_BASE}/skills?${params.toString()}`);
+      const res = await fetch(`${API_BASE}/skills?${params.toString()}`, {
+        headers: getAuthHeaders(),
+      });
       if (res.ok) setSkills(await res.json());
     } catch (e) {
       console.error("Gagal mengambil skills:", e);
@@ -100,7 +105,7 @@ export default function SkillsPage() {
     try {
       const res = await fetch(`${API_BASE}/skills/install`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           name: formName.trim().toLowerCase(),
           category_name: formCategory.trim(),
@@ -131,7 +136,7 @@ export default function SkillsPage() {
     try {
       const res = await fetch(`${API_BASE}/skills/import-git`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           repo_url: gitUrl.trim(),
           name: gitName.trim() || undefined,

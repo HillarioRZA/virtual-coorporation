@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { AGENT_TOOLS } from "@/lib/constants/llmPresets";
+import { getAuthHeaders } from "@/lib/api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -38,7 +39,9 @@ export default function RoleToolSelector({
   useEffect(() => {
     async function loadDynamicTools() {
       try {
-        const res = await fetch(`${API_BASE}/mcp/all-tools`);
+        const res = await fetch(`${API_BASE}/mcp/all-tools`, {
+          headers: getAuthHeaders(),
+        });
         if (res.ok) {
           const data = await res.json();
           if (data.mcp_tools) {

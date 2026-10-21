@@ -16,6 +16,7 @@ import {
   ExternalLink,
   Lock,
 } from "lucide-react";
+import { getAuthHeaders } from "@/lib/api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -54,7 +55,9 @@ export default function MCPPage() {
   const fetchServers = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/mcp/servers`);
+      const res = await fetch(`${API_BASE}/mcp/servers`, {
+        headers: getAuthHeaders(),
+      });
       if (res.ok) {
         const data = await res.json();
         setServers(data);
@@ -81,7 +84,7 @@ export default function MCPPage() {
       }
       const res = await fetch(`${API_BASE}/mcp/dry-run`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           command_or_url: formCommand,
           transport: formTransport,
@@ -109,7 +112,7 @@ export default function MCPPage() {
       }
       const res = await fetch(`${API_BASE}/mcp/install`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           name: formName.trim().toLowerCase(),
           command_or_url: formCommand,
@@ -135,6 +138,7 @@ export default function MCPPage() {
     try {
       const res = await fetch(`${API_BASE}/mcp/servers/${server.id}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
       });
       if (res.status === 409) {
         const data = await res.json();

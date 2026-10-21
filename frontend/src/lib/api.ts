@@ -13,7 +13,7 @@ import { getApiV1Base } from "./config";
 
 const API_BASE = getApiV1Base();
 
-function getAuthHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
+export function getAuthHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
   const headers = { ...customHeaders };
   if (typeof window !== "undefined") {
     const token = sessionStorage.getItem("venture_session_token");

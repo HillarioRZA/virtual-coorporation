@@ -39,6 +39,9 @@ class SecurityGateMiddleware:
             "/api/v1/corporate/office",
             "/api/v1/corporate/roles",
             "/api/v1/sentinel",
+            "/api/v1/mcp/all-tools",
+            "/api/v1/mcp/servers",
+            "/api/v1/skills",
         )
         if any(path == p or path.startswith(p + "/") for p in public_prefixes):
             await self.app(scope, receive, send)
