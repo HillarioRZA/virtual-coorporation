@@ -5,7 +5,7 @@ Memvalidasi keluaran LLM terhadap skema Pydantic dan melakukan perbaikan otomati
 
 import json
 import re
-from typing import Any, Dict, Optional, Tuple, Type, TypeVar
+from typing import Any, Dict, Optional, Type, TypeVar
 from pydantic import BaseModel, ValidationError
 
 from app.core.logger import logger
@@ -15,16 +15,8 @@ T = TypeVar("T", bound=BaseModel)
 
 
 def extract_json_payload(raw_text: str) -> str:
-    """Mengekstrak blok JSON murni dari teks mentah atau blok markdown.
-
-    Args:
-        raw_text: Teks keluaran mentah dari LLM.
-
-    Returns:
-        String JSON yang telah dibersihkan.
-    """
+    """Mengekstrak blok JSON murni dari teks mentah atau blok markdown."""
     text = raw_text.strip()
-    # Cek apakah dibungkus kode blok markdown ```json ... ```
     match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
     if match:
         return match.group(1).strip()
@@ -40,23 +32,7 @@ async def parse_and_repair_schema(
     provider: str,
     max_repairs: int = 2,
 ) -> T:
-    """Memvalidasi JSON keluaran terhadap skema Pydantic dengan auto-correction loop.
-
-    Args:
-        llm_client: Instance client BYOK Unified LLM.
-        raw_response: Keluaran teks awal dari LLM.
-        system_prompt: Prompt sistem agen terkait.
-        schema_cls: Kelas model Pydantic sasaran.
-        model: Nama model yang digunakan.
-        provider: Penyedia model (e.g. 'deepseek', 'anthropic').
-        max_repairs: Batas maksimal perbaikan otomatis (maksimal 2x).
-
-    Returns:
-        Instance model Pydantic yang valid.
-
-    Raises:
-        ValueError: Jika setelah iterasi maksimal output tetap gagal divalidasi.
-    """
+    """Memvalidasi JSON keluaran terhadap skema Pydantic dengan auto-correction loop."""
     current_response = raw_response
     last_error: Optional[Exception] = None
 

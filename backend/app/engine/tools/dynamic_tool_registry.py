@@ -8,7 +8,7 @@ import json
 import asyncio
 from typing import Any, Callable, Dict, List, Optional
 import uuid
-from loguru import logger
+from app.core.logger import logger
 
 from app.db.session import get_db_connection
 

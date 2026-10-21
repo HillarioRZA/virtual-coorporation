@@ -23,6 +23,7 @@ import {
   deleteTicket,
   seedInitialTickets,
   dispatchConcurrentEngineering,
+  dispatchKanbanTickets,
 } from "@/lib/ticketApi";
 import { DivisionResponse, RoleResponse } from "@/lib/types/corporate";
 import { TicketResponse, TicketStatus } from "@/lib/types/tickets";
@@ -117,6 +118,23 @@ export default function MissionControlKanbanPage() {
     }
   };
 
+  const handleDispatchAutonomous = async () => {
+    setIsDispatching(true);
+    try {
+      const data = await dispatchKanbanTickets(projectId);
+      setFeedback({
+        type: "success",
+        message: `Autonomous Runner mendispatch ${data.dispatched_count} tiket yang siap dieksekusi!`,
+      });
+      const updatedTickets = await fetchTickets(projectId);
+      setTickets(updatedTickets);
+    } catch (err: any) {
+      setFeedback({ type: "error", message: err.message || "Gagal memicu Autonomous Runner." });
+    } finally {
+      setIsDispatching(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full space-y-6">
       {/* Top Header */}
@@ -153,6 +171,16 @@ export default function MissionControlKanbanPage() {
           >
             <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
             <span>Seed Default Tickets</span>
+          </button>
+
+          <button
+            onClick={handleDispatchAutonomous}
+            disabled={isDispatching}
+            className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 text-cyan-300 text-xs font-semibold transition-all disabled:opacity-50"
+            title="Memicu Autonomous Runner mengeksekusi tiket TODO yang dependensinya selesai"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>{isDispatching ? "Runner Berjalan..." : "Jalankan Autonomous Runner"}</span>
           </button>
 
           <button

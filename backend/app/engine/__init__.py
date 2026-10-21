@@ -56,7 +56,6 @@ _FORWARDING_MODULES = {
     "diff_engine": "app.engine.quality.diff_engine",
 
     "office_dispatch": "app.engine.office.office_dispatch",
-    "office_layout": "app.engine.office.office_layout",
     "office_simulator": "app.engine.office.office_simulator",
 
     "corporate_schemas": "app.engine.schemas.corporate_schemas",

@@ -65,6 +65,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         from app.engine.secretary.telegram_daemon import telegram_secretary
         if getattr(settings, "TELEGRAM_BOT_TOKEN", None):
             telegram_secretary.start()
+
+        # Jalankan Autonomous Kanban Task Runner di latar belakang
+        from app.engine.runtime.kanban_runner import kanban_runner
+        kanban_runner.start_background_runner()
     except Exception as err:
         logger.error(f"Gagal menginisialisasi basis data saat startup: {err}")
         raise

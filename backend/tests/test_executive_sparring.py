@@ -12,15 +12,34 @@ import pytest_asyncio
 from app.core.prompts import clear_prompt_cache, load_prompt
 from app.db.init_db import init_database
 from app.engine.memory.memory import MemoryManager
-from app.engine.nodes.auto_correction import extract_json_payload, parse_and_repair_schema
-from app.engine.nodes.cos import cos_sparring_node
-from app.engine.nodes.cto import cto_architecture_node
-from app.engine.nodes.sparring import sparring_room_node
+from app.engine.schemas.auto_correction import extract_json_payload, parse_and_repair_schema
+from app.engine.roles.dynamic_node import execute_dynamic_role_node
 from app.engine.runtime.routers import apply_gate_decision, router_gate_1, router_sparring
 from app.engine.schemas.schemas import BusinessBriefSchema, SystemArchitectureSchema
 from app.engine.runtime.state import VentureState
 from app.engine.runtime.state_machine import NativeStateMachine
 from app.gateway.client import UnifiedLLMClient
+
+
+async def cos_sparring_node(state: VentureState, llm_client: Any = None, memory_mgr: Any = None) -> Dict[str, Any]:
+    """Helper eksekusi peran CoS via dynamic node engine."""
+    return await execute_dynamic_role_node("cos", state, llm_client=llm_client, memory_mgr=memory_mgr)
+
+
+async def cto_architecture_node(state: VentureState, llm_client: Any = None, memory_mgr: Any = None) -> Dict[str, Any]:
+    """Helper eksekusi peran CTO via dynamic node engine."""
+    return await execute_dynamic_role_node("cto", state, llm_client=llm_client, memory_mgr=memory_mgr)
+
+
+async def sparring_room_node(state: VentureState, llm_client: Any = None, memory_mgr: Any = None) -> Dict[str, Any]:
+    """Helper eksekusi sesi Sparring Room (CoS + CTO) via dynamic node engine."""
+    await execute_dynamic_role_node("cos", state, llm_client=llm_client, memory_mgr=memory_mgr)
+    await execute_dynamic_role_node("cto", state, llm_client=llm_client, memory_mgr=memory_mgr)
+    return {
+        "business_brief": state.business_brief,
+        "system_architecture": state.system_architecture,
+        "selected_archetype": state.selected_archetype,
+    }
 
 
 @pytest_asyncio.fixture

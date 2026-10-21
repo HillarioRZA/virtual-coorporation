@@ -74,6 +74,7 @@ async def migrate_drop_role_slug_column(conn: aiosqlite.Connection) -> None:
         division_id TEXT NOT NULL,
         name TEXT NOT NULL,
         job_description TEXT DEFAULT '',
+        persona_prompt TEXT DEFAULT '',
         system_prompt_template TEXT NOT NULL,
         model_provider TEXT NOT NULL DEFAULT 'openrouter',
         model_name TEXT NOT NULL DEFAULT 'deepseek/deepseek-r1:free',
@@ -101,16 +102,18 @@ async def migrate_drop_role_slug_column(conn: aiosqlite.Connection) -> None:
     jd_expr = "COALESCE(job_description, '')" if has_jd else "''"
     has_oi = "order_index" in cols
     oi_expr = "COALESCE(order_index, 0)" if has_oi else "0"
+    has_pp = "persona_prompt" in cols
+    pp_expr = "COALESCE(persona_prompt, '')" if has_pp else "''"
 
     copy_sql = f"""
     INSERT INTO corporate_roles_new (
-        id, branch_id, division_id, name, job_description, system_prompt_template,
+        id, branch_id, division_id, name, job_description, persona_prompt, system_prompt_template,
         model_provider, model_name, temperature, thinking_level, tool_permissions,
         token_budget_per_task, is_active, is_system_default, order_index, fallback_chain,
         created_at, updated_at
     )
     SELECT
-        id, branch_id, division_id, name, {jd_expr}, system_prompt_template,
+        id, branch_id, division_id, name, {jd_expr}, {pp_expr}, system_prompt_template,
         model_provider, model_name, temperature, {tl_expr}, tool_permissions,
         token_budget_per_task, is_active, is_system_default, {oi_expr}, {fb_expr},
         created_at, updated_at
@@ -162,4 +165,28 @@ async def migrate_role_job_description_column(conn: aiosqlite.Connection) -> Non
             WHERE branch_id = 'branch_main' AND id = ? AND (job_description IS NULL OR job_description = '');
             """,
             (jd, r_id),
+        )
+
+
+async def migrate_role_persona_prompt(conn: aiosqlite.Connection) -> None:
+    """Migrasi aman kolom persona_prompt (Layer 1 Soul/DNA) pada corporate_roles."""
+    cur = await conn.execute("PRAGMA table_info(corporate_roles);")
+    cols = [r[1] for r in await cur.fetchall()]
+    if "persona_prompt" not in cols:
+        await conn.execute("ALTER TABLE corporate_roles ADD COLUMN persona_prompt TEXT DEFAULT '';")
+
+    from app.db.corporate_prompts import DEFAULT_PERSONA_PROMPTS
+    id_map = {
+        "cos": "role_cos", "cto": "role_cto", "pm": "role_pm", "ux": "role_ux",
+        "frontend": "role_fe", "backend": "role_be", "qa": "role_qa",
+    }
+    for slug_key, persona in DEFAULT_PERSONA_PROMPTS.items():
+        r_id = id_map.get(slug_key, f"role_{slug_key}")
+        await conn.execute(
+            """
+            UPDATE corporate_roles
+            SET persona_prompt = ?
+            WHERE branch_id = 'branch_main' AND id = ? AND (persona_prompt IS NULL OR persona_prompt = '');
+            """,
+            (persona, r_id),
         )

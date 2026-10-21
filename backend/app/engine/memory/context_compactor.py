@@ -5,7 +5,7 @@ ringkasan progresif percakapan lampau, dan retensi utuh putaran dialog terakhir 
 """
 
 from typing import Any, Dict, List, Optional
-from loguru import logger
+from app.core.logger import logger
 
 DEFAULT_MAX_TOOL_CHARS = 2000
 DEFAULT_TAIL_RETENTION_COUNT = 4

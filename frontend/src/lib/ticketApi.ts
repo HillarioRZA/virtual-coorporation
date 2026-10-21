@@ -119,3 +119,20 @@ export async function dispatchConcurrentEngineering(
   return await res.json();
 }
 
+export async function dispatchKanbanTickets(
+  projectId: string,
+  branchId: string = "branch_main"
+): Promise<{ status: string; project_id: string; dispatched_count: number; dispatched_ticket_ids: string[] }> {
+  const res = await fetch(
+    `${API_BASE}/corporate/tickets/${projectId}/dispatch?branch_id=${encodeURIComponent(branchId)}`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || err.message || "Gagal memicu eksekusi otonom tiket Kanban.");
+  }
+  return await res.json();
+}

@@ -66,6 +66,7 @@ export interface RoleResponse {
   division_id: string;
   name: string;
   job_description?: string;
+  persona_prompt?: string;
   system_prompt_template: string;
   model_provider: string;
   model_name: string;
@@ -86,6 +87,7 @@ export interface RoleCreate {
   division_id: string;
   name: string;
   job_description?: string;
+  persona_prompt?: string;
   system_prompt_template: string;
   model_provider?: string;
   model_name?: string;
@@ -101,6 +103,7 @@ export interface RoleUpdate {
   division_id?: string;
   name?: string;
   job_description?: string;
+  persona_prompt?: string;
   system_prompt_template?: string;
   model_provider?: string;
   model_name?: string;

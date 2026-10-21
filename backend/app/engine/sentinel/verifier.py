@@ -9,7 +9,7 @@ import re
 import time
 from typing import Any, Dict, Optional, Set, Tuple, Union
 from pydantic import BaseModel, Field
-from loguru import logger
+from app.core.logger import logger
 
 from app.core.config import settings
 from app.db.sentinel_repo import sentinel_repo

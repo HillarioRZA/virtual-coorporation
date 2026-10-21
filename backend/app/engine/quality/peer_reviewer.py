@@ -90,7 +90,7 @@ class AutonomousPeerReviewer:
                     inline_comments.append({
                         "file_path": path,
                         "line_number": idx,
-                        "comment": "Dilarang menggunakan print(). Gunakan logger terkonfigurasi (loguru).",
+                        "comment": "Dilarang menggunakan print(). Gunakan logger terkonfigurasi (logger internal).",
                         "code_suggestion": "logger.info(...)",
                     })
 

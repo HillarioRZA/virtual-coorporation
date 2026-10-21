@@ -123,6 +123,15 @@ export default function RoleCard({
               Core
             </span>
           )}
+
+          {role.persona_prompt && (
+            <span
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[9px] font-mono cursor-help"
+              title={`Soul Persona: ${role.persona_prompt}`}
+            >
+              ✦ Soul
+            </span>
+          )}
         </div>
 
         {role.tool_permissions?.length > 0 && (

@@ -41,6 +41,10 @@ export default function SkillsPage() {
 
   // Install Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [installTab, setInstallTab] = useState<"git" | "manual">("git");
+  const [gitUrl, setGitUrl] = useState("");
+  const [gitName, setGitName] = useState("");
+  const [gitCategory, setGitCategory] = useState("");
   const [formName, setFormName] = useState("");
   const [formCategory, setFormCategory] = useState("");
   const [formDesc, setFormDesc] = useState("");
@@ -115,6 +119,35 @@ export default function SkillsPage() {
       fetchSkills();
     } catch (err: any) {
       setFormError(err.message || "Gagal menyimpan skill.");
+    } finally {
+      setInstallLoading(false);
+    }
+  };
+
+  const handleGitInstall = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInstallLoading(true);
+    setFormError(null);
+    try {
+      const res = await fetch(`${API_BASE}/skills/import-git`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          repo_url: gitUrl.trim(),
+          name: gitName.trim() || undefined,
+          category_name: gitCategory.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Gagal mengimpor skill dari Git.");
+      setIsModalOpen(false);
+      setGitUrl("");
+      setGitName("");
+      setGitCategory("");
+      fetchCategories();
+      fetchSkills();
+    } catch (err: any) {
+      setFormError(err.message || "Gagal mengimpor skill dari Git.");
     } finally {
       setInstallLoading(false);
     }
@@ -288,78 +321,170 @@ export default function SkillsPage() {
               </div>
             )}
 
-            <form onSubmit={handleInstall} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+            {/* Mode Switcher Tabs */}
+            <div className="flex border-b border-white/10 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setInstallTab("git")}
+                className={`pb-2.5 px-3 text-xs font-medium border-b-2 transition-all ${
+                  installTab === "git"
+                    ? "border-cyan-400 text-cyan-300"
+                    : "border-transparent text-slate-400 hover:text-white"
+                }`}
+              >
+                📦 Impor dari Git / GitHub Repo
+              </button>
+              <button
+                type="button"
+                onClick={() => setInstallTab("manual")}
+                className={`pb-2.5 px-3 text-xs font-medium border-b-2 transition-all ${
+                  installTab === "manual"
+                    ? "border-cyan-400 text-cyan-300"
+                    : "border-transparent text-slate-400 hover:text-white"
+                }`}
+              >
+                ✏️ Editor Manual (SKILL.md)
+              </button>
+            </div>
+
+            {/* TAB 1: GIT IMPORTER */}
+            {installTab === "git" && (
+              <form onSubmit={handleGitInstall} className="space-y-4 pt-1">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Nama Skill</label>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">
+                    URL Repositori Git Publik (GitHub / GitLab)
+                  </label>
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill"
+                    value={gitUrl}
+                    onChange={(e) => setGitUrl(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-cyan-500"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Mendukung repositori multi-berkas (folder <code className="text-cyan-400">scripts/</code>, <code className="text-cyan-400">templates/</code>, aset, dan <code className="text-cyan-400">SKILL.md</code>).
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Nama Skill (Opsional)</label>
+                    <input
+                      type="text"
+                      placeholder="Auto-detect dari repo"
+                      value={gitName}
+                      onChange={(e) => setGitName(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Kategori Kustom (Opsional)</label>
+                    <input
+                      type="text"
+                      list="category-suggestions"
+                      placeholder="Auto-detect dari metadata"
+                      value={gitCategory}
+                      onChange={(e) => setGitCategory(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 text-xs text-slate-400 hover:text-white"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={installLoading}
+                    className="px-4 py-2 text-xs font-medium text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all disabled:opacity-50 shadow-md"
+                  >
+                    {installLoading ? "Mengkloning & Memasang..." : "Unduh & Pasang Bundle Skill"}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* TAB 2: MANUAL EDITOR */}
+            {installTab === "manual" && (
+              <form onSubmit={handleInstall} className="space-y-4 pt-1">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Nama Skill</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="flutter-clean-architecture"
+                      value={formName}
+                      onChange={(e) => setFormName(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Kategori (Auto-Create)</label>
+                    <input
+                      type="text"
+                      required
+                      list="category-suggestions"
+                      placeholder="Mobile Development"
+                      value={formCategory}
+                      onChange={(e) => setFormCategory(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-500"
+                    />
+                    <datalist id="category-suggestions">
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.name} />
+                      ))}
+                    </datalist>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Deskripsi Ringkas</label>
                   <input
                     type="text"
-                    required
-                    placeholder="flutter-clean-architecture"
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
+                    placeholder="Standar implementasi BLoC dan Clean Architecture pada Flutter"
+                    value={formDesc}
+                    onChange={(e) => setFormDesc(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-500"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Kategori (Auto-Create)</label>
-                  <input
-                    type="text"
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Konten SKILL.md (Markdown)</label>
+                  <textarea
+                    rows={8}
                     required
-                    list="category-suggestions"
-                    placeholder="Mobile Development"
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-500"
+                    placeholder="# PANDUAN TEKNIS FLUTTER&#10;&#10;## Pola State Management&#10;Gunakan flutter_bloc..."
+                    value={formContent}
+                    onChange={(e) => setFormContent(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-cyan-500"
                   />
-                  <datalist id="category-suggestions">
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.name} />
-                    ))}
-                  </datalist>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Deskripsi Ringkas</label>
-                <input
-                  type="text"
-                  placeholder="Standar implementasi BLoC dan Clean Architecture pada Flutter"
-                  value={formDesc}
-                  onChange={(e) => setFormDesc(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Konten SKILL.md (Markdown)</label>
-                <textarea
-                  rows={8}
-                  required
-                  placeholder="# PANDUAN TEKNIS FLUTTER&#10;&#10;## Pola State Management&#10;Gunakan flutter_bloc..."
-                  value={formContent}
-                  onChange={(e) => setFormContent(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-cyan-500"
-                />
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-xs text-slate-400 hover:text-white"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={installLoading}
-                  className="px-4 py-2 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-xl transition-all disabled:opacity-50"
-                >
-                  {installLoading ? "Menyimpan..." : "Simpan Skill"}
-                </button>
-              </div>
-            </form>
+                <div className="pt-2 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 text-xs text-slate-400 hover:text-white"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={installLoading}
+                    className="px-4 py-2 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-xl transition-all disabled:opacity-50"
+                  >
+                    {installLoading ? "Menyimpan..." : "Simpan Skill"}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

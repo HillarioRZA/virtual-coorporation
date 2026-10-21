@@ -14,14 +14,12 @@ class BranchCreate(BaseModel):
     slug: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-z0-9_\-]+$", description="Slug unik.")
     description: Optional[str] = Field(None, max_length=500)
 
-
 class BranchForkRequest(BaseModel):
     """Payload kloning / forking branch seperti Git."""
     name: str = Field(..., min_length=2, max_length=100, description="Nama branch baru.")
     slug: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-z0-9_\-]+$", description="Slug unik.")
     description: Optional[str] = Field(None, max_length=500)
     source_branch_id: str = Field("branch_main", description="ID branch sumber.")
-
 
 class BranchResponse(BaseModel):
     """Representasi respon branch organisasi."""
@@ -43,14 +41,12 @@ class DivisionCreate(BaseModel):
     accent_color: str = Field("#cbd5e1", description="Warna hex aksen.")
     icon_name: str = Field("FolderTree", description="Nama ikon Lucide.")
 
-
 class DivisionUpdate(BaseModel):
     """Payload pembaruan metadata divisi."""
     name: Optional[str] = Field(None, min_length=2, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
     accent_color: Optional[str] = None
     icon_name: Optional[str] = None
-
 
 class DivisionResponse(BaseModel):
     """Representasi respon divisi korporat."""
@@ -76,6 +72,7 @@ class RoleCreate(BaseModel):
     division_id: str = Field(..., description="ID divisi penanggung jawab.")
     name: str = Field(..., min_length=2, max_length=100, description="Nama peran karyawan AI.")
     job_description: Optional[str] = Field("", description="Tugas utama dan jobdesk peran.")
+    persona_prompt: Optional[str] = Field("", description="DNA karakter/Soul agen (Layer 1).")
     system_prompt_template: str = Field(..., min_length=10, description="System instruction.")
     model_provider: str = Field("openrouter", description="Provider LLM.")
     model_name: str = Field("deepseek/deepseek-r1:free", description="ID model LLM.")
@@ -93,6 +90,7 @@ class RoleUpdate(BaseModel):
     division_id: Optional[str] = Field(None, description="ID divisi baru jika peran dipindahkan.")
     name: Optional[str] = Field(None, min_length=2, max_length=100)
     job_description: Optional[str] = None
+    persona_prompt: Optional[str] = None
     system_prompt_template: Optional[str] = Field(None, min_length=10)
     model_provider: Optional[str] = None
     model_name: Optional[str] = None
@@ -112,6 +110,7 @@ class RoleResponse(BaseModel):
     division_id: str
     name: str
     job_description: Optional[str] = ""
+    persona_prompt: Optional[str] = ""
     system_prompt_template: str
     model_provider: str
     model_name: str

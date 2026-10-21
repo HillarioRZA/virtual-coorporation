@@ -25,6 +25,7 @@ from app.db.corporate_seeder import (
     migrate_role_job_description_column,
     migrate_drop_role_slug_column,
     migrate_rich_system_prompts,
+    migrate_role_persona_prompt,
 )
 
 
@@ -45,6 +46,7 @@ async def init_database(custom_path: Optional[str] = None) -> None:
             await migrate_branch_parent_column(conn)
             await migrate_role_job_description_column(conn)
             await migrate_drop_role_slug_column(conn)
+            await migrate_role_persona_prompt(conn)
             await seed_default_corporate_structure(conn)
             await migrate_rich_system_prompts(conn)
             await seed_default_pipeline_stages(conn)

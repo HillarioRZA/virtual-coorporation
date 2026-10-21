@@ -101,3 +101,41 @@ async def extract_and_register_tool_proposal(
     except Exception as err:
         logger.warning(f"Gagal memproses proposal perkakas dari Telegram: {err}")
     return None
+
+
+async def execute_secretary_chat(
+    llm_client: Any,
+    text: str,
+    custom_path: Optional[str] = None,
+) -> str:
+    """Menjalankan dialog eksekutif dengan Sekretaris dan mendaftarkan proposal perkakas bila ada."""
+    sec_role = await resolve_secretary_role(custom_path=custom_path)
+    sys_prompt = build_secretary_prompt(sec_role)
+    model = sec_role.get("model_name") or "deepseek/deepseek-r1:free"
+    provider = sec_role.get("model_provider") or "openrouter"
+    temperature = float(sec_role.get("temperature", 0.4))
+
+    try:
+        reply = await llm_client.complete(
+            prompt=text,
+            system_prompt=sys_prompt,
+            model=model,
+            provider=provider,
+            temperature=temperature,
+        )
+        proposal = await extract_and_register_tool_proposal(
+            llm_reply=reply,
+            creator_role_id=sec_role.get("id", "role_secretary"),
+            custom_path=custom_path,
+        )
+        if proposal:
+            p_name = proposal["name"]
+            reply += (
+                f"\n\n🛠️ *[Perkakas Baru Berhasil Diajukan]*:\n"
+                f"Perkakas `{p_name}` telah didaftarkan ke sistem dengan status `PENDING_APPROVAL`.\n"
+                f"Ketik `/approve {p_name}` untuk mengaktifkannya secara instan!"
+            )
+        return reply
+    except Exception as err:
+        logger.error(f"Error pada dialog sekretaris: {err}")
+        return f"Maaf Founder, terdapat kendala saat memproses arahan: {err}"

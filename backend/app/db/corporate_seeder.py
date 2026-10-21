@@ -6,7 +6,7 @@ Mengisi konfigurasi kanonikal bawaan saat basis data pertama kali diinisialisasi
 import json
 from typing import List, Tuple
 import aiosqlite
-from app.db.corporate_prompts import DEFAULT_ROLE_PROMPTS
+from app.db.corporate_prompts import DEFAULT_ROLE_PROMPTS, DEFAULT_PERSONA_PROMPTS
 from app.db.corporate_migrations import (
     migrate_order_index,
     migrate_role_fallback_chain,
@@ -15,6 +15,7 @@ from app.db.corporate_migrations import (
     migrate_rich_system_prompts,
     migrate_role_job_description_column,
     migrate_drop_role_slug_column,
+    migrate_role_persona_prompt,
 )
 
 
@@ -42,19 +43,19 @@ async def seed_default_corporate_structure(conn: aiosqlite.Connection) -> None:
     )
 
     roles = [
-        ("role_cos", "branch_main", "div_exec", "Chief of Staff", "Validasi kelayakan pasar, monetisasi, model harga, & mitigasi risiko bisnis.", DEFAULT_ROLE_PROMPTS["cos"], "openrouter", "deepseek/deepseek-r1:free", 0.2, '["read_file", "write_file"]', 8000, 1, 1, 0),
-        ("role_cto", "branch_main", "div_eng", "Chief Technology Officer", "Arsitektur sistem, pemilihan stack teknologi, API specs, & batas teknis.", DEFAULT_ROLE_PROMPTS["cto"], "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file", "ast_scan"]', 10000, 1, 1, 1),
-        ("role_pm", "branch_main", "div_product", "Product Manager", "Penyusunan Lean PRD, user stories, acceptance criteria, & pembagian tiket Kanban.", DEFAULT_ROLE_PROMPTS["pm"], "openrouter", "deepseek/deepseek-r1:free", 0.2, '["read_file", "write_file"]', 8000, 1, 1, 2),
-        ("role_ux", "branch_main", "div_product", "UI/UX Architect", "Design tokens, tata letak antarmuka, komponen Tailwind CSS, & wireframe visual.", DEFAULT_ROLE_PROMPTS["ux"], "openrouter", "deepseek/deepseek-r1:free", 0.3, '["read_file", "write_file"]', 8000, 1, 1, 3),
-        ("role_fe", "branch_main", "div_eng", "Frontend Engineer", "Implementasi UI Next.js 14 App Router, React, & komponen interaktif.", DEFAULT_ROLE_PROMPTS["frontend"], "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file"]', 12000, 1, 1, 4),
-        ("role_be", "branch_main", "div_eng", "Backend Engineer", "Implementasi REST API FastAPI, skema data Pydantic, & integrasi SQLite.", DEFAULT_ROLE_PROMPTS["backend"], "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file"]', 12000, 1, 1, 5),
-        ("role_qa", "branch_main", "div_eng", "QA & SecOps Engineer", "Adversarial TDD test suite, AST security scan, audit OWASP, & penguncian tes.", DEFAULT_ROLE_PROMPTS["qa"], "openrouter", "deepseek/deepseek-r1:free", 0.1, '["read_file", "ast_scan"]', 8000, 1, 1, 6),
+        ("role_cos", "branch_main", "div_exec", "Chief of Staff", "Validasi kelayakan pasar, monetisasi, model harga, & mitigasi risiko bisnis.", DEFAULT_PERSONA_PROMPTS["cos"], DEFAULT_ROLE_PROMPTS["cos"], "openrouter", "deepseek/deepseek-r1:free", 0.2, '["read_file", "write_file"]', 8000, 1, 1, 0),
+        ("role_cto", "branch_main", "div_eng", "Chief Technology Officer", "Arsitektur sistem, pemilihan stack teknologi, API specs, & batas teknis.", DEFAULT_PERSONA_PROMPTS["cto"], DEFAULT_ROLE_PROMPTS["cto"], "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file", "ast_scan"]', 10000, 1, 1, 1),
+        ("role_pm", "branch_main", "div_product", "Product Manager", "Penyusunan Lean PRD, user stories, acceptance criteria, & pembagian tiket Kanban.", DEFAULT_PERSONA_PROMPTS["pm"], DEFAULT_ROLE_PROMPTS["pm"], "openrouter", "deepseek/deepseek-r1:free", 0.2, '["read_file", "write_file"]', 8000, 1, 1, 2),
+        ("role_ux", "branch_main", "div_product", "UI/UX Architect", "Design tokens, tata letak antarmuka, komponen Tailwind CSS, & wireframe visual.", DEFAULT_PERSONA_PROMPTS["ux"], DEFAULT_ROLE_PROMPTS["ux"], "openrouter", "deepseek/deepseek-r1:free", 0.3, '["read_file", "write_file"]', 8000, 1, 1, 3),
+        ("role_fe", "branch_main", "div_eng", "Frontend Engineer", "Implementasi UI Next.js 14 App Router, React, & komponen interaktif.", DEFAULT_PERSONA_PROMPTS["frontend"], DEFAULT_ROLE_PROMPTS["frontend"], "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file"]', 12000, 1, 1, 4),
+        ("role_be", "branch_main", "div_eng", "Backend Engineer", "Implementasi REST API FastAPI, skema data Pydantic, & integrasi SQLite.", DEFAULT_PERSONA_PROMPTS["backend"], DEFAULT_ROLE_PROMPTS["backend"], "openrouter", "qwen/qwen-2.5-coder-32b-instruct:free", 0.2, '["read_file", "write_file"]', 12000, 1, 1, 5),
+        ("role_qa", "branch_main", "div_eng", "QA & SecOps Engineer", "Adversarial TDD test suite, AST security scan, audit OWASP, & penguncian tes.", DEFAULT_PERSONA_PROMPTS["qa"], DEFAULT_ROLE_PROMPTS["qa"], "openrouter", "deepseek/deepseek-r1:free", 0.1, '["read_file", "ast_scan"]', 8000, 1, 1, 6),
     ]
     await conn.executemany(
         """
         INSERT OR IGNORE INTO corporate_roles 
-        (id, branch_id, division_id, name, job_description, system_prompt_template, model_provider, model_name, temperature, tool_permissions, token_budget_per_task, is_active, is_system_default, order_index)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        (id, branch_id, division_id, name, job_description, persona_prompt, system_prompt_template, model_provider, model_name, temperature, tool_permissions, token_budget_per_task, is_active, is_system_default, order_index)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         """,
         roles,
     )

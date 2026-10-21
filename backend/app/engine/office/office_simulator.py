@@ -3,9 +3,17 @@ Real-Time Activity Simulation Engine for Corporate Oasis Command HQ.
 Mengelola status aktivitas kognitif agen, transisi state, dan translasi event bus korporat.
 """
 
-from typing import Any, Dict, Optional
+from enum import Enum
+from typing import Any, Dict, List, Optional
 from app.core.logger import logger
-from app.engine.office.office_layout import SpatialTier, get_canonical_campus_layout
+
+
+class SpatialTier(str, Enum):
+    """Tingkat kasta hierarki korporat dan pembagian zona kerja."""
+    EXECUTIVE = "EXECUTIVE"                  # Founder, CoS, CFO, Secretary
+    LEAD_MANAGEMENT = "LEAD_MANAGEMENT"      # CTO, PM
+    WORKER_SPECIALIST = "WORKER_SPECIALIST"  # FE, BE, QA, UI/UX, DevSecOps, Legal
+    COMMONS = "COMMONS"                      # All Roles (Oasis Lounge)
 
 
 class AgentSpatialState:
@@ -42,30 +50,55 @@ class AgentSpatialState:
         }
 
 
+DEFAULT_ROSTER: List[Dict[str, Any]] = [
+    {"role_id": "role_founder", "name": "Founder & CEO", "tier": SpatialTier.EXECUTIVE, "color": "#eab308"},
+    {"role_id": "role_cos", "name": "Chief of Staff", "tier": SpatialTier.EXECUTIVE, "color": "#eab308"},
+    {"role_id": "role_cfo", "name": "Chief Financial Officer", "tier": SpatialTier.EXECUTIVE, "color": "#eab308"},
+    {"role_id": "role_secretary", "name": "Executive Secretary", "tier": SpatialTier.EXECUTIVE, "color": "#a855f7"},
+    {"role_id": "role_cto", "name": "Chief Technology Officer", "tier": SpatialTier.LEAD_MANAGEMENT, "color": "#3b82f6"},
+    {"role_id": "role_pm", "name": "Product Manager", "tier": SpatialTier.LEAD_MANAGEMENT, "color": "#3b82f6"},
+    {"role_id": "role_fe", "name": "Frontend Engineer", "tier": SpatialTier.WORKER_SPECIALIST, "color": "#06b6d4"},
+    {"role_id": "role_be", "name": "Backend Engineer", "tier": SpatialTier.WORKER_SPECIALIST, "color": "#10b981"},
+    {"role_id": "role_qa", "name": "QA Specialist", "tier": SpatialTier.WORKER_SPECIALIST, "color": "#f43f5e"},
+    {"role_id": "role_ui_ux", "name": "UI/UX Designer", "tier": SpatialTier.WORKER_SPECIALIST, "color": "#8b5cf6"},
+    {"role_id": "role_devsecops", "name": "DevSecOps Engineer", "tier": SpatialTier.WORKER_SPECIALIST, "color": "#f59e0b"},
+    {"role_id": "role_legal", "name": "Legal Counsel", "tier": SpatialTier.WORKER_SPECIALIST, "color": "#64748b"},
+]
+
+
 class OfficeSimulatorEngine:
     """Mesin pengelola state kehadiran dan reaktivitas event bus agen kantor korporat."""
 
     def __init__(self) -> None:
-        """Inisialisasi registry agen berdasarkan skema layout kanonikal."""
-        self.layout = get_canonical_campus_layout()
+        """Inisialisasi registry agen berdasarkan roster dinamis terpadu."""
+        self.layout: Dict[str, Any] = {
+            "campus_name": "Sovereign Silicon Campus",
+            "style": "oasis_command_hq",
+            "tiers": [t.value for t in SpatialTier],
+            "wings": [
+                {"id": "wing_penthouse", "name": "The Executive Penthouse", "tier": SpatialTier.EXECUTIVE.value, "furniture": [{"id": "desk_founder", "assigned_role": "role_founder"}, {"id": "desk_cos", "assigned_role": "role_cos"}]},
+                {"id": "wing_management", "name": "Strategy Suites", "tier": SpatialTier.LEAD_MANAGEMENT.value, "furniture": [{"id": "desk_cto", "assigned_role": "role_cto"}, {"id": "desk_pm", "assigned_role": "role_pm"}]},
+                {"id": "wing_engineering", "name": "Collaborative Engineering Lab", "tier": SpatialTier.WORKER_SPECIALIST.value, "furniture": [{"id": "desk_fe", "assigned_role": "role_fe"}, {"id": "desk_be", "assigned_role": "role_be"}]},
+                {"id": "wing_commons", "name": "Oasis Commons Lounge", "tier": SpatialTier.COMMONS.value, "furniture": []},
+            ],
+        }
         self.agents: Dict[str, AgentSpatialState] = {}
-        self._init_agents_from_layout()
+        self._init_default_roster()
 
-    def _init_agents_from_layout(self) -> None:
-        """Membangun registry agen dari workstation yang didefinisikan pada layout."""
-        for wing in self.layout.get("wings", []):
-            tier = SpatialTier(wing.get("tier", "WORKER_SPECIALIST"))
-            color = wing.get("color", "#06b6d4")
-            for item in wing.get("furniture", []):
-                role = item.get("assigned_role")
-                if role:
-                    name = item.get("label", role).replace(" Desk", "").replace(" Pod", "").replace(" Workstation", "")
-                    self.agents[role] = AgentSpatialState(
-                        role_id=role,
-                        name=name,
-                        tier=tier,
-                        color=color,
-                    )
+    def _init_default_roster(self) -> None:
+        """Membangun registry agen dari daftar roster default."""
+        for r in DEFAULT_ROSTER:
+            self.agents[r["role_id"]] = AgentSpatialState(
+                role_id=r["role_id"],
+                name=r["name"],
+                tier=r["tier"],
+                color=r["color"],
+            )
+
+    def register_dynamic_role(self, role_id: str, name: str, tier: SpatialTier = SpatialTier.WORKER_SPECIALIST, color: str = "#06b6d4") -> None:
+        """Mendaftarkan peran baru ke dalam simulator secara dinamis."""
+        self.agents[role_id] = AgentSpatialState(role_id=role_id, name=name, tier=tier, color=color)
+        logger.info(f"Peran [{role_id}] berhasil didaftarkan ke Office Simulator.")
 
     def handle_bus_event(self, event_type: str, payload: Dict[str, Any]) -> None:
         """Menerjemahkan event bus korporat menjadi mutasi aktivitas dan status agen."""
@@ -128,3 +161,28 @@ class OfficeSimulatorEngine:
 
 
 office_sim_engine = OfficeSimulatorEngine()
+
+
+def auto_slot_role(
+    layout: Dict[str, Any],
+    role_id: str,
+    label: str,
+    tier: SpatialTier = SpatialTier.WORKER_SPECIALIST,
+) -> Dict[str, Any]:
+    """Menambahkan slot peran baru ke denah kantor secara dinamis."""
+    office_sim_engine.register_dynamic_role(role_id=role_id, name=label, tier=tier)
+    for wing in layout.get("wings", []):
+        if wing.get("tier") == tier.value:
+            wing.setdefault("furniture", []).append({
+                "id": f"desk_{role_id}",
+                "type": "desk",
+                "assigned_role": role_id,
+                "label": label,
+            })
+            break
+    return layout
+
+
+def get_canonical_campus_layout() -> Dict[str, Any]:
+    """Mengembalikan skema layout kantor kanonikal tanpa dependensi modul layout terpisah."""
+    return office_sim_engine.layout

@@ -37,12 +37,14 @@ async def execute_dynamic_role_node(
     temperature = 0.5
     system_prompt = load_prompt(norm_id)
 
+    persona_prompt = ""
     try:
         role_data = await role_repo.resolve_role(role_identifier, custom_path=custom_path)
         if role_data:
             model = role_data.get("model_name") or model
             provider = role_data.get("model_provider") or provider
             temperature = float(role_data.get("temperature", temperature))
+            persona_prompt = (role_data.get("persona_prompt") or "").strip()
             if role_data.get("system_prompt_template"):
                 system_prompt = role_data["system_prompt_template"]
             elif role_data.get("system_prompt"):
@@ -65,6 +67,15 @@ async def execute_dynamic_role_node(
             system_prompt = f"{system_prompt}\n\n{wisdom_block}"
     except Exception as w_err:
         logger.debug(f"Wisdom query skip: {w_err}")
+
+    # 3-Layer Prompting: Layer 1 (Soul/DNA) + Layer 2 (SOP/Directives)
+    if persona_prompt:
+        system_prompt = (
+            f"=== CORE PERSONA & IDENTITY (IMMUTABLE SOUL) ===\n"
+            f"{persona_prompt}\n\n"
+            f"=== OPERATIONAL DIRECTIVE & SOP ===\n"
+            f"{system_prompt}"
+        )
 
     user_prompt = _build_task_prompt(state, ticket_context)
     if memory_mgr:

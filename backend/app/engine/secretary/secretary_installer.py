@@ -94,4 +94,22 @@ async def handle_installer_intent(
             f"Ketik `/confirm_skill {target_url}` untuk menyelesaikan instalasi."
         )
 
+    # 4. Konfirmasi instalasi Skill ("/confirm_skill <url>")
+    confirm_match = re.search(r"^/confirm_skill\s+([^\s]+)", clean_text, re.I)
+    if confirm_match:
+        target_url = confirm_match.group(1).strip()
+        try:
+            from app.engine.skills.git_importer import import_skill_from_git
+            res = await import_skill_from_git(repo_url=target_url)
+            return (
+                f"✅ *[Skill Berhasil Dipasang]*\n"
+                f"• Nama: `{res['name']}`\n"
+                f"• Kategori: `{res['category']}`\n"
+                f"• Jumlah Berkas: *{res.get('files_count', 0)}* berkas\n\n"
+                f"Playbook telah diindeks ke SQLite FTS5 dan siap digunakan oleh seluruh agen korporat!"
+            )
+        except Exception as err:
+            logger.error(f"Gagal memasang skill via Telegram: {err}")
+            return f"❌ Gagal memasang skill dari `{target_url}`: {err}"
+
     return None

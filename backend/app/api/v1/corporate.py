@@ -139,7 +139,6 @@ async def list_roles(
     """Mengambil seluruh role karyawan AI."""
     return await corporate_repo.get_roles(branch_id=branch_id, division_id=division_id, active_only=active_only)
 
-
 @router.get("/roles/{role_id}", response_model=RoleResponse)
 async def get_role(role_id: str) -> RoleResponse:
     """Mengambil detail satu role karyawan AI."""
@@ -148,7 +147,6 @@ async def get_role(role_id: str) -> RoleResponse:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Role '{role_id}' tidak ditemukan.")
     return role
 
-
 @router.post("/roles", response_model=RoleResponse, status_code=status.HTTP_201_CREATED)
 async def create_role(payload: RoleCreate) -> RoleResponse:
     """Mendaftarkan role karyawan AI baru pada branch dan divisi tertentu tanpa slug."""
@@ -156,6 +154,7 @@ async def create_role(payload: RoleCreate) -> RoleResponse:
         res = await corporate_repo.create_role(
             branch_id=payload.branch_id, division_id=payload.division_id,
             name=payload.name, job_description=payload.job_description or "",
+            persona_prompt=payload.persona_prompt or "",
             system_prompt_template=payload.system_prompt_template, model_provider=payload.model_provider,
             model_name=payload.model_name, temperature=payload.temperature,
             tool_permissions=payload.tool_permissions, token_budget_per_task=payload.token_budget_per_task,
@@ -173,7 +172,8 @@ async def update_role(role_id: str, payload: RoleUpdate) -> RoleResponse:
     try:
         updated = await corporate_repo.update_role(
             role_id=role_id, division_id=payload.division_id, name=payload.name,
-            job_description=payload.job_description, system_prompt_template=payload.system_prompt_template,
+            job_description=payload.job_description, persona_prompt=payload.persona_prompt,
+            system_prompt_template=payload.system_prompt_template,
             model_provider=payload.model_provider, model_name=payload.model_name,
             temperature=payload.temperature, tool_permissions=payload.tool_permissions,
             token_budget_per_task=payload.token_budget_per_task, is_active=payload.is_active,

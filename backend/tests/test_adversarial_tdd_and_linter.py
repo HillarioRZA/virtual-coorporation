@@ -9,8 +9,8 @@ import pytest
 from app.engine.quality.citation_auditor import audit_text_citations, extract_citation_urls
 from app.engine.tools.design_token_engine import generate_design_tokens, load_design_tokens
 from app.engine.quality.editorial_reviewer import editorial_reviewer
-from app.engine.nodes.backend import BackendOutputEnvelope, write_backend_files
-from app.engine.nodes.frontend import FrontendCodeBundle, write_frontend_files
+from app.engine.schemas.envelope_schemas import BackendOutputEnvelope, FrontendCodeBundle
+from app.engine.tools.code_bundle_writer import write_backend_files, write_frontend_files
 from app.engine.quality.preflight_auditor import audit_project_dependencies
 from app.engine.quality.semantic_linter import (
     compute_flesch_metrics,

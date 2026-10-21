@@ -5,7 +5,7 @@ Legal bundle generator, DevSecOps packaging, dan validasi siklus penuh end-to-en
 """
 
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator, Dict
 import httpx
 import pytest
 import pytest_asyncio
@@ -14,17 +14,54 @@ from app.core.config import settings
 from app.core.security import SecretVaultManager
 from app.db.init_db import init_database
 from app.engine.memory.memory import MemoryManager
-from app.engine.nodes.backend import backend_engineering_node
-from app.engine.nodes.devsecops import devsecops_packaging_node
-from app.engine.nodes.hardening import production_hardening_node
-from app.engine.nodes.legal import legal_compliance_node
-from app.engine.nodes.qa import qa_eval_node
+from app.engine.roles.dynamic_node import execute_dynamic_role_node
+
+
 from app.engine.runtime.routers import router_deploy_live, router_gate_3
 from app.engine.schemas.schemas import BusinessBriefSchema, SystemArchitectureSchema
 from app.engine.runtime.state import VentureState
 from app.engine.runtime.state_machine import NativeStateMachine
 from app.gateway.client import UnifiedLLMClient
 from main import app
+
+
+async def backend_engineering_node(state: VentureState, llm_client: Any = None, memory_manager: Any = None) -> Dict[str, Any]:
+    """Helper eksekusi peran Backend via dynamic node engine."""
+    return await execute_dynamic_role_node("backend", state, llm_client=llm_client, memory_mgr=memory_manager)
+
+
+async def devsecops_packaging_node(
+    state: VentureState,
+    llm_client: Any = None,
+    memory_manager: Any = None,
+    vault_manager: Any = None,
+) -> Dict[str, Any]:
+    """Helper eksekusi peran DevSecOps via dynamic node engine."""
+    return await execute_dynamic_role_node(
+        "devsecops", state, llm_client=llm_client, memory_mgr=memory_manager, vault_mgr=vault_manager
+    )
+
+
+async def qa_eval_node(state: VentureState, llm_client: Any = None, memory_manager: Any = None) -> Dict[str, Any]:
+    """Helper eksekusi peran QA via dynamic node engine."""
+    return await execute_dynamic_role_node("qa", state, llm_client=llm_client, memory_mgr=memory_manager)
+
+
+async def legal_compliance_node(state: VentureState, llm_client: Any = None, memory_manager: Any = None) -> Dict[str, Any]:
+    """Helper eksekusi peran Legal via dynamic node engine."""
+    return await execute_dynamic_role_node("legal", state, llm_client=llm_client, memory_mgr=memory_manager)
+
+
+async def production_hardening_node(state: VentureState, llm_client: Any = None, memory_manager: Any = None) -> Dict[str, Any]:
+    """Helper fase production hardening via dynamic node engine."""
+    await execute_dynamic_role_node("backend", state, llm_client=llm_client, memory_mgr=memory_manager)
+    await execute_dynamic_role_node("qa", state, llm_client=llm_client, memory_mgr=memory_manager)
+    await execute_dynamic_role_node("legal", state, llm_client=llm_client, memory_mgr=memory_manager)
+    return {
+        "quality_scorecard": state.quality_scorecard,
+        "token_usage": state.token_usage,
+        "event_logs": state.event_logs,
+    }
 
 
 @pytest_asyncio.fixture

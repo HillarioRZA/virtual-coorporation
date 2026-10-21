@@ -8,7 +8,7 @@ import asyncio
 from contextlib import asynccontextmanager
 import os
 from typing import AsyncGenerator, Dict
-from loguru import logger
+from app.core.logger import logger
 
 
 class FileLockManager:

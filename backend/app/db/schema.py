@@ -96,6 +96,7 @@ CREATE TABLE IF NOT EXISTS corporate_roles (
     division_id TEXT NOT NULL,
     name TEXT NOT NULL,
     job_description TEXT DEFAULT '',
+    persona_prompt TEXT DEFAULT '',
     system_prompt_template TEXT NOT NULL,
     model_provider TEXT NOT NULL DEFAULT 'openrouter',
     model_name TEXT NOT NULL DEFAULT 'deepseek/deepseek-r1:free',

@@ -98,10 +98,12 @@ class SkillsHub:
                 """,
                 (skill_id, name, cat_info["id"], desc, str(dest_dir), json.dumps({"files": list(files.keys())})),
             )
-            # Indeks FTS5 teks penuh
+            # Indeks FTS5 teks penuh termasuk manifest berkas
+            manifest_str = " ".join(files.keys())
+            indexed_text = f"{skill_md_content[:3500]} {manifest_str}"
             await conn.execute(
                 "INSERT INTO corporate_skills_fts (skill_id, name, description, content) VALUES (?, ?, ?, ?);",
-                (skill_id, name, desc, skill_md_content[:4000]),
+                (skill_id, name, desc, indexed_text),
             )
             await conn.commit()
 

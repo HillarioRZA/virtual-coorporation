@@ -1,13 +1,65 @@
 """
-State Machine Routers & Gate Transition Rules.
-Menentukan logika percabangan deterministik antar-tahap dan evaluasi keputusan CEO.
+State Machine Routers & Table-Driven Gate Transition Rules.
+Menentukan logika transisi deterministik antar-tahap siklus hidup ventura
+dan evaluasi keputusan CEO berbasis Transition Table Matrix O(1).
 """
 
-from typing import Optional
+from typing import Dict, Optional, Tuple
 from app.core.logger import logger
 from app.engine.runtime.state import VentureState
 
 VALID_GATE_DECISIONS = {"APPROVE", "REVISE", "KILL", "GO_PRODUCTION", "ITERATE"}
+
+GATE_TRANSITION_TABLE: Dict[Tuple[str, str], str] = {
+    # Gate 1: Kelayakan Bisnis & Arsitektur Sistem
+    ("GATE_1_WAITING", "APPROVE"): "PRD_AND_SPECS",
+    ("GATE_1_WAITING", "GO_PRODUCTION"): "PRD_AND_SPECS",
+    ("GATE_1_WAITING", "REVISE"): "SPARRING_ROOM",
+    ("GATE_1_WAITING", "ITERATE"): "SPARRING_ROOM",
+    ("GATE_1_WAITING", "KILL"): "PROJECT_KILLED",
+
+    # Gate 2: Purwarupa Visual UI & Mock Next.js
+    ("GATE_2_WAITING", "APPROVE"): "PRODUCTION_HARDENING",
+    ("GATE_2_WAITING", "GO_PRODUCTION"): "PRODUCTION_HARDENING",
+    ("GATE_2_WAITING", "REVISE"): "MOCK_PROTOTYPING",
+    ("GATE_2_WAITING", "ITERATE"): "MOCK_PROTOTYPING",
+    ("GATE_2_WAITING", "KILL"): "PROJECT_KILLED",
+
+    # Gate 3: Pra-Rilis Produksi, Brankas Kredensial & PaaS Deploy
+    ("GATE_3_WAITING", "APPROVE"): "DEPLOY_LIVE",
+    ("GATE_3_WAITING", "GO_PRODUCTION"): "DEPLOY_LIVE",
+    ("GATE_3_WAITING", "REVISE"): "PRODUCTION_HARDENING",
+    ("GATE_3_WAITING", "ITERATE"): "PRODUCTION_HARDENING",
+    ("GATE_3_WAITING", "KILL"): "PROJECT_KILLED",
+}
+
+
+def evaluate_gate_transition(current_gate: str, decision: Optional[str]) -> str:
+    """Mengevaluasi keputusan stage-gate secara deterministik berbasis Transition Table Matrix O(1).
+
+    Args:
+        current_gate: Nama tahap gerbang saat ini (e.g. 'GATE_1_WAITING').
+        decision: Keputusan Founder/CEO ('APPROVE', 'REVISE', 'KILL', dll).
+
+    Returns:
+        Nama tahap berikutnya yang dituju.
+
+    Raises:
+        ValueError: Jika keputusan yang diberikan tidak terdaftar di VALID_GATE_DECISIONS.
+    """
+    if not decision:
+        return current_gate
+
+    action = decision.upper().strip()
+    if action not in VALID_GATE_DECISIONS:
+        raise ValueError(f"Invalid Gate decision '{decision}'. Must be one of {VALID_GATE_DECISIONS}")
+
+    next_state = GATE_TRANSITION_TABLE.get((current_gate, action))
+    if not next_state:
+        return current_gate
+
+    logger.info(f"Stage-Gate [{current_gate}] diputuskan [{action}] -> Transisi ke [{next_state}].")
+    return next_state
 
 
 def router_sparring(state: VentureState) -> str:
@@ -20,23 +72,7 @@ def router_sparring(state: VentureState) -> str:
 
 def router_gate_1(state: VentureState) -> str:
     """Router transisi untuk Stage-Gate 1 berdasarkan keputusan Founder/CEO."""
-    decision = (state.gate_decision or "").upper().strip()
-
-    if not decision:
-        return "GATE_1_WAITING"
-
-    if decision not in VALID_GATE_DECISIONS:
-        raise ValueError(f"Invalid Gate 1 decision '{decision}'.")
-
-    if decision in ["APPROVE", "GO_PRODUCTION"]:
-        logger.info(f"Stage-Gate 1 APPROVED untuk [{state.project_id}]. Lanjut ke PRD_AND_SPECS.")
-        return "PRD_AND_SPECS"
-    elif decision in ["REVISE", "ITERATE"]:
-        logger.info(f"Stage-Gate 1 REVISE diminta untuk [{state.project_id}]. Kembali ke SPARRING_ROOM.")
-        return "SPARRING_ROOM"
-    else:  # KILL
-        logger.info(f"Stage-Gate 1 KILLED untuk [{state.project_id}]. Proyek dihentikan.")
-        return "PROJECT_KILLED"
+    return evaluate_gate_transition("GATE_1_WAITING", state.gate_decision)
 
 
 def router_prd_and_specs(state: VentureState) -> str:
@@ -56,30 +92,8 @@ def router_mock_prototyping(state: VentureState) -> str:
 
 
 def router_gate_2(state: VentureState) -> str:
-    """Router transisi untuk Stage-Gate 2 (CEO Demo Day).
-
-    Keputusan:
-        APPROVE / GO_PRODUCTION -> 'PRODUCTION_HARDENING'
-        REVISE / ITERATE        -> 'MOCK_PROTOTYPING'
-        KILL                    -> 'PROJECT_KILLED'
-    """
-    decision = (state.gate_decision or "").upper().strip()
-
-    if not decision:
-        return "GATE_2_WAITING"
-
-    if decision not in VALID_GATE_DECISIONS:
-        raise ValueError(f"Invalid Gate 2 decision '{decision}'.")
-
-    if decision in ["APPROVE", "GO_PRODUCTION"]:
-        logger.info(f"Stage-Gate 2 APPROVED untuk [{state.project_id}]. Lanjut ke PRODUCTION_HARDENING.")
-        return "PRODUCTION_HARDENING"
-    elif decision in ["REVISE", "ITERATE"]:
-        logger.info(f"Stage-Gate 2 REVISE diminta untuk [{state.project_id}]. Kembali ke MOCK_PROTOTYPING.")
-        return "MOCK_PROTOTYPING"
-    else:  # KILL
-        logger.info(f"Stage-Gate 2 KILLED untuk [{state.project_id}]. Proyek dihentikan.")
-        return "PROJECT_KILLED"
+    """Router transisi untuk Stage-Gate 2 (CEO Demo Day)."""
+    return evaluate_gate_transition("GATE_2_WAITING", state.gate_decision)
 
 
 def apply_gate_decision(
@@ -106,20 +120,7 @@ def router_production_hardening(state: VentureState) -> str:
 
 def router_gate_3(state: VentureState) -> str:
     """Evaluasi deterministik keputusan Founder pada Stage-Gate 3 (Vault Injection & PaaS Deploy)."""
-    decision = (state.gate_decision or "REVISE").upper().strip()
-
-    if decision not in VALID_GATE_DECISIONS:
-        raise ValueError(f"Invalid Gate 3 decision '{decision}'.")
-
-    if decision in ["APPROVE", "GO_PRODUCTION"]:
-        logger.info(f"Stage-Gate 3 APPROVED untuk [{state.project_id}]. Lanjut ke DEPLOY_LIVE.")
-        return "DEPLOY_LIVE"
-    elif decision in ["REVISE", "ITERATE"]:
-        logger.info(f"Stage-Gate 3 REVISE diminta untuk [{state.project_id}]. Kembali ke PRODUCTION_HARDENING.")
-        return "PRODUCTION_HARDENING"
-    else:  # KILL
-        logger.info(f"Stage-Gate 3 KILLED untuk [{state.project_id}]. Proyek dihentikan.")
-        return "PROJECT_KILLED"
+    return evaluate_gate_transition("GATE_3_WAITING", state.gate_decision or "REVISE")
 
 
 def router_deploy_live(state: VentureState) -> str:

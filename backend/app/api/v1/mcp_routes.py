@@ -89,8 +89,10 @@ async def delete_server(server_id: str, force: bool = False) -> Dict[str, Any]:
 
 @router.get("/all-tools")
 async def get_all_tools() -> Dict[str, Any]:
-    """Mengembalikan seluruh perkakas aktif di sistem (Built-in + MCP Tools) untuk seleksi izin role."""
+    """Mengembalikan seluruh perkakas aktif di sistem (Built-in, MCP Tools, & Custom Tools) untuk izin role."""
     from app.engine.tools.builtin_tools import get_builtin_tools
+    from app.db.session import get_db_connection
+
     builtin_keys = list(get_builtin_tools().keys())
     servers = await mcp_manager.list_mcp_servers()
     mcp_tools = []
@@ -103,5 +105,25 @@ async def get_all_tools() -> Dict[str, Any]:
                 "description": t.get("description", ""),
                 "server_name": s_name,
             })
-    return {"builtin": builtin_keys, "mcp_tools": mcp_tools}
+
+    custom_tools = []
+    try:
+        async with get_db_connection() as conn:
+            async with conn.execute(
+                "SELECT id, name, description, created_by FROM corporate_custom_tools WHERE status = 'APPROVED';"
+            ) as cur:
+                rows = await cur.fetchall()
+                for r in rows:
+                    c_name = r["name"]
+                    custom_tools.append({
+                        "id": f"custom:{c_name}",
+                        "name": c_name,
+                        "label": f"[CUSTOM] {c_name}",
+                        "description": r["description"] or "Perkakas dinamis korporat buatan agen/sekretaris",
+                        "created_by": r["created_by"] or "secretary",
+                    })
+    except Exception as err:
+        logger.warning(f"Gagal memuat perkakas custom dinamis untuk all-tools: {err}")
+
+    return {"builtin": builtin_keys, "mcp_tools": mcp_tools, "custom_tools": custom_tools}
 

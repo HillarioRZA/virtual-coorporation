@@ -12,19 +12,28 @@ interface MCPToolOption {
   server_name: string;
 }
 
+interface CustomToolOption {
+  id: string;
+  name: string;
+  label: string;
+  description?: string;
+  created_by?: string;
+}
+
 interface RoleToolSelectorProps {
   selectedTools: string[];
   onToggleTool: (toolId: string) => void;
 }
 
 /**
- * RoleToolSelector - Komponen seleksi izin perkakas (tools) agen dinamis (Built-in + MCP).
+ * RoleToolSelector - Komponen seleksi izin perkakas (tools) agen dinamis (Built-in + MCP + Custom Secretary Tools).
  */
 export default function RoleToolSelector({
   selectedTools,
   onToggleTool,
 }: RoleToolSelectorProps) {
   const [mcpTools, setMcpTools] = useState<MCPToolOption[]>([]);
+  const [customTools, setCustomTools] = useState<CustomToolOption[]>([]);
 
   useEffect(() => {
     async function loadDynamicTools() {
@@ -35,9 +44,12 @@ export default function RoleToolSelector({
           if (data.mcp_tools) {
             setMcpTools(data.mcp_tools);
           }
+          if (data.custom_tools) {
+            setCustomTools(data.custom_tools);
+          }
         }
       } catch (err) {
-        // Fallback anggap belum ada MCP tools tambahan
+        // Fallback anggap belum ada dynamic tools tambahan
       }
     }
     loadDynamicTools();
@@ -89,6 +101,35 @@ export default function RoleToolSelector({
                     isSelected
                       ? "bg-purple-500/20 border-purple-500/40 text-purple-300 shadow-sm"
                       : "bg-white/5 border-white/10 text-slate-400 hover:text-purple-300"
+                  }`}
+                >
+                  {isSelected ? "✓ " : "+ "}
+                  {tool.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {customTools.length > 0 && (
+        <div className="pt-2 border-t border-white/5">
+          <label className="block text-xs font-medium text-amber-300 mb-1.5">
+            Izin Perkakas Sintesis Dinamis (*Approved Secretary / Custom Tools*)
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {customTools.map((tool) => {
+              const isSelected = selectedTools.includes(tool.id) || selectedTools.includes(tool.name);
+              return (
+                <button
+                  type="button"
+                  key={tool.id}
+                  onClick={() => onToggleTool(tool.name)}
+                  title={tool.description || ""}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-mono border transition-all ${
+                    isSelected
+                      ? "bg-amber-500/20 border-amber-500/40 text-amber-300 shadow-sm"
+                      : "bg-white/5 border-white/10 text-slate-400 hover:text-amber-300"
                   }`}
                 >
                   {isSelected ? "✓ " : "+ "}

@@ -26,6 +26,7 @@ export default function RoleModal({
   const [divisionId, setDivisionId] = useState("");
   const [name, setName] = useState("");
   const [jobDescription, setJobDescription] = useState("");
+  const [personaPrompt, setPersonaPrompt] = useState("");
   const [systemPrompt, setSystemPrompt] = useState("");
   const [modelProvider, setModelProvider] = useState("openrouter");
   const [modelName, setModelName] = useState("deepseek/deepseek-r1:free");
@@ -42,6 +43,7 @@ export default function RoleModal({
       setDivisionId(initialData.division_id);
       setName(initialData.name);
       setJobDescription(initialData.job_description || "");
+      setPersonaPrompt(initialData.persona_prompt || "");
       setSystemPrompt(initialData.system_prompt_template);
       setModelProvider(initialData.model_provider || "openrouter");
       setModelName(initialData.model_name || "deepseek/deepseek-r1:free");
@@ -54,6 +56,7 @@ export default function RoleModal({
       setDivisionId(preselectedDivisionId || divisions[0]?.id || "");
       setName("");
       setJobDescription("");
+      setPersonaPrompt("");
       setSystemPrompt("Anda adalah agen spesialis yang berdedikasi tinggi.");
       setModelProvider("openrouter");
       setModelName("deepseek/deepseek-r1:free");
@@ -87,6 +90,7 @@ export default function RoleModal({
         division_id: divisionId,
         name: name.trim(),
         job_description: jobDescription.trim(),
+        persona_prompt: personaPrompt.trim(),
         system_prompt_template: systemPrompt.trim(),
         model_provider: modelProvider,
         model_name: modelName.trim(),
@@ -118,7 +122,7 @@ export default function RoleModal({
           </div>
           <div>
             <h3 className="text-base font-semibold text-white">{initialData ? "Edit Karyawan AI" : "Tambah Karyawan AI"}</h3>
-            <p className="text-xs text-slate-400">Konfigurasi mandat peran, model LLM, fallback chain & perkakas agen</p>
+            <p className="text-xs text-slate-400">Konfigurasi mandat peran, 3-layer prompt, fallback chain & perkakas agen</p>
           </div>
         </div>
 
@@ -164,10 +168,27 @@ export default function RoleModal({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">System Instruction</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-medium text-amber-300">Persona Prompt (Soul / DNA Agen)</label>
+              <span className="text-[10px] text-amber-400/80 font-mono">Layer 1 • Immutable</span>
+            </div>
+            <textarea
+              rows={2}
+              value={personaPrompt}
+              onChange={(e) => setPersonaPrompt(e.target.value)}
+              placeholder="Kepribadian, bias kognitif, dan gaya bicara agen (mencegah persona drift saat fallback LLM)..."
+              className="w-full px-3 py-2 rounded-xl bg-amber-500/5 border border-amber-500/20 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400/50"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-medium text-slate-300">System Instruction / SOP</label>
+              <span className="text-[10px] text-slate-400 font-mono">Layer 2 • Operational</span>
+            </div>
             <textarea
               rows={3} required value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)}
-              placeholder="Instruksi sistem yang mendefinisikan kepribadian..."
+              placeholder="Instruksi operasional, format JSON schema, kriteria tugas..."
               className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-500/50"
             />
           </div>

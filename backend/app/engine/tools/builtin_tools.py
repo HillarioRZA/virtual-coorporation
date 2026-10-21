@@ -6,7 +6,7 @@ ke dalam DynamicToolRegistry tanpa percabangan if-elif statis.
 
 from types import SimpleNamespace
 from typing import Any, Callable, Dict
-from loguru import logger
+from app.core.logger import logger
 
 from app.engine.tools.db_inspector import db_inspector
 from app.engine.tools.contract_validator import contract_validator

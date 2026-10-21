@@ -6,7 +6,7 @@ menggunakan Polimorfik Contract Handlers dan pencatatan biaya token dinamis.
 
 import json
 from typing import Any, Dict, Optional
-from loguru import logger
+from app.core.logger import logger
 from app.engine.roles.contract_handlers import contract_handler_registry
 from app.engine.roles.role_event_logger import log_role_event
 from app.engine.runtime.state import VentureState

@@ -49,4 +49,5 @@ export const AGENT_TOOLS = [
   { id: "runtime_tool_builder", label: "Runtime Tool Builder" },
   { id: "lock_test_suite", label: "Kunci Test Suite (chmod 444 / TDD Guard)" },
   { id: "write_code_bundle", label: "Tulis Code Bundle (Next.js / FastAPI / Docker / Legal)" },
+  { id: "chat_telegram", label: "Liaison Sekretaris Telegram" },
 ];

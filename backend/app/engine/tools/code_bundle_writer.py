@@ -20,13 +20,8 @@ def set_projects_output_dir(path: Path) -> None:
 
 
 def _get_base_dir() -> Path:
-    """Mengambil direktori dasar output proyek dengan fallback backward-compatible."""
-    import sys
-    legacy = (
-        getattr(sys.modules.get("app.engine.nodes.backend"), "PROJECTS_OUTPUT_DIR", None)
-        or getattr(sys.modules.get("app.engine.nodes.frontend"), "PROJECTS_OUTPUT_DIR", None)
-    )
-    return _custom_projects_dir or legacy or PROJECTS_OUTPUT_DIR
+    """Mengambil direktori dasar output proyek terisolasi."""
+    return _custom_projects_dir or PROJECTS_OUTPUT_DIR
 
 
 def write_backend_files(

@@ -6,18 +6,18 @@ Mengelola siklus hidup peran karyawan AI, parameter LLM, dan izin tools pada SQL
 import json
 from typing import Any, Dict, List, Optional
 import uuid
-
 import aiosqlite
+
 from app.core.logger import logger
 from app.db.session import get_db_connection
 from app.db.branch_repo import branch_repo
 
-
 ROLE_COLS = (
     "id, branch_id, division_id, name, COALESCE(job_description, '') as job_description, "
-    "system_prompt_template, model_provider, model_name, temperature, tool_permissions, "
-    "token_budget_per_task, is_active, is_system_default, COALESCE(order_index, 0) as order_index, "
-    "COALESCE(fallback_chain, '[]') as fallback_chain, COALESCE(thinking_level, 'medium') as thinking_level, created_at, updated_at"
+    "COALESCE(persona_prompt, '') as persona_prompt, system_prompt_template, model_provider, "
+    "model_name, temperature, tool_permissions, token_budget_per_task, is_active, is_system_default, "
+    "COALESCE(order_index, 0) as order_index, COALESCE(fallback_chain, '[]') as fallback_chain, "
+    "COALESCE(thinking_level, 'medium') as thinking_level, created_at, updated_at"
 )
 
 
@@ -28,37 +28,29 @@ class RoleRepository:
         """Memetakan baris basis data ke dictionary entitas peran."""
         try:
             perms = json.loads(row["tool_permissions"])
-        except Exception:
+        except (json.JSONDecodeError, TypeError, KeyError):
             perms = ["read_file", "write_file"]
         try:
             raw_chain = row["fallback_chain"] if "fallback_chain" in row.keys() else "[]"
             fallback = json.loads(raw_chain) if raw_chain else []
-        except Exception:
+        except (json.JSONDecodeError, TypeError):
             fallback = []
         return {
-            "id": row["id"],
-            "branch_id": row["branch_id"],
-            "division_id": row["division_id"],
-            "name": row["name"],
-            "job_description": str(row["job_description"]) if "job_description" in row.keys() else "",
-            "system_prompt_template": row["system_prompt_template"],
-            "model_provider": row["model_provider"],
-            "model_name": row["model_name"],
-            "temperature": float(row["temperature"]),
-            "tool_permissions": perms,
-            "token_budget_per_task": int(row["token_budget_per_task"]),
-            "is_active": bool(row["is_active"]),
-            "is_system_default": bool(row["is_system_default"]),
-            "order_index": int(row["order_index"]),
-            "fallback_chain": fallback,
+            "id": row["id"], "branch_id": row["branch_id"], "division_id": row["division_id"],
+            "name": row["name"], "job_description": str(row["job_description"]) if "job_description" in row.keys() else "",
+            "persona_prompt": str(row["persona_prompt"]) if "persona_prompt" in row.keys() else "",
+            "system_prompt_template": row["system_prompt_template"], "model_provider": row["model_provider"],
+            "model_name": row["model_name"], "temperature": float(row["temperature"]),
+            "tool_permissions": perms, "token_budget_per_task": int(row["token_budget_per_task"]),
+            "is_active": bool(row["is_active"]), "is_system_default": bool(row["is_system_default"]),
+            "order_index": int(row["order_index"]), "fallback_chain": fallback,
             "thinking_level": str(row["thinking_level"]) if "thinking_level" in row.keys() else "medium",
-            "created_at": str(row["created_at"]),
-            "updated_at": str(row["updated_at"]),
+            "created_at": str(row["created_at"]), "updated_at": str(row["updated_at"]),
         }
 
     async def get_roles(
         self, branch_id: Optional[str] = None, division_id: Optional[str] = None,
-        active_only: bool = False, custom_path: Optional[str] = None
+        active_only: bool = False, custom_path: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """Mengambil seluruh role karyawan AI pada branch tertentu."""
         target_branch = branch_id
@@ -86,12 +78,10 @@ class RoleRepository:
         async with get_db_connection(custom_path) as conn:
             async with conn.execute(query, (role_id,)) as cursor:
                 row = await cursor.fetchone()
-                if not row:
-                    return None
-                return self._map_role(row)
+                return self._map_role(row) if row else None
 
     async def get_role_by_name(
-        self, name: str, branch_id: str = "branch_main", custom_path: Optional[str] = None
+        self, name: str, branch_id: str = "branch_main", custom_path: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
         """Mengambil data satu role berdasarkan nama peran dan branch."""
         query = f"SELECT {ROLE_COLS} FROM corporate_roles WHERE branch_id = ? AND LOWER(name) = ?;"
@@ -101,19 +91,18 @@ class RoleRepository:
                 return self._map_role(row) if row else None
 
     async def get_role_by_slug(
-        self, slug: str, branch_id: str = "branch_main", custom_path: Optional[str] = None
+        self, slug: str, branch_id: str = "branch_main", custom_path: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
         """Pencarian role kompatibel mundur berdasarkan ID atau Nama."""
         return await self.resolve_role(slug, branch_id, custom_path)
 
     async def resolve_role(
-        self, identifier: str, branch_id: str = "branch_main", custom_path: Optional[str] = None
+        self, identifier: str, branch_id: str = "branch_main", custom_path: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
         """Mencari peran berdasarkan ID atau Nama secara toleran."""
         role = await self.get_role_by_id(identifier, custom_path)
         if role:
             return role
-        # Coba format role_id jika diawali atau tanpa prefix
         if not identifier.startswith("role_"):
             role = await self.get_role_by_id(f"role_{identifier.lower()}", custom_path)
             if role:
@@ -122,37 +111,25 @@ class RoleRepository:
 
     async def create_role(
         self, branch_id: str, division_id: str, name: str, system_prompt_template: str,
-        job_description: str = "", model_provider: str = "openrouter",
+        job_description: str = "", persona_prompt: str = "", model_provider: str = "openrouter",
         model_name: str = "deepseek/deepseek-r1:free", temperature: float = 0.2,
         tool_permissions: Optional[List[str]] = None, token_budget_per_task: int = 8000,
         is_active: bool = True, thinking_level: str = "medium", custom_path: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Mendaftarkan role baru pada branch dan divisi tertentu tanpa slug."""
+        """Mendaftarkan role baru pada branch dan divisi tertentu dengan persona_prompt Layer 1."""
         role_id = f"role_{uuid.uuid4().hex[:8]}"
         perms_json = json.dumps(tool_permissions or ["read_file", "write_file"])
 
         async with get_db_connection(custom_path) as conn:
-            async with conn.execute(
-                "SELECT id FROM corporate_divisions WHERE id = ? AND branch_id = ?;", (division_id, branch_id)
-            ) as cur:
+            async with conn.execute("SELECT id FROM corporate_divisions WHERE id = ? AND branch_id = ?;", (division_id, branch_id)) as cur:
                 if not await cur.fetchone():
                     raise ValueError(f"Divisi '{division_id}' tidak ditemukan pada branch '{branch_id}'.")
-
-            async with conn.execute(
-                "SELECT id FROM corporate_roles WHERE branch_id = ? AND LOWER(name) = ?;", (branch_id, name.lower().strip())
-            ) as cur:
+            async with conn.execute("SELECT id FROM corporate_roles WHERE branch_id = ? AND LOWER(name) = ?;", (branch_id, name.lower().strip())) as cur:
                 if await cur.fetchone():
                     raise ValueError(f"Role dengan nama '{name}' sudah ada pada branch ini.")
 
-            ins_sql = (
-                "INSERT INTO corporate_roles (id, branch_id, division_id, name, job_description, "
-                "system_prompt_template, model_provider, model_name, temperature, tool_permissions, "
-                "token_budget_per_task, is_active, is_system_default, thinking_level) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?);"
-            )
-            await conn.execute(ins_sql, (
-                role_id, branch_id, division_id, name, job_description, system_prompt_template,
-                model_provider, model_name, temperature, perms_json, token_budget_per_task, 1 if is_active else 0, thinking_level
-            ))
+            ins_sql = "INSERT INTO corporate_roles (id, branch_id, division_id, name, job_description, persona_prompt, system_prompt_template, model_provider, model_name, temperature, tool_permissions, token_budget_per_task, is_active, is_system_default, thinking_level) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?);"
+            await conn.execute(ins_sql, (role_id, branch_id, division_id, name, job_description, persona_prompt, system_prompt_template, model_provider, model_name, temperature, perms_json, token_budget_per_task, 1 if is_active else 0, thinking_level))
             await conn.commit()
             logger.info(f"Role baru '{name}' ({role_id}) berhasil didaftarkan.")
 
@@ -163,32 +140,29 @@ class RoleRepository:
 
     async def update_role(
         self, role_id: str, division_id: Optional[str] = None, name: Optional[str] = None,
-        job_description: Optional[str] = None, system_prompt_template: Optional[str] = None,
-        model_provider: Optional[str] = None, model_name: Optional[str] = None,
-        temperature: Optional[float] = None, tool_permissions: Optional[List[str]] = None,
-        token_budget_per_task: Optional[int] = None, is_active: Optional[bool] = None,
-        fallback_chain: Optional[List[Dict[str, Any]]] = None, thinking_level: Optional[str] = None,
-        custom_path: Optional[str] = None,
+        job_description: Optional[str] = None, persona_prompt: Optional[str] = None,
+        system_prompt_template: Optional[str] = None, model_provider: Optional[str] = None,
+        model_name: Optional[str] = None, temperature: Optional[float] = None,
+        tool_permissions: Optional[List[str]] = None, token_budget_per_task: Optional[int] = None,
+        is_active: Optional[bool] = None, fallback_chain: Optional[List[Dict[str, Any]]] = None,
+        thinking_level: Optional[str] = None, custom_path: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
-        """Memperbarui konfigurasi role, divisi, dan rantai model cadangan (fallback chain)."""
+        """Memperbarui konfigurasi role, persona_prompt (Soul), dan fallback chain."""
         existing = await self.get_role_by_id(role_id, custom_path)
         if not existing:
             return None
 
-        target_division = division_id if division_id is not None else existing["division_id"]
+        target_div = division_id if division_id is not None else existing["division_id"]
         async with get_db_connection(custom_path) as conn:
             if division_id is not None and division_id != existing["division_id"]:
-                async with conn.execute(
-                    "SELECT id FROM corporate_divisions WHERE id = ? AND branch_id = ?;",
-                    (division_id, existing["branch_id"]),
-                ) as cur:
+                async with conn.execute("SELECT id FROM corporate_divisions WHERE id = ? AND branch_id = ?;", (division_id, existing["branch_id"])) as cur:
                     if not await cur.fetchone():
                         raise ValueError(f"Divisi '{division_id}' tidak ditemukan pada branch '{existing['branch_id']}'.")
 
             fields = {
-                "division_id": target_division,
-                "name": name if name is not None else existing["name"],
+                "division_id": target_div, "name": name if name is not None else existing["name"],
                 "job_description": job_description if job_description is not None else existing.get("job_description", ""),
+                "persona_prompt": persona_prompt if persona_prompt is not None else existing.get("persona_prompt", ""),
                 "system_prompt_template": system_prompt_template if system_prompt_template is not None else existing["system_prompt_template"],
                 "model_provider": model_provider if model_provider is not None else existing["model_provider"],
                 "model_name": model_name if model_name is not None else existing["model_name"],
@@ -200,16 +174,9 @@ class RoleRepository:
                 "thinking_level": thinking_level if thinking_level is not None else existing.get("thinking_level", "medium"),
                 "id": role_id,
             }
-            upd_sql = (
-                "UPDATE corporate_roles SET division_id = :division_id, name = :name, job_description = :job_description, "
-                "system_prompt_template = :system_prompt_template, model_provider = :model_provider, "
-                "model_name = :model_name, temperature = :temperature, tool_permissions = :tool_permissions, "
-                "token_budget_per_task = :token_budget_per_task, is_active = :is_active, "
-                "fallback_chain = :fallback_chain, thinking_level = :thinking_level, updated_at = CURRENT_TIMESTAMP WHERE id = :id;"
-            )
+            upd_sql = "UPDATE corporate_roles SET division_id = :division_id, name = :name, job_description = :job_description, persona_prompt = :persona_prompt, system_prompt_template = :system_prompt_template, model_provider = :model_provider, model_name = :model_name, temperature = :temperature, tool_permissions = :tool_permissions, token_budget_per_task = :token_budget_per_task, is_active = :is_active, fallback_chain = :fallback_chain, thinking_level = :thinking_level, updated_at = CURRENT_TIMESTAMP WHERE id = :id;"
             await conn.execute(upd_sql, fields)
             await conn.commit()
-
         return await self.get_role_by_id(role_id, custom_path)
 
     async def delete_role(self, role_id: str, custom_path: Optional[str] = None) -> bool:
@@ -217,10 +184,8 @@ class RoleRepository:
         existing = await self.get_role_by_id(role_id, custom_path)
         if not existing:
             raise ValueError(f"Role '{role_id}' tidak ditemukan.")
-
         if existing["is_system_default"] and existing["branch_id"] == "branch_main":
             raise ValueError("Role bawaan sistem pada branch main tidak dapat dihapus.")
-
         async with get_db_connection(custom_path) as conn:
             await conn.execute("DELETE FROM corporate_roles WHERE id = ?;", (role_id,))
             await conn.commit()

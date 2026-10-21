@@ -54,6 +54,12 @@ async def create_project(payload: CreateProjectRequest) -> Dict[str, Any]:
             event_type="PROJECT_CREATED",
             content=f"Founder menginisiasi proyek '{payload.name}': {payload.founder_idea}",
         )
+        try:
+            from app.db.ticket_repo import ticket_repo
+            await ticket_repo.seed_initial_project_tickets(project_id, branch_id="branch_main")
+        except Exception as seed_err:
+            logger.debug(f"Auto-seed tickets error on create: {seed_err}")
+
         logger.info(f"Proyek baru diinisialisasi: [{project_id}] {payload.name}")
 
         return {
@@ -165,18 +171,13 @@ async def delete_project(project_id: str) -> Dict[str, Any]:
                 raise HTTPException(status_code=404, detail=f"Proyek '{project_id}' tidak ditemukan.")
 
             proj_name = proj["name"]
-            tables = [
-                ("projects", "id"),
-                ("project_checkpoints", "project_id"),
-                ("agent_event_logs", "project_id"),
-                ("corporate_tickets", "project_id"),
-                ("corporate_messages", "project_id"),
-                ("corporate_financial_ledger", "project_id"),
-                ("corporate_pull_requests", "project_id"),
-                ("sandbox_snapshots", "project_id"),
-                ("sentinel_findings", "project_id"),
+            cascade_tables = [
+                ("projects", "id"), ("project_checkpoints", "project_id"), ("agent_event_logs", "project_id"),
+                ("corporate_tickets", "project_id"), ("corporate_messages", "project_id"),
+                ("corporate_financial_ledger", "project_id"), ("corporate_pull_requests", "project_id"),
+                ("sandbox_snapshots", "project_id"), ("sentinel_findings", "project_id"),
             ]
-            for tbl, col in tables:
+            for tbl, col in cascade_tables:
                 try:
                     await conn.execute(f"DELETE FROM {tbl} WHERE {col} = ?", (project_id,))
                 except Exception:

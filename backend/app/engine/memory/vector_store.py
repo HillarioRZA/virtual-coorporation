@@ -9,7 +9,7 @@ import math
 import re
 import zlib
 from typing import Any, Dict, List, Optional, Tuple
-from loguru import logger
+from app.core.logger import logger
 
 
 class DeterministicSemanticVectorizer:

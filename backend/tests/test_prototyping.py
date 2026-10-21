@@ -11,10 +11,11 @@ import pytest_asyncio
 
 from app.db.init_db import init_database
 from app.engine.memory.memory import MemoryManager
-from app.engine.nodes.frontend import FrontendCodeBundle, frontend_prototyping_node, write_frontend_files
-from app.engine.nodes.pm import pm_spec_freeze_node
-from app.engine.nodes.prototyping import mock_prototyping_phase_node, prd_and_specs_phase_node
-from app.engine.nodes.ui_ux import ui_ux_spec_node
+from app.engine.schemas.envelope_schemas import FrontendCodeBundle
+from app.engine.tools.code_bundle_writer import write_frontend_files
+from app.engine.roles.dynamic_node import execute_dynamic_role_node
+
+
 from app.engine.runtime.routers import (
     apply_gate_decision,
     router_gate_2,
@@ -24,6 +25,54 @@ from app.engine.runtime.routers import (
 from app.engine.runtime.state import VentureState
 from app.engine.runtime.state_machine import NativeStateMachine
 from app.gateway.client import UnifiedLLMClient
+
+
+async def pm_spec_freeze_node(state: VentureState, llm_client: Any = None, memory_mgr: Any = None) -> Dict[str, Any]:
+    """Helper eksekusi peran PM via dynamic node engine."""
+    return await execute_dynamic_role_node("pm", state, llm_client=llm_client, memory_mgr=memory_mgr)
+
+
+async def ui_ux_spec_node(state: VentureState, llm_client: Any = None, memory_mgr: Any = None) -> Dict[str, Any]:
+    """Helper eksekusi peran UI/UX via dynamic node engine."""
+    return await execute_dynamic_role_node("ui_ux", state, llm_client=llm_client, memory_mgr=memory_mgr)
+
+
+async def frontend_prototyping_node(
+    state: VentureState,
+    llm_client: Any = None,
+    memory_mgr: Any = None,
+    sandbox_mgr: Any = None,
+    proxy_mgr: Any = None,
+) -> Dict[str, Any]:
+    """Helper eksekusi peran Frontend via dynamic node engine."""
+    return await execute_dynamic_role_node(
+        "frontend", state, llm_client=llm_client, memory_mgr=memory_mgr, sandbox_mgr=sandbox_mgr, proxy_mgr=proxy_mgr
+    )
+
+
+async def prd_and_specs_phase_node(state: VentureState, llm_client: Any = None, memory_mgr: Any = None) -> Dict[str, Any]:
+    """Helper komposit PRD & Specs via dynamic node engine."""
+    await execute_dynamic_role_node("pm", state, llm_client=llm_client, memory_mgr=memory_mgr)
+    await execute_dynamic_role_node("ui_ux", state, llm_client=llm_client, memory_mgr=memory_mgr)
+    return {
+        "prd_spec": state.prd_spec,
+        "openapi_spec": state.openapi_spec,
+        "ui_spec": state.ui_spec,
+        "project_name": state.project_name,
+    }
+
+
+async def mock_prototyping_phase_node(
+    state: VentureState,
+    llm_client: Any = None,
+    memory_mgr: Any = None,
+    sandbox_mgr: Any = None,
+    proxy_mgr: Any = None,
+) -> Dict[str, Any]:
+    """Helper fase mock prototyping via dynamic node engine."""
+    return await execute_dynamic_role_node(
+        "frontend", state, llm_client=llm_client, memory_mgr=memory_mgr, sandbox_mgr=sandbox_mgr, proxy_mgr=proxy_mgr
+    )
 
 
 @pytest_asyncio.fixture

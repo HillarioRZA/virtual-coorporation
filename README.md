@@ -4,7 +4,8 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-14.2%20(Production%20Ready)-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![Oasis 2D Liquid](https://img.shields.io/badge/Command%20HQ-Obsidian%20Liquid%202D-6366f1?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
-[![Pytest](https://img.shields.io/badge/Pytest-203%2F203%20Passed%20(100%25)-brightgreen?style=flat-square&logo=pytest&logoColor=white)](https://pytest.org/)
+[![Pytest](https://img.shields.io/badge/Pytest-214%2F214%20Passed%20(100%25)-brightgreen?style=flat-square&logo=pytest&logoColor=white)](https://pytest.org/)
+[![3-Layer Prompting](https://img.shields.io/badge/Prompting-3--Layer%20(Soul%20•%20SOP%20•%20Context)-8B5CF6?style=flat-square)](backend/app/engine/roles/dynamic_node.py)
 [![FastEmbed](https://img.shields.io/badge/Neural%20RAG-FastEmbed%20ONNX%20(384--dim)-00D26A?style=flat-square&logo=onnx&logoColor=white)](backend/app/engine/memory/vector_store.py)
 [![CoV Gatekeeper](https://img.shields.io/badge/Sentinel-Two--Tier%20CoV%20(Critic--Only)-FF6B6B?style=flat-square)](backend/app/engine/sentinel/verifier.py)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org/)
@@ -20,7 +21,7 @@
 
 Platform ini memberdayakan seorang **Founder tunggal (Solo Entrepreneur / Chairman / CEO)** untuk mengoperasikan konglomerasi digital berskala penuh secara mandiri: mulai dari inisiasi ide produk, riset pasar, penyusunan kontrak OpenAPI, rekayasa paralel Frontend & Backend, penjaminan mutu P2P, audit keamanan statis OWASP Top 10, hingga peluncuran langsung di sandbox kontainer terisolasi.
 
-Seluruh dinamika perusahaan dipantau secara real-time melalui antarmuka **Global Oasis Live Command HQ** (`/office`) yang elegan, berkinerja tinggi (2D Obsidian Liquid Engine), hemat token (Zero Idle Token Overhead), dan dilengkapi panel live thought stream, handoff inter-agen, serta ruang kontrol krisis All-Hands.
+Seluruh dinamika perusahaan dipantau secara real-time melalui antarmuka **Global Oasis Live Command HQ** (`/office`) yang elegan, berkinerja tinggi (2D Obsidian Liquid Engine dengan slotting workstation dinamis), hemat token (Zero Idle Token Overhead), dan dilengkapi panel live thought stream, handoff inter-agen, serta ruang kontrol krisis All-Hands.
 
 ---
 
@@ -34,8 +35,8 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 │                                  Next.js 14 App Router • TypeScript                                    │
 │                                                                                                        │
 │  /                 /organization         /kanban/[id]         /preview/[id]         /office            │
-│  Portfolio Hub     Org Studio & DND      Mission Control      Live Sandbox, PTY     Global Oasis Live  │
-│  & Venture State   Pipeline Builder      & Live Lounge WS     Terminal & Snapshots  Command HQ (2D)    │
+│  Portfolio Hub     Org Studio & AI Board Mission Control      Live Sandbox, PTY     Global Oasis Live  │
+│  & Venture State   (3-Layer Prompting)   & Live Lounge WS     Terminal & Snapshots  Command HQ (2D)    │
 │                                                                                                        │
 │  /mcp              /skills               /analytics           /settings             /wisdom            │
 │  MCP Server Hub    Public Skill Library  Ledger & Finance     BYOK & Secret Vault   FastEmbed 384-dim  │
@@ -47,7 +48,7 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 │                                        Pure ASGI Middleware Engine                                     │
 │                                                                                                        │
 │  • SecurityGateMiddleware (Stealth Dynamic PIN + OpenClaw Trust Boundary) • ProcessTimeLoggingMiddleware│
-│  • 21 Modular REST & WebSocket Routers (Corporate, Pipelines, Tickets, Governance, Vault, Office)     │
+│  • 27 Modular REST & WebSocket Routers (Corporate, Skills, MCP, Tickets, Governance, Vault, Office)   │
 └───────────────────────┬───────────────────────────────────────────────────────┬────────────────────────┘
                         │                                                       │
                         ▼                                                       ▼
@@ -64,6 +65,7 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 │                                    EXECUTIVE GOVERNANCE & GUARDRAILS                                   │
 │                                                                                                        │
 │  • Agent Decision Envelope: { PROCEED | CONSULT_ROLE | ESCALATE_TO_C_LEVEL | REQUEST_REWORK }          │
+│  • Table-Driven State Transition Matrix O(1) FSM: Evaluasi gerbang deterministik (Stage-Gate)          │
 │  • Anti-Infinite Loop Circuit Breaker: Auto-Freeze Ticket on >= 3 Consecutive Debate Turns             │
 │  • Financial Guardrail & Flight Recorder: Hard Quota ($1.50 / 350k tokens) & Dynamic Pricing Ledger    │
 │  • 1-Click CEO Strategic Intervention & Veto (Force Proceed / Chat Directive / Reassign Role)          │
@@ -82,7 +84,7 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 │  • Dynamic Tool Registry: Local Tools, Persistent Custom Tools (corporate_custom_tools), & MCP Router │
 │  • Telegram Secretary Daemon: Background Long Polling, Sender Whitelist & Inline Approval Gate         │
 │  • Hardened Docker Subnet Sandbox: Dedicated bridge_net_{project_id} with Hard CPU/RAM Quota           │
-│  • Global Oasis Live Engine: Real-time Multi-Agent Thoughts, Scoped @mentions & 0-Token Watchdog       │
+│  • Global Oasis Live Engine: Real-time Multi-Agent Thoughts, Scoped @mentions & Dynamic Auto-Slotting  │
 └────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -105,25 +107,23 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 ### 2. Visual Dynamic Organization Studio (`/organization`)
 * **Hierarki Korporat Git-Style**: Visualisasi struktur organisasi yang memisahkan Executive Suite, Core Engineering, dan Divisi Kustom.
 * **Divisi Dinamis Tanpa Batas**: Pengguna bebas membuat divisi baru (misal: Rekayasa Software, Edukasi, Copywriting, Riset Pasar), menentukan warna aksen HEX, ikon Lucide React, serta mandat divisi.
-* **Karyawan AI Fleksibel**: Mendaftarkan peran AI baru dengan spesifikasi granular:
-  - System prompt instruksi persona terisolasi.
+* **Karyawan AI Fleksibel & 100% Slug-Free**: Mendaftarkan peran AI baru dengan spesifikasi granular:
+  - **Persona Prompt (Layer 1 - Soul)**: Temperamen dasar, filosofi kerja, dan identitas psikologis yang *immutable*.
+  - **System Prompt Template (Layer 2 - SOP)**: Panduan operasional peran, format JSON Pydantic, dan standar kerja.
   - Penugasan model LLM dan provider independen per agen.
   - **Dynamic Thinking Level (Reasoning Effort)**: Opsi kedalaman penalaran (`none`, `low`, `medium`, `high`) per peran AI.
   - Pengatur kreativitas (*temperature* 0.0 s/d 1.5).
   - Alokasi batas anggaran token (*token budget* 1.000 s/d 100.000 token per tugas).
   - Izin perkakas modular (*tool permissions*): `read_file`, `write_file`, `ast_patch_file`, `search_codebase`, `web_search`, `execute_code`, `inspect_db_schema`, `validate_api_contract`, `git_diff_summary`, dan `runtime_tool_builder`.
+  - Indikator visual badge `✦ Soul` pada kartu peran yang memiliki konfigurasi persona mandiri.
 
-### 3. Visual HTML5 Drag-and-Drop Pipeline Builder
-* **Multi-Product-Line Pipelines**: Rantai alur kerja modular untuk berbagai lini bisnis:
-  - 💻 **Software & SaaS (Tech Core)**: Siklus penuh arsitektur, frontend, backend, security audit, dan deployment.
-  - 📚 **Edukasi & Kursus Online**: Kurikulum, materi pengajaran, latihan soal, dan tinjauan pedagogis.
-  - ✍️ **Copywriting & Konten**: Riset audiens, penulisan artikel/copy, editorial review, dan SEO metadata.
-  - 🧪 **Pipeline Kustom Bebas**: Menyesuaikan kebutuhan proyek apa pun dari nol.
-* **Dukungan Rantai Siklis (*Looping Sequences*)**: Memungkinkan peran yang sama dipanggil berulang kali dalam satu alur (misal: `Role A ➔ Role B ➔ Role C ➔ Role A ➔ Role C`).
-* **Gerbang Keputusan CEO Terintegrasi (*Human-in-the-Loop*)**: Kartu intervensi manusia yang dapat ditarik langsung ke kanvas pipeline:
-  - 👑 **Stage-Gate Approval**: Evaluasi kelayakan produk sebelum fase berikutnya dimulai.
-  - 🤝 **Executive Strategic Meeting**: Pertemuan penyelarasan strategi antara Founder dan C-Level.
-  - 🧭 **Founder Direction Input**: Penyisipan arahan visi Founder langsung di tengah eksekusi.
+### 3. 3-Layer Prompting Architecture & Anti-Persona Drift
+* **Tiga Lapisan Prompting Terisolasi (*Layered Cognition*)**:
+  - 🧬 **Layer 1: Persona Prompt (Soul / DNA)**: Inti karakter psikologis dan gaya bahasa agen. Ketika model utama (seperti Claude 3.5 Sonnet atau GPT-4o) mengalami rate-limit atau kehabisan token, 9Router secara otomatis mengalihkan tugas ke model fallback yang lebih ringan (seperti Mistral, GPT-4o-mini, atau Llama 3). Layer 1 menjamin model pengganti **tidak mengalami krisis identitas (*anti-persona drift*)** dan tetap menjaga karakter aslinya.
+  - 📋 **Layer 2: System Prompt Template (SOP & Directives)**: Standar operasional prosedur, instruksi kontrak output Pydantic v2, aturan anti-hallucination, dan direktif domain tugas.
+  - ⚡ **Layer 3: User Context (Kanban & Dynamic Memory)**: Status kartu tugas aktif, dependensi tiket, ringkasan artefak blackboard, dan instruksi langsung Founder.
+* **Perakitan Otomatis di Runtime (`dynamic_node.py`)**: Sistem menggabungkan Layer 1 dan Layer 2 menjadi satu system prompt kohesif dengan header pemisah yang tegas sebelum dikirim ke gateway inferensi.
+* **Evolusi Otonom & Pemangkasan Visual n8n**: Modul canvas drag-and-drop bergaya n8n telah dipensiunkan untuk memangkas ukuran bundle JavaScript klien sebesar **28%** (menjadi 15.8 kB). Sistem bertransformasi penuh menuju eksekusi otonom berbasis tujuan (*goal-driven task dependencies*) dan Finite State Machine (FSM).
 
 ### 4. Dynamic Asynchronous Kanban, Autonomous Runner & File Locks
 * **Manajemen Tiket Otonom**: Setiap tugas venture direpresentasikan dalam kartu tiket (`corporate_tickets`) lengkap dengan branch, divisi, penanggung jawab, lini produk, prioritas, dan dependensi prasyarat.
@@ -140,7 +140,8 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 * **FileLockManager (`file_lock_manager.py`)**: Manajemen *mutex lock* asinkron per jalur berkas (`asyncio.Lock` per absolute file path), mengeliminasi tabrakan penulisan (*race conditions*) saat beberapa agen bekerja paralel pada kode sumber yang berdekatan.
 * **Corporate Event Bus Asinkron (`event_bus.py`)**: Arsitektur pub/sub non-blocking berbasis `asyncio.Queue` per proyek yang mendistribusikan sinyal tugas ke antarmuka web, WebSocket Lounge, dan telemetri secara instan.
 
-### 5. Executive Governance Hub & Anti-Infinite Loop Circuit Breaker
+### 5. Executive Governance Hub & Stage-Gate Transition Matrix O(1)
+* **Table-Driven State Transition Matrix $O(1)$ (`GATE_TRANSITION_TABLE`)**: Seluruh evaluasi persetujuan/penolakan gerbang di `routers.py` menggunakan matriks transisi deterministik berbasis dictionary, membuang ladder `if-elif` manual yang rapuh dan menjamin transisi state venture bersifat $O(1)$ instan.
 * **Format Keputusan Terstruktur (`AgentDecisionEnvelope`)**: Agen merespons tugas dalam format JSON kanonikal dengan opsi aksi: `PROCEED`, `CONSULT_ROLE`, `ESCALATE_TO_C_LEVEL`, atau `REQUEST_REWORK`.
 * **Anti-Infinite Loop Circuit Breaker (`circuit_breaker.py`)**: Melacak putaran diskusi konsultasi inter-agen pada tiket yang sama. Jika diskusi mencapai **$\ge 3$ putaran berturut-turut** tanpa menghasilkan kode baru, sistem secara otomatis membekukan tiket menjadi `BLOCKED_LOOP_DETECTED`.
 * **Hak Veto & Intervensi 1-Klik CEO**: Founder dapat mengambil alih tiket yang dibekukan:
@@ -242,13 +243,17 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 * **Manajemen Visual Tujuan Divisi & Jobdesk Peran di UI**:
   - Antarmuka visual `/organization` memungkinkan Founder mengubah Tujuan Divisi (*Division Purpose*) dan Fokus Jobdesk Karyawan AI (*Role Job Description*) secara langsung tanpa menyentuh kode backend.
 
-### 17. Remote Executive Liaison: Telegram Secretary Daemon & Dynamic Tool Synthesis
-* **Long Polling Daemon Background Worker (`telegram_daemon.py`)**: Berjalan di latar belakang menggunakan `httpx.AsyncClient` tanpa memerlukan konfigurasi webhook publik atau port forwarding.
+### 17. Remote Executive Liaison: Telegram Secretary Daemon (5 Pilar Operasional)
+* **Long Polling Daemon Background Worker (`telegram_daemon.py`)**: Berjalan di latar belakang menggunakan `httpx.AsyncClient` tanpa memerlukan konfigurasi webhook publik atau port forwarding rumit.
 * **OpenClaw Trust Boundary (Whitelist Protection)**: Memeriksa identitas pengirim di gerbang terluar. Hanya pesan dari `user_id` yang terdaftar dalam `TELEGRAM_ALLOWED_USER_IDS` yang diproses. Upaya akses tanpa izin langsung ditolak dan dicatat sebagai *security probe* ke `flight_recorder.py`.
-* **Dynamic Role Secretary Integration (`secretary_resolver.py`)**: Agen eksekutif personal Founder yang terdaftar resmi di tabel `corporate_roles` (di bawah divisi `div_exec` atau memiliki permission `chat_telegram`), menjembatani instruksi Founder di aplikasi Telegram dengan operasional multi-agen. Parameter model, prompt kustom, dan persona dari UI langsung digunakan secara dinamis.
-* **Remote Dynamic Tool Synthesis**: Founder dapat berdiskusi bebas dengan Sekretaris dan memerintahkannya membuat perkakas sistem baru via Telegram. Sekretaris menghasilkan fungsi Python yang secara otomatis didaftarkan ke `dynamic_tool_registry.py` dengan status `PENDING_APPROVAL`.
-* **Inline Tool Approval Gate**: Saat Sekretaris menyintesis perkakas baru, ringkasan fungsi dan nama tool dikirimkan ke Telegram Founder. Founder dapat langsung mengaktifkannya dengan membalas `/approve <nama_tool>` atau menolak dengan `/reject <nama_tool>`.
-* **Live Command Telemetri**: Perintah `/status` untuk ringkasan real-time Kanban korporat, serta diskusi bebas untuk konsultasi eksekutif jarak jauh.
+* **Dynamic Role Secretary Integration (`secretary_resolver.py`)**: Agen eksekutif personal Founder yang terdaftar resmi di tabel `corporate_roles` (memiliki permission `chat_telegram` atau peran Secretary di bawah divisi `div_exec`), menjembatani instruksi Founder di aplikasi Telegram dengan operasional multi-agen. Parameter model, prompt kustom, persona, dan izin perkakas dari UI `/organization` langsung digunakan secara dinamis.
+* **Shared Bot Configuration**: Konfigurasi `TELEGRAM_BOT_TOKEN` dan `TELEGRAM_CHAT_ID` digunakan secara bersama (*shared credentials*) antara Gerbang Keamanan (pengiriman PIN dinamis 6-digit untuk login) dan Daemon Sekretaris (interaksi chat dua arah), sehingga Founder cukup mengonfigurasi satu bot Telegram tunggal di `.env`.
+* **5 Pilar Operasional Sekretaris**:
+  1. 💬 **Tactical Dialogue & Remote Sparring**: Konsultasi strategi, brainstorming ide bisnis, dan diskusi teknis dua arah kapan pun Founder berada jauh dari laptop.
+  2. 📋 **Away-From-Desk Kanban Dispatcher (`secretary_task_bridge.py`)**: Memantau status beban kerja korporat via `/status` atau `/tasks`, serta membuat dan mendisposisikan tiket baru ke papan Kanban via perintah `/task <deskripsi>` atau instruksi verbal.
+  3. 📢 **Proactive Autonomous Event Bus Reporting (`secretary_reporter.py`)**: Berlangganan langsung ke `corporate_event_bus` dan mengirimkan laporan proaktif (*push notification*) secara real-time saat tugas selesai (`TASK_COMPLETED`), gagal (`TASK_FAILED`), atau mengalami deadlock (`CIRCUIT_BREAKER_TRIGGERED`).
+  4. 📦 **Dry-Run & Direct Skill/MCP Installer (`secretary_installer.py`)**: Analisis otomatis URL repositori git atau modul MCP, pratinjau keamanan dry-run, dan eksekusi instalasi nyata ke sistem backend saat Founder membalas `/confirm_skill <url>`.
+  5. 🛠️ **Dynamic Tool Synthesis & Inline Approval**: Pembuatan perkakas Python baru saat Founder memintanya di chat Telegram, registrasi otomatis dengan status `PENDING_APPROVAL`, serta aktivasi instan via `/approve <nama_tool>` atau penolakan via `/reject <nama_tool>`.
 
 ### 18. Extensible Dynamic Tool Registry & SQLite Custom Tool Persistence
 * **Dynamic Tool Registry (`dynamic_tool_registry.py`)**: Registri perkakas yang dapat diperluas (*extensible*), menggantikan percabangan statis dengan routing dinamis untuk perkakas internal, server eksternal berbasis **Model Context Protocol (MCP)**, dan perkakas kustom runtime.
@@ -260,15 +265,17 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 * **Progressive Executive Summarization**: Jika akumulasi token mencapai $\ge 70\%$ dari batas jendela konteks model, riwayat pesan awal dipadatkan secara otomatis menjadi ringkasan status teknis.
 * **Tail Retention Guarantee**: Mempertahankan 4 giliran percakapan terbaru (*last 4 turns*) secara utuh tanpa pemotongan agar agen tidak kehilangan instruksi dan konteks operasional terkini.
 
-### 20. Model Context Protocol (MCP) Server Hub & Permission Pool (`/mcp`)
+### 20. Model Context Protocol (MCP) Server Hub & Unified Role Permissions Pool (`/mcp`)
 * **Instalasi & Manajemen Server MCP Tanpa Koding**: Antarmuka visual `/mcp` memungkinkan Founder memasang server MCP eksternal berbasis stdio JSON-RPC 2.0 (seperti GitHub MCP, Postgres MCP, Filesystem MCP) hanya dengan mengisi command, argumen, dan variabel lingkungan.
 * **Brankas Rahasia Terenkripsi AES-256-GCM**: Variabel lingkungan sensitif (misal `GITHUB_PERSONAL_ACCESS_TOKEN`, `DATABASE_URL`) dienkripsi secara aman di tabel `corporate_mcp_servers` sebelum disimpan ke basis data SQLite.
-* **Registrasi Permission Otomatis & Rehidrasi Saat Boot**: Perkakas yang diekspos oleh server MCP langsung diubah menjadi permission korporat dinamis (`mcp:<server_name>:<tool_name>`) dan dapat langsung dicentang pada konfigurasi peran di `/organization`. Saat server restart, seluruh proxy perkakas aktif direhidrasi secara otomatis.
+* **Unified Role Permissions Catalog (`/api/v1/mcp/all-tools`)**: Endpoint ini mengagregasi seluruh perkakas yang tersedia di seluruh platform—mencakup perkakas bawaan sistem (`builtin`), seluruh perkakas dari server MCP aktif (`mcp_tools`), serta perkakas kustom buatan Sekretaris yang telah disetujui (`custom_tools` status `APPROVED`). Seluruh perkakas otomatis muncul di pemilih izin peran pada antarmuka `/organization` (dengan badge amber untuk custom tools).
 * **Referential Dependency Guardrail (Anti-Accidental Deletion)**: Mencegah penghapusan server MCP jika masih ada peran AI aktif yang memegang izin perkakas dari server tersebut (mengembalikan HTTP 409 Conflict beserta daftar nama peran terkait).
 * **Two-Tier CoV Routing Cerdas**: Perkakas pembacaan (`mcp:*:get_*`, `list_*`, `read_*`) dialirkan langsung ke Tier 1 Deterministic Verifier (0ms latency & 0 token overhead), sedangkan perkakas mutasi (`create_*`, `delete_*`, `execute_*`) dialirkan ke Tier 2 CoV LLM Critic.
 
-### 21. Public Skills Library & Dynamic Taxonomy Hub (`/skills`)
-* **Arsitektur Bundle Folder Terisolasi**: Skills disimpan sebagai bundle direktori mandiri di bawah `skills/<category>/<skill_name>/` yang memuat berkas `SKILL.md` (metadata, panduan agen), skrip pembantu, dan referensi aset.
+### 21. Public Skills Library, Git Importer & Dynamic Taxonomy Hub (`/skills`)
+* **Git & Remote Skill Importer (`git_importer.py` & `POST /skills/import-git`)**: Mampu mengimpor repositori keahlian kompleks yang memiliki banyak berkas (seperti `ui-ux-pro-max-skill`) langsung melalui URL repositori GitHub/GitLab. Sistem melakukan kloning dangkal (`--depth 1`), mengekstrak hierarki folder (`scripts/`, `examples/`, `references/`), mem-parsing metadata YAML `SKILL.md`, serta mengindeks seluruh manifest berkas ke mesin pencari teks penuh SQLite FTS5 (`corporate_skills_fts`).
+* **Dual-Mode UI Importer (`/skills`)**: Modal instalasi menyediakan dua tab: **"Repository Git (Auto-Import)"** untuk impor otomatis instan dari repositori publik dan **"Manual SKILL.md"** untuk penulisan panduan mandiri.
+* **Arsitektur Bundle Folder Terisolasi**: Skills disimpan sebagai bundle direktori mandiri di bawah `skills/<category>/<skill_name>/` yang memuat berkas `SKILL.md`, skrip pembantu, dan referensi aset.
 * **0% Beban Vektor ONNX (Zero Vector Bloat)**: Berbeda dari Corporate Wisdom Base yang mengonsumsi kapasitas embedding neural ONNX 384-dim, Skills Library beroperasi murni sebagai perpustakaan publik berbasis indeks teks penuh SQLite FTS5 (BM25 ranking).
 * **Dynamic Auto-Category Taxonomy**: Jika pengguna memasang skill dengan kategori baru (misal: `business-management`, `cloud-native`), sistem mendeteksi keberadaan kategori secara otomatis dan mendaftarkannya ke tabel `corporate_skill_categories` tanpa intervensi manual.
 * **Proteksi Path Traversal Ketat**: Mekanisme sanitasi memblokir upaya eksploitasi path traversal (`../` atau `..\\`) saat ekstraksi bundle skill dari arsip zip atau git.
@@ -283,8 +290,9 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 * **Project-Wide TypeScript Compiler Filtering**: Menjalankan `tsc --project tsconfig.json` pada root proyek, namun menyaring diagnostik fatal hanya pada berkas yang diubah dalam PR untuk mengeliminasi *false positives* dari berkas sandbox lain.
 * **Python AST & Syntax Fallback**: Validasi sintaksis Python berbasis Abstract Syntax Tree (AST) untuk mendeteksi `SyntaxError` secara deterministik tanpa dependensi eksternal.
 
-### 23. Telegram Secretary Dry-Run & Secret Credential Interceptor
-* **Dry-Run Intent Detection**: Saat Founder meminta instalasi MCP atau Skills melalui Telegram (misal: *"install mcp github token=ghp_xxx"*), Sekretaris mendeteksi niat, memverifikasi parameter, dan memberikan pratinjau dry-run sebelum mengeksekusi instalasi.
+### 23. Telegram Secretary Dry-Run, Direct Installation & Secret Credential Interceptor
+* **Dry-Run Intent Detection**: Saat Founder meminta instalasi MCP atau Skills melalui Telegram (misal: *"install skill https://github.com/..."* atau *"install mcp github token=ghp_xxx"*), Sekretaris mendeteksi niat, memverifikasi parameter, dan memberikan pratinjau dry-run sebelum mengeksekusi instalasi.
+* **Direct Git Skill Installation via `/confirm_skill <url>`**: Founder dapat memicu instalasi nyata secara asinkron dari jarak jauh hanya dengan mengonfirmasi URL yang diajukan oleh Sekretaris.
 * **Secret Interception & Vault Storage**: Token rahasia (`token=...`, `key=...`) diekstraksi sebelum pesan dikirimkan ke model LLM atau log publik, dan disimpan langsung ke brankas rahasia terenkripsi AES-256-GCM.
 * **Scrubbing & Auto-Delete Telegram History**: Menyamarkan token dalam teks balasan (`token=***`) dan memanggil endpoint Telegram Bot API `deleteMessage` untuk menghapus pesan asli Founder dari riwayat obrolan Telegram demi keamanan maksimal.
 
@@ -343,14 +351,14 @@ Sistem dirancang dengan arsitektur berlapis (*layered architecture*) yang memisa
 
 ---
 
-## 📡 Spesifikasi 25 Router API Backend
+## 📡 Spesifikasi 27 Router API Backend
 
 Seluruh endpoint REST API dan WebSocket terpusat di bawah prefix `/api/v1` dengan validasi skema tipe Pydantic v2:
 
 | No | Modul Router | Prefix Endpoint | Tipe | Deskripsi & Tanggung Jawab Utama |
 |:--:|:-------------|:----------------|:----:|:---------------------------------|
-| 1 | `corporate.py` | `/corporate` | REST | CRUD hierarki organisasi: branch, forking alur kerja, divisi dinamis, dan pendaftaran peran AI (100% Slug-Free). |
-| 2 | `corporate_workflow.py` | `/corporate/branches/{id}` | REST | Pipeline builder multi-lini produk, tahapan DND berulang (*looping*), dan gerbang keputusan CEO. |
+| 1 | `corporate.py` | `/corporate` | REST | CRUD hierarki organisasi: branch, forking alur kerja, divisi dinamis, dan pendaftaran peran AI (100% Slug-Free, 3-Layer Prompting). |
+| 2 | `corporate_workflow.py` | `/corporate/branches/{id}` | REST | Pengelolaan tahapan alur kerja dan gerbang keputusan CEO berbasis FSM deterministik. |
 | 3 | `corporate_tickets.py` | `/corporate/tickets` | REST | Manajemen kartu tiket Kanban virtual (5 status), dependensi tugas, dan tingkat prioritas. |
 | 4 | `corporate_events.py` | `/corporate/events` | REST | Riwayat percakapan inter-agen, dialog eskalasi, dan log event bus korporat. |
 | 5 | `corporate_ws.py` | `/ws/corporate` | WS | WebSocket streaming dua arah untuk sinkronisasi tiket Kanban dan siaran event real-time. |
@@ -374,6 +382,8 @@ Seluruh endpoint REST API dan WebSocket terpusat di bawah prefix `/api/v1` denga
 | 23 | `files.py` | `/files` | REST | Upload dan unduh lampiran multimodal dengan verifikasi MIME dan proteksi path traversal. |
 | 24 | `sentinel.py` | `/sentinel` | REST | Telemetri CoV (Chain-of-Verification) Pre-flight Guardrail dan audit celah keamanan. |
 | 25 | `frontier_radar.py` | `/frontier-radar` | REST | Telemetri model router upstream health, token consumption rate, dan cooldown tracker. |
+| 26 | `mcp_routes.py` | `/mcp` | REST | Manajemen server MCP eksternal, enkripsi AES-256 kredensial, dry-run discovery, dan Unified Role Permissions (`/mcp/all-tools`). |
+| 27 | `skills_routes.py` | `/skills` | REST | Public Skills Library, SQLite FTS5 search, instalasi bundle lokal, dan Git & Remote Skill Importer (`POST /skills/import-git`). |
 
 ---
 
@@ -383,7 +393,7 @@ Seluruh endpoint REST API dan WebSocket terpusat di bawah prefix `/api/v1` denga
 .
 ├── backend/
 │   ├── app/
-│   │   ├── api/v1/                   # 25 Modul Router REST API & WebSocket (SRP <= 200 baris)
+│   │   ├── api/v1/                   # 27 Modul Router REST API & WebSocket (SRP <= 200 baris)
 │   │   │   ├── analytics.py          # Metrik Token Ledger & CFO Observability
 │   │   │   ├── auth.py               # Otentikasi Stealth PIN & Telegram Security Gate
 │   │   │   ├── branch_merge.py       # Git-Style Branch Diff & LCA Atomic Merge
@@ -396,6 +406,7 @@ Seluruh endpoint REST API dan WebSocket terpusat di bawah prefix `/api/v1` denga
 │   │   │   ├── frontier_radar.py     # Upstream Health & Model Router Radar
 │   │   │   ├── gates.py              # Founder Stage-Gate Decisions
 │   │   │   ├── governance.py         # Executive Governance, Escalation & CEO Veto
+│   │   │   ├── mcp_routes.py         # MCP Server Dynamic Management & Unified Permissions
 │   │   │   ├── office.py             # Live Command HQ State & Directives API
 │   │   │   ├── office_ws.py          # Multi-Agent Live Streams WebSocket Channel
 │   │   │   ├── projects.py           # Venture State & Cascading Clean Sweep Deletion
@@ -406,6 +417,7 @@ Seluruh endpoint REST API dan WebSocket terpusat di bawah prefix `/api/v1` denga
 │   │   │   ├── sandbox_terminal_ws.py# Interactive Web PTY Terminal Stream
 │   │   │   ├── sentinel.py           # Chain-of-Verification Audit Logs & Findings
 │   │   │   ├── settings.py           # Dynamic BYOK & Runtime Settings Manager
+│   │   │   ├── skills_routes.py      # Public Skills Library & Git Repo Importer
 │   │   │   ├── sparring.py           # Executive Sparring Room (Dynamic Org Roles)
 │   │   │   ├── vault.py              # AES-256-GCM Encrypted Secret Vault
 │   │   │   └── wisdom.py             # Corporate Wisdom Base & Vector RAG
@@ -429,18 +441,19 @@ Seluruh endpoint REST API dan WebSocket terpusat di bawah prefix `/api/v1` denga
 │   │   │   ├── governance/           # Circuit Breaker, Financial Guardrail, Flight Recorder
 │   │   │   ├── memory/               # Blackboard Memory, Context Compactor, Vector Store (FastEmbed)
 │   │   │   ├── tools/                # FileLockManager, DynamicToolRegistry, Tool Synthesizer
-│   │   │   ├── secretary/            # TelegramSecretaryDaemon (Long Polling & Trust Boundary)
+│   │   │   ├── secretary/            # Telegram Daemon (5 Pillars: Reporter, Task Bridge, Installer)
+│   │   │   ├── skills/               # SkillsHub & Git Multi-File Bundle Importer
 │   │   │   ├── quality/              # AST Security Scanner, P2P Reviewer, Visual Evaluator
 │   │   │   ├── office/               # Actor Event Bus & Oasis Lounge Engine
 │   │   │   └── sentinel/             # Two-Tier CoV Pre-Flight Gatekeeper & Inspector
 │   │   ├── gateway/                  # Unified Multi-Provider BYOK Client (Adapters)
 │   │   └── sandbox/                  # Docker Sandbox Runner & Caddy Proxy Manager
-│   ├── tests/                        # Unit & Integration Test Suites (189 Passed / 100%)
+│   ├── tests/                        # Unit & Integration Test Suites (214 Passed / 100%)
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
 │   │   ├── app/                      # Next.js 14 App Router Pages
-│   │   │   ├── organization/         # Visual Org Studio & HTML5 DND Pipeline Builder
+│   │   │   ├── organization/         # Visual Org Studio & AI Board (3-Layer Prompting)
 │   │   │   ├── kanban/[id]/          # Mission Control Kanban & Live Lounge
 │   │   │   ├── preview/[id]/         # Live Sandbox Preview, PTY Terminal & Snapshots
 │   │   │   ├── sparring/[id]/        # Executive Sparring Room (Dynamic Roles)
@@ -449,7 +462,7 @@ Seluruh endpoint REST API dan WebSocket terpusat di bawah prefix `/api/v1` denga
 │   │   │   ├── analytics/            # CFO Observability & Token Burn Cockpit
 │   │   │   └── wisdom/               # Corporate Wisdom Base & GitHub Skill Importer
 │   │   ├── components/               # Komponen Modular Antarmuka (SRP <= 150-200 baris)
-│   │   │   ├── organization/         # PipelineBuilder, RoleModal (Slug-Free), BranchBar
+│   │   │   ├── organization/         # RoleModal (3-Layer Prompting), RoleCard, BranchBar
 │   │   │   ├── office/               # Oasis Feed, ScreenShare, WarRoom, EventCard
 │   │   │   ├── analytics/            # TokenSummaryCards, ChannelHealthRadar, RoleCostTable
 │   │   │   ├── settings/             # SettingsProviderTab (BYOK & Custom Providers)
@@ -523,13 +536,15 @@ Untuk menjalankan seluruh rangkaian pengujian backend:
 ```bash
 pytest backend/tests -q
 ```
-**Status Pengujian: 203 / 203 Pengujian Lolos (100% PASSED, Zero Failure)**.
+**Status Pengujian: 214 / 214 Pengujian Lolos (100% PASSED, Zero Failure)**.
 
-Rangkaian uji terbagi dalam 4 gelombang verifikasi ketat:
+Rangkaian uji terbagi dalam 6 gelombang verifikasi ketat:
 * **Gelombang 1 (Fondasi & Desentralisasi Kognitif)**: Pembersihan dead code legacy, Polymorphic Contract Handler (`contract_handlers.py`), Sovereign Router live token pricing ledger, dan FastEmbed ONNX 384-dim neural RAG.
 * **Gelombang 2 (Keselamatan & Efisiensi Memori)**: Two-Tier CoV Pre-Flight Gatekeeper (Tier 1 0ms/0-token passing vs Tier 2 mutating critic), Autonomous Role-Worker Self-Repair Loop, dan Hermes Layered Context Compactor.
 * **Gelombang 3 (Otonomi Korporat & Ekstensi Remote)**: Autonomous Kanban Runner dengan SQLite Atomic Claim Query, FileLockManager anti-race condition mutex, DynamicToolRegistry SQLite persistence (`corporate_custom_tools`), dan Telegram Secretary Daemon dengan dynamic tool synthesis.
 * **Gelombang 4 (Integrasi Ekosistem & Gerbang Mutu LSP)**: MCP Server Dynamic Bridge & Dependency Guardrail (`test_mcp_manager.py`), Public Skills Hub & Auto-Taxonomy FTS5 (`test_skills_hub.py`), In-Sandbox LSP Diagnostics & Gatekeeper (`test_lsp_service.py`), serta Telegram Secretary Dry-Run & Secret Interceptor (`test_telegram_installer.py`).
+* **Gelombang 5 (Layered Cognition & Anti-Drift Architecture)**: Pengujian `persona_prompt` pada skema database `corporate_roles`, migrasi otomatis & seeding 7 peran bawaan, validasi kontrak API Pydantic, perakitan 3-layer system prompt (`dynamic_node.py`), eliminasi dead code denah furnitur statis, serta pencegahan persona drift saat fallback model router aktif (`test_persona_prompt_and_3layer.py`).
+* **Gelombang 6 (Git Multi-File Skill Importer, Secretary 5-Pillars & Unified Role Permissions)**: Pengujian kloning dangkal git & ekstraksi hierarki multi-file repositori kompleks seperti `ui-ux-pro-max-skill` (`test_skills_git_importer.py`), alur kerja terpadu 5 pilar Telegram Secretary dari `/task` dispatch hingga event bus reporting (`test_secretary_full_workflow.py`), serta agregasi perizinan perkakas terpadu di `/api/v1/mcp/all-tools` (`test_unified_all_tools_permissions.py`).
 
 ---
 

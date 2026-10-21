@@ -13,10 +13,8 @@ import BranchForkModal from "@/components/organization/BranchForkModal";
 import BranchMergeModal from "@/components/organization/BranchMergeModal";
 import DivisionModal from "@/components/organization/DivisionModal";
 import RoleModal from "@/components/organization/RoleModal";
-import WorkflowPipelineBuilder, { WorkflowPipelineBuilderHandle } from "@/components/organization/WorkflowPipelineBuilder";
 
 export default function OrganizationPage() {
-  const pipelineBuilderRef = useRef<WorkflowPipelineBuilderHandle>(null);
   const [branches, setBranches] = useState<BranchResponse[]>([]);
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const [divisions, setDivisions] = useState<DivisionResponse[]>([]);
@@ -93,8 +91,8 @@ export default function OrganizationPage() {
         <span className="text-xs font-mono uppercase tracking-wider text-indigo-400">Virtual Org Studio</span>
       </div>
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white mt-1">Bagan Organisasi & Alur Kerja Korporat</h1>
-        <p className="text-xs md:text-sm text-slate-400 mt-0.5">Kelola divisi, karyawan AI, dan alur kerja Git-style secara dinamis tanpa hardcode backend.</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white mt-1">Bagan Organisasi & Dewan Direksi AI</h1>
+        <p className="text-xs md:text-sm text-slate-400 mt-0.5">Kelola divisi, karyawan AI, 3-layer prompt (Soul Persona & SOP), dan konfigurasi model LLM secara terpadu.</p>
       </div>
 
       {feedback && (
@@ -116,13 +114,6 @@ export default function OrganizationPage() {
         onOpenDivisionModal={() => { setEditingDivision(null); setDivisionModalOpen(true); }}
         onActivateBranch={handleActivateBranch}
         onDeleteBranch={handleDeleteBranch}
-      />
-
-      <WorkflowPipelineBuilder
-        ref={pipelineBuilderRef}
-        selectedBranch={selectedBranch}
-        onOpenForkModal={() => setForkModalOpen(true)}
-        onPipelineChanged={() => { if (selectedBranchId) loadStructure(selectedBranchId); }}
       />
 
       {loading ? (
@@ -148,7 +139,6 @@ export default function OrganizationPage() {
               onAddRole={(divId) => { setPreselectedDivisionId(divId); setEditingRole(null); setRoleModalOpen(true); }}
               onEditRole={(r) => { setEditingRole(r); setPreselectedDivisionId(r.division_id); setRoleModalOpen(true); }}
               onDeleteRole={handleDeleteRole} onToggleActiveRole={handleToggleActiveRole}
-              onAddToPipeline={(r, n, c) => pipelineBuilderRef.current?.addRoleToPipeline(r, n, c)}
             />
           ))}
         </div>
